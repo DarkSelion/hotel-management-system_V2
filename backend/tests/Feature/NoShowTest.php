@@ -41,6 +41,18 @@ class NoShowTest extends TestCase
         ]);
     }
 
+    protected function staff(): User
+    {
+        $role = \App\Models\Role::create(['name' => 'Receptionist', 'slug' => 'receptionist']);
+
+        return User::create([
+            'name' => 'Staff User',
+            'email' => 'staff@test.com',
+            'password' => Hash::make('password'),
+            'role_id' => $role->id,
+        ]);
+    }
+
     protected function roomType(): RoomType
     {
         return RoomType::create([
@@ -307,5 +319,183 @@ class NoShowTest extends TestCase
         $this->artisan('reservations:detect-overdue')
             ->expectsOutput('Processed overdue reservations:')
             ->assertExitCode(0);
+    }
+
+    // =========================================================================
+    // REFRESH-OVERDUE ENDPOINT (manual admin trigger)
+    // =========================================================================
+
+    public function test_admin_can_trigger_refresh_overdue_endpoint(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->createReservation('confirmed', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+
+        $response = $this->postJson('/api/reservations/refresh-overdue');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('count', 1)
+            ->assertJsonPath('reservation_ids.0', $reservation->id);
+
+        $this->assertTrue($reservation->fresh()->is_overdue);
+        $this->assertNotNull($reservation->fresh()->overdue_at);
+    }
+
+    public function test_refresh_overdue_endpoint_returns_empty_when_none_overdue(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $this->createReservation('confirmed', now()->addDays(2)->format('Y-m-d'), now()->addDays(5)->format('Y-m-d'));
+
+        $this->postJson('/api/reservations/refresh-overdue')
+            ->assertStatus(200)
+            ->assertJsonPath('count', 0)
+            ->assertJsonCount(0, 'reservation_ids');
+    }
+
+    public function test_refresh_overdue_endpoint_is_idempotent(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $this->createReservation('confirmed', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+
+        $this->postJson('/api/reservations/refresh-overdue')->assertStatus(200)->assertJsonPath('count', 1);
+        $this->postJson('/api/reservations/refresh-overdue')->assertStatus(200)->assertJsonPath('count', 0);
+    }
+
+    public function test_staff_cannot_trigger_refresh_overdue_endpoint(): void
+    {
+        $staff = $this->staff();
+        Sanctum::actingAs($staff);
+
+        $this->postJson('/api/reservations/refresh-overdue')->assertStatus(403);
+    }
+
+    public function test_guest_cannot_trigger_refresh_overdue_endpoint(): void
+    {
+        $guest = $this->guest(['email' => 'guest-noshow@example.com']);
+        Sanctum::actingAs($guest);
+
+        $this->postJson('/api/reservations/refresh-overdue')->assertStatus(403);
+    }
+
+    public function test_unauthenticated_cannot_trigger_refresh_overdue_endpoint(): void
+    {
+        $this->postJson('/api/reservations/refresh-overdue')->assertStatus(401);
+    }
+
+    public function test_deactivated_admin_cannot_trigger_refresh_overdue_endpoint(): void
+    {
+        $role = \App\Models\Role::create(['name' => 'Admin', 'slug' => 'admin']);
+        $admin = User::create([
+            'name' => 'Inactive Admin',
+            'email' => 'inactive-admin@test.com',
+            'password' => Hash::make('password'),
+            'role_id' => $role->id,
+            'is_active' => false,
+        ]);
+        Sanctum::actingAs($admin);
+
+        $this->postJson('/api/reservations/refresh-overdue')->assertStatus(403);
+    }
+
+    // =========================================================================
+    // OVERDUE DETECTION SERVICE — edge cases
+    // =========================================================================
+
+    public function test_overdue_detection_sets_overdue_at_to_check_in_date(): void
+    {
+        $checkIn = now()->subDays(4)->format('Y-m-d');
+        $reservation = $this->createReservation('confirmed', $checkIn, now()->subDays(2)->format('Y-m-d'));
+
+        $service = new OverdueReservationService();
+        $service->detectAndFlagOverdue();
+
+        $fresh = $reservation->fresh();
+        $this->assertTrue($fresh->is_overdue);
+        $this->assertEquals(
+            now()->parse($checkIn)->startOfDay()->toDateTimeString(),
+            $fresh->overdue_at->toDateTimeString()
+        );
+    }
+
+    public function test_overdue_detection_does_not_flag_check_in_today(): void
+    {
+        $reservation = $this->createReservation('confirmed', now()->format('Y-m-d'), now()->addDays(2)->format('Y-m-d'));
+
+        $service = new OverdueReservationService();
+        $result = $service->detectAndFlagOverdue();
+
+        $this->assertEquals(0, $result['count']);
+        $this->assertFalse($reservation->fresh()->is_overdue);
+    }
+
+    public function test_overdue_detection_ignores_checked_in_no_show_and_checked_out(): void
+    {
+        $this->createReservation('checked_in', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+        $this->createReservation('no_show', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+        $this->createReservation('checked_out', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+
+        $service = new OverdueReservationService();
+        $result = $service->detectAndFlagOverdue();
+
+        $this->assertEquals(0, $result['count']);
+    }
+
+    public function test_overdue_detection_notifies_admins_and_managers(): void
+    {
+        $admin = $this->admin();
+        $managerRole = \App\Models\Role::create(['name' => 'Hotel Manager', 'slug' => 'hotel_manager']);
+        User::create([
+            'name' => 'Manager',
+            'email' => 'manager@test.com',
+            'password' => Hash::make('password'),
+            'role_id' => $managerRole->id,
+        ]);
+        $this->createReservation('confirmed', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+
+        $service = new OverdueReservationService();
+        $service->detectAndFlagOverdue();
+
+        $manager = User::where('email', 'manager@test.com')->first();
+
+        $this->assertDatabaseHas('activity_logs', [
+            'user_id' => $admin->id,
+            'action' => 'notified_overdue',
+            'module' => 'reservations',
+        ]);
+        $this->assertDatabaseHas('activity_logs', [
+            'user_id' => $manager->id,
+            'action' => 'notified_overdue',
+            'module' => 'reservations',
+        ]);
+    }
+
+    public function test_clear_overdue_resets_flag_and_logs_activity(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->createReservation('confirmed', now()->subDays(4)->format('Y-m-d'), now()->subDays(2)->format('Y-m-d'));
+        $reservation->update(['is_overdue' => true, 'overdue_at' => now()->startOfDay()]);
+
+        $service = new OverdueReservationService();
+        $result = $service->clearOverdue($reservation->id);
+
+        $this->assertTrue($result);
+        $fresh = $reservation->fresh();
+        $this->assertFalse($fresh->is_overdue);
+        $this->assertNull($fresh->overdue_at);
+        $this->assertDatabaseHas('activity_logs', [
+            'user_id' => $admin->id,
+            'action' => 'cleared_overdue',
+            'module' => 'reservations',
+            'model_id' => $reservation->id,
+        ]);
+    }
+
+    public function test_clear_overdue_returns_false_for_missing_reservation(): void
+    {
+        $service = new OverdueReservationService();
+        $this->assertFalse($service->clearOverdue(999999));
     }
 }
