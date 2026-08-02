@@ -24,7 +24,7 @@ class RoomController extends Controller
                             ->where('check_out', '>=', $request->check_out);
                     });
             })
-                ->whereNotIn('status', ['cancelled', 'checked_out'])
+                ->active()
                 ->pluck('room_id');
 
             $query->whereHas('rooms', function ($q) use ($bookedRoomIds) {
@@ -96,7 +96,7 @@ class RoomController extends Controller
                         ->where('check_out', '>=', $data['check_out']);
                 });
         })
-            ->whereNotIn('status', ['cancelled', 'checked_out'])
+            ->active()
             ->pluck('room_id');
 
         $rooms = $query->whereNotIn('id', $bookedRoomIds)->get();

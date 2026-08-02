@@ -605,6 +605,36 @@ class PortalTest extends TestCase
         $this->assertCount(0, $response->json());
     }
 
+    public function test_portal_available_rooms_ignores_no_show_reservations(): void
+    {
+        $type = $this->roomType('deluxe', 150);
+        $room = $this->room($type);
+
+        Reservation::create([
+            'reservation_number' => 'BK-' . now()->year . '-0041',
+            'guest_id' => $this->guest()->id,
+            'room_id' => $room->id,
+            'status' => 'no_show',
+            'check_in' => '2026-10-10',
+            'check_out' => '2026-10-12',
+            'adults' => 2,
+            'price_per_night' => 150,
+            'total_nights' => 2,
+            'subtotal' => 300,
+            'tax_amount' => 30,
+            'total_amount' => 330,
+            'due_amount' => 330,
+            'payment_status' => 'unpaid',
+            'source' => 'booking_engine',
+        ]);
+
+        $response = $this->getJson('/api/portal/rooms/available?check_in=2026-10-09&check_out=2026-10-13');
+
+        $response->assertStatus(200);
+        $this->assertCount(1, $response->json());
+        $this->assertEquals($room->id, $response->json()[0]['id']);
+    }
+
     public function test_portal_available_rooms_by_type(): void
     {
         $deluxe = $this->roomType('deluxe', 150);

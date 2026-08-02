@@ -109,6 +109,6 @@ class Reservation extends Model
 
     public function scopeActive(Builder $query)
     {
-        $query->whereNotIn('status', ['cancelled', 'no_show']);
+        $query->whereNotIn('status', ['cancelled', 'checked_out', 'no_show']);
     }
 }

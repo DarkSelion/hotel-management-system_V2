@@ -123,7 +123,7 @@ class RoomController extends Controller
                         ->where('check_out', '>=', $data['check_out']);
                 });
         })
-            ->whereNotIn('status', ['cancelled', 'checked_out', 'no_show'])
+            ->active()
             ->pluck('room_id');
 
         $rooms = $query->whereNotIn('id', $bookedRoomIds)

@@ -401,7 +401,7 @@ class ReservationController extends Controller
     private function roomHasOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeId = null): bool
     {
         return Reservation::where('room_id', $roomId)
-            ->whereNotIn('status', ['cancelled', 'checked_out', 'no_show'])
+            ->active()
             ->when($excludeId !== null, fn ($query) => $query->where('id', '!=', $excludeId))
             ->where('check_in', '<', $checkOut)
             ->where('check_out', '>', $checkIn)
@@ -411,7 +411,7 @@ class ReservationController extends Controller
     private function reconcileRoomStatus(Room $room): void
     {
         $hasActive = Reservation::where('room_id', $room->id)
-            ->whereNotIn('status', ['cancelled', 'checked_out', 'no_show'])
+            ->active()
             ->exists();
 
         if ($hasActive) {

@@ -48,7 +48,7 @@ class ReservationController extends Controller
         $total = round($subtotal + $tax, 2);
 
         $reservation = DB::transaction(function () use ($data, $guest, $roomType, $rate, $nights, $subtotal, $tax, $taxRate, $total) {
-            $overlappingRoomIds = Reservation::whereNotIn('status', ['cancelled', 'checked_out'])
+            $overlappingRoomIds = Reservation::active()
                 ->where(function ($q) use ($data) {
                     $q->whereBetween('check_in', [$data['check_in'], $data['check_out']])
                         ->orWhereBetween('check_out', [$data['check_in'], $data['check_out']])

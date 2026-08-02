@@ -32,6 +32,9 @@ class DashboardController extends Controller
 
         $today = now()->format('Y-m-d');
 
+        // NOTE: only cancelled/no_show are excluded here (checked_out is counted
+        // deliberately) — a reservation that checked in and out today still checked
+        // in today. scopeActive() (cancelled/checked_out/no_show) is NOT used here.
         $checkInsToday = Reservation::where('check_in', $today)
             ->whereNotIn('status', ['cancelled', 'no_show'])
             ->count();
