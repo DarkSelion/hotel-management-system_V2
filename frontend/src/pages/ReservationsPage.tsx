@@ -187,7 +187,7 @@ export default function ReservationsPage() {
       render: (r) => (
         <button
           onClick={() => openDetailModal(r)}
-          className="text-primary hover:underline"
+          className="block max-w-[160px] truncate text-primary hover:underline"
         >
           {r.reservation_number}
         </button>
@@ -250,13 +250,13 @@ export default function ReservationsPage() {
       key: 'payment_status',
       label: 'Payment',
       sortable: true,
-      className: 'whitespace-nowrap w-[120px] text-center',
+      className: 'whitespace-nowrap',
       render: (r) => <StatusBadge status={r.payment_status} />,
     },
     {
       key: 'actions',
       label: 'Actions',
-      className: 'whitespace-nowrap pl-6',
+      className: 'whitespace-nowrap',
       render: (r) => (
         <ReservationRowActions
           reservation={r}

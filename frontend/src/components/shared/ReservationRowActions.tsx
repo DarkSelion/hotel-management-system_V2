@@ -14,7 +14,7 @@ interface ReservationRowActionsProps {
   onMarkNoShow: () => void
 }
 
-const ACTION_BOX = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border'
+const ACTION_BOX = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border divide-x divide-border'
 
 export function ReservationRowActions({
   reservation,
