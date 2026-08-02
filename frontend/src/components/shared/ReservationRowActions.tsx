@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 import { Eye, Pencil, XCircle, LogIn, LogOut, MoreVertical, UserX } from 'lucide-react'
 import type { Reservation } from '@/types'
 
@@ -12,6 +13,8 @@ interface ReservationRowActionsProps {
   onCheckOut: () => void
   onMarkNoShow: () => void
 }
+
+const GROUP_CLASS = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border shadow-sm'
 
 export function ReservationRowActions({
   reservation,
@@ -26,12 +29,12 @@ export function ReservationRowActions({
 
   if (status === 'cancelled' || status === 'no_show' || status === 'checked_out') {
     return (
-      <div className="flex items-center gap-2">
+      <div className={GROUP_CLASS}>
         <Button
           variant="ghost"
           size="sm"
           square
-          className="px-0"
+          className="rounded-none border-0"
           onClick={(e) => { e.stopPropagation(); onView() }}
           title="View"
         >
@@ -53,18 +56,22 @@ export function ReservationRowActions({
           : null
 
   const kebabItems = [
-    { label: 'View', icon: <Eye className="h-4 w-4" />, onClick: onView },
-    { label: 'Edit', icon: <Pencil className="h-4 w-4" />, onClick: onEdit },
-    ...(overdue ? [{ label: 'Check In (late)', icon: <LogIn className="h-4 w-4" />, onClick: onCheckIn }] : []),
+    { label: 'View', icon: <Eye className="h-3.5 w-3.5" />, onClick: onView },
+    { label: 'Edit', icon: <Pencil className="h-3.5 w-3.5" />, onClick: onEdit },
+    ...(overdue ? [{ label: 'Check In (late)', icon: <LogIn className="h-3.5 w-3.5" />, onClick: onCheckIn }] : []),
     ...(status === 'pending' || status === 'confirmed'
-      ? [{ label: 'Cancel', icon: <XCircle className="h-4 w-4" />, danger: true as const, onClick: onCancel }]
+      ? [{ label: 'Cancel', icon: <XCircle className="h-3.5 w-3.5" />, danger: true as const, onClick: onCancel }]
       : []),
   ]
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={GROUP_CLASS}>
       {primary && (
-        <Button size="sm" className={primary.classes} onClick={(e) => { e.stopPropagation(); primary.onClick() }}>
+        <Button
+          size="sm"
+          className={cn('h-8 rounded-none border-0 px-3', primary.classes)}
+          onClick={(e) => { e.stopPropagation(); primary.onClick() }}
+        >
           {primary.icon}
           {primary.label}
         </Button>
@@ -76,7 +83,7 @@ export function ReservationRowActions({
             variant="ghost"
             size="sm"
             square
-            className="px-0"
+            className={cn('rounded-none border-0', primary && 'border-l border-border')}
             title="More actions"
           >
             <MoreVertical className="h-4 w-4" />

@@ -81,7 +81,7 @@ export function DropdownMenu({ trigger, items, align = 'left' }: DropdownMenuPro
           ref={menuRef}
           style={{ position: 'fixed', top: 0, left: 0, visibility: 'hidden' }}
           className={cn(
-            'z-50 min-w-[12rem] rounded-lg border border-border bg-card py-1 shadow-lg',
+            'z-[60] min-w-[8.5rem] rounded-lg border border-border bg-card py-0.5 shadow-xl ring-1 ring-black/10',
           )}
         >
           {items.map((item, i) => (
@@ -89,7 +89,7 @@ export function DropdownMenu({ trigger, items, align = 'left' }: DropdownMenuPro
               {item.divider && <div className="my-1 border-t border-border" />}
               <button
                 className={cn(
-                  'flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors',
+                  'flex w-full items-center gap-2 px-2.5 py-1.5 text-[13px] transition-colors',
                   item.danger ? 'text-danger hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50',
                 )}
                 onClick={() => {
@@ -97,7 +97,7 @@ export function DropdownMenu({ trigger, items, align = 'left' }: DropdownMenuPro
                   closeMenu()
                 }}
               >
-                {item.icon && <span className="h-4 w-4">{item.icon}</span>}
+                {item.icon && <span className="h-3.5 w-3.5">{item.icon}</span>}
                 {item.label}
               </button>
             </div>

@@ -8,7 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   square?: boolean
 }
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'md', ...props }, ref) => {
+  ({ className, variant = 'default', size = 'md', square, ...props }, ref) => {
     return (
       <button
         ref={ref}
@@ -22,7 +22,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'outline': 'border border-border bg-transparent text-gray-700 hover:bg-gray-50',
             'danger': 'bg-danger text-white hover:bg-red-600',
           }[variant],
-          {
+          square ? 'size-8 px-0' : {
             sm: 'h-8 px-3 text-xs',
             md: 'h-10 px-4 text-sm',
             lg: 'h-12 px-6 text-base',
