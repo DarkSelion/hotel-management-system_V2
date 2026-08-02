@@ -173,40 +173,19 @@ export function useRefreshOverdue() {
 }
 
 export function useCheckInOutWithPayment() {
-  const createPayment = useCreatePayment()
   const checkIn = useCheckIn()
   const checkOut = useCheckOut()
-  const isLoading = createPayment.isPending || checkIn.isPending || checkOut.isPending
+  const isLoading = checkIn.isPending || checkOut.isPending
 
-  const perform = async (
+  const performStatusChange = async (
     action: 'check-in' | 'check-out',
     reservation: Reservation,
-    paymentMethod?: 'cash' | 'gcash',
-    amount?: number,
   ) => {
-    let paymentRecorded = false
-    try {
-      if (paymentMethod && amount && amount > 0) {
-        await createPayment.mutateAsync({
-          reservation_id: reservation.id,
-          amount: Math.min(amount, reservation.due_amount),
-          payment_method: paymentMethod,
-          payment_type: amount >= reservation.due_amount ? 'full' : 'partial',
-          status: paymentMethod === 'gcash' ? 'pending' : 'completed',
-        })
-        paymentRecorded = true
-      }
-
-      if (action === 'check-in') await checkIn.mutateAsync(reservation.id)
-      else await checkOut.mutateAsync(reservation.id)
-    } catch (err) {
-      const e = err as Error & { paymentRecorded?: boolean }
-      e.paymentRecorded = paymentRecorded
-      throw e
-    }
+    if (action === 'check-in') await checkIn.mutateAsync(reservation.id)
+    else await checkOut.mutateAsync(reservation.id)
   }
 
-  return { perform, isLoading }
+  return { performStatusChange, isLoading }
 }
 
 // ── Guests ─────────────────────────────────────────────

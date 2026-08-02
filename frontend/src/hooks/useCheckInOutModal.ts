@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react'
 import { useCheckInOutWithPayment } from '@/hooks/useApi'
-import type { Reservation } from '@/types'
+import type { Payment, Reservation } from '@/types'
 
 export type CheckInOutError = { message: string; paymentRecorded: boolean } | null
 
 export function useCheckInOutModal(action: 'check-in' | 'check-out') {
   const [target, setTarget] = useState<Reservation | null>(null)
   const [error, setError] = useState<CheckInOutError>(null)
-  const { perform, isLoading } = useCheckInOutWithPayment()
+  const { performStatusChange, isLoading } = useCheckInOutWithPayment()
 
   const verb = action === 'check-in' ? 'check-in' : 'check-out'
   const Verb = action === 'check-in' ? 'Check-in' : 'Check-out'
@@ -22,25 +22,47 @@ export function useCheckInOutModal(action: 'check-in' | 'check-out') {
     setError(null)
   }, [])
 
-  const confirm = useCallback(
-    async (paymentMethod?: 'cash' | 'gcash', amount?: number) => {
+  const runStatusChange = useCallback(
+    async (paymentRecorded: boolean) => {
       if (!target) return
       try {
-        const isRetry = error?.paymentRecorded
-        await perform(action, target, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
+        await performStatusChange(action, target)
         setTarget(null)
         setError(null)
       } catch (err) {
-        const e = err as { paymentRecorded?: boolean; message?: string }
+        const e = err as { message?: string }
         setError({
-          message: e.paymentRecorded
+          message: paymentRecorded
             ? `Payment was recorded, but ${verb} failed. Retry to finish ${verb} — the amount has already been collected.`
             : (e.message || `${Verb} failed. Please try again.`),
-          paymentRecorded: !!e.paymentRecorded,
+          paymentRecorded,
         })
       }
     },
-    [action, target, error, perform, verb, Verb],
+    [action, target, performStatusChange, verb, Verb],
+  )
+
+  const confirm = useCallback(() => runStatusChange(false), [runStatusChange])
+
+  const confirmAfterPayment = useCallback(
+    (payment?: Payment) => {
+      if (!target) return
+      if (payment?.status === 'completed') {
+        setTarget((prev) => {
+          if (!prev) return prev
+          const paidAmount = (prev.paid_amount ?? 0) + payment.amount
+          const dueAmount = Math.max(0, prev.total_amount - paidAmount)
+          return {
+            ...prev,
+            paid_amount: paidAmount,
+            due_amount: dueAmount,
+            payment_status: dueAmount <= 0 ? 'paid' : 'partial',
+          }
+        })
+      }
+      return runStatusChange(true)
+    },
+    [target, runStatusChange],
   )
 
   return {
@@ -51,5 +73,6 @@ export function useCheckInOutModal(action: 'check-in' | 'check-out') {
     open,
     close,
     confirm,
+    confirmAfterPayment,
   }
 }

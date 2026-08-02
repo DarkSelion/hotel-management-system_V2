@@ -60,8 +60,8 @@ export default function ReservationsPage() {
 
   const checkInModal = useCheckInOutModal('check-in')
   const checkOutModal = useCheckInOutModal('check-out')
-  const { open: openCheckIn } = checkInModal
-  const { open: openCheckOut } = checkOutModal
+  const { open: openCheckIn, confirmAfterPayment: confirmAfterCheckIn } = checkInModal
+  const { open: openCheckOut, confirmAfterPayment: confirmAfterCheckOut } = checkOutModal
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -346,6 +346,7 @@ export default function ReservationsPage() {
         error={checkInModal.error}
         onClose={checkInModal.close}
         onConfirm={checkInModal.confirm}
+        onConfirmAfterPayment={confirmAfterCheckIn}
       />
 
       <ReservationCheckInOutModal
@@ -356,6 +357,7 @@ export default function ReservationsPage() {
         error={checkOutModal.error}
         onClose={checkOutModal.close}
         onConfirm={checkOutModal.confirm}
+        onConfirmAfterPayment={confirmAfterCheckOut}
       />
 
       <ConfirmDialog

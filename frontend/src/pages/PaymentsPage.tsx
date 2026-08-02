@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
-import { usePayments, useCreatePayment, useReservations } from '@/hooks/useApi'
+import { usePayments, useReservations } from '@/hooks/useApi'
 import type { Payment, Reservation } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
 import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { PaymentModal } from '@/components/shared/PaymentModal'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +16,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { PAYMENT_METHODS } from '@/lib/constants'
 import {
   Plus, Eye, Banknote, Smartphone,
-  Loader2, AlertCircle,
+  AlertCircle,
 } from 'lucide-react'
 
 interface PaymentExtended extends Payment {
@@ -28,13 +29,6 @@ const PAYMENT_STATUS_OPTIONS = [
   { value: 'completed', label: 'Completed' },
   { value: 'failed', label: 'Failed' },
   { value: 'refunded', label: 'Refunded' },
-]
-
-const PAYMENT_TYPE_OPTIONS = [
-  { value: 'full', label: 'Full' },
-  { value: 'partial', label: 'Partial' },
-  { value: 'deposit', label: 'Deposit' },
-  { value: 'refund', label: 'Refund' },
 ]
 
 const METHOD_ICONS: Record<string, React.ReactNode> = {
@@ -60,14 +54,6 @@ export default function PaymentsPage() {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<PaymentExtended | null>(null)
 
-  const [formReservationId, setFormReservationId] = useState<number | ''>('')
-  const [formAmount, setFormAmount] = useState(0)
-  const [formMethod, setFormMethod] = useState('cash')
-  const [formType, setFormType] = useState('full')
-  const [formReference, setFormReference] = useState('')
-  const [formNotes, setFormNotes] = useState('')
-  const [formErrors, setFormErrors] = useState<Partial<Record<string, string>>>({})
-
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = { page, sort: sortBy }
     if (search) params.search = search
@@ -80,7 +66,6 @@ export default function PaymentsPage() {
 
   const { data: paymentsData, isLoading, error, refetch } = usePayments(queryParams)
   const { data: reservationsData } = useReservations({ per_page: 100, status: 'checked_in,checked_out,confirmed' })
-  const createPayment = useCreatePayment()
 
   const payments = (paymentsData?.data ?? []) as PaymentExtended[]
   const reservations = (reservationsData?.data ?? []) as Reservation[]
@@ -92,49 +77,11 @@ export default function PaymentsPage() {
   }
 
   function openNewForm() {
-    setFormReservationId('')
-    setFormAmount(0)
-    setFormMethod('cash')
-    setFormType('full')
-    setFormReference('')
-    setFormNotes('')
-    setFormErrors({})
     setShowFormModal(true)
   }
 
   function closeFormModal() {
     setShowFormModal(false)
-  }
-
-  function handleReservationSelect(id: number) {
-    setFormReservationId(id)
-    const res = reservations.find(r => r.id === id)
-    if (res) {
-      setFormAmount(res.due_amount ?? res.total_amount)
-    }
-  }
-
-  function validateForm(): boolean {
-    const errors: Partial<Record<string, string>> = {}
-    if (formReservationId === '') errors.reservation_id = 'Reservation is required'
-    if (formAmount <= 0) errors.amount = 'Amount must be greater than 0'
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  function handleFormSubmit() {
-    if (!validateForm()) return
-
-    const payload = {
-      reservation_id: Number(formReservationId),
-      amount: formAmount,
-      payment_method: formMethod,
-      payment_type: formType,
-      reference_number: formReference || undefined,
-      notes: formNotes || undefined,
-    }
-
-    createPayment.mutate(payload, { onSuccess: closeFormModal })
   }
 
   function getMethodLabel(method: string) {
@@ -360,80 +307,11 @@ export default function PaymentsPage() {
         )}
       </Modal>
 
-      <Modal
+      <PaymentModal
         isOpen={showFormModal}
         onClose={closeFormModal}
-        title="Record Payment"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Reservation</label>
-            <Select
-              value={formReservationId ? String(formReservationId) : ''}
-              onChange={(e) => handleReservationSelect(Number(e.target.value))}
-              error={formErrors.reservation_id}
-            >
-              <option value="" disabled>Select a reservation</option>
-              {reservations.map(r => (
-                <option key={r.id} value={r.id}>
-                  #{r.reservation_number} - {r.guest?.first_name} {r.guest?.last_name} (Due: {formatCurrency(r.due_amount)})
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Amount (₱)"
-              type="number"
-              min={0}
-              step="0.01"
-              value={formAmount}
-              onChange={(e) => setFormAmount(Number(e.target.value))}
-              error={formErrors.amount}
-            />
-            <Select label="Payment Type" value={formType} onChange={(e) => setFormType(e.target.value)}>
-              {PAYMENT_TYPE_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </Select>
-          </div>
-
-          <Select label="Payment Method" value={formMethod} onChange={(e) => setFormMethod(e.target.value)}>
-            {PAYMENT_METHODS.map(m => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </Select>
-
-          <Input
-            label="Reference / Transaction ID"
-            placeholder="TXN-123456"
-            value={formReference}
-            onChange={(e) => setFormReference(e.target.value)}
-          />
-
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Notes</label>
-            <textarea
-              className="flex h-20 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
-              value={formNotes}
-              onChange={(e) => setFormNotes(e.target.value)}
-              placeholder="Payment notes..."
-            />
-          </div>
-        </div>
-
-        <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={closeFormModal} disabled={createPayment.isPending}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleFormSubmit} disabled={createPayment.isPending}>
-            {createPayment.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Record Payment
-          </Button>
-        </div>
-      </Modal>
+        reservations={reservations}
+      />
 
     </div>
   )

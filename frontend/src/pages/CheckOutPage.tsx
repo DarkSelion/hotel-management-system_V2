@@ -27,7 +27,9 @@ export default function CheckOutPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
 
   const checkOutModal = useCheckInOutModal('check-out')
-  const { open: openCheckOut, close: closeCheckOut, confirm: confirmCheckOut } = checkOutModal
+  const {
+    open: openCheckOut, close: closeCheckOut, confirm: confirmCheckOut, confirmAfterPayment: confirmAfterCheckOut,
+  } = checkOutModal
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -208,6 +210,7 @@ export default function CheckOutPage() {
         error={checkOutModal.error}
         onClose={closeCheckOut}
         onConfirm={confirmCheckOut}
+        onConfirmAfterPayment={confirmAfterCheckOut}
       />
     </div>
   )

@@ -29,7 +29,9 @@ export default function CheckInPage() {
   const [cancelTarget, setCancelTarget] = useState<Reservation | null>(null)
 
   const checkInModal = useCheckInOutModal('check-in')
-  const { open: openCheckIn, close: closeCheckIn, confirm: confirmCheckIn } = checkInModal
+  const {
+    open: openCheckIn, close: closeCheckIn, confirm: confirmCheckIn, confirmAfterPayment: confirmAfterCheckIn,
+  } = checkInModal
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -221,6 +223,7 @@ export default function CheckInPage() {
         error={checkInModal.error}
         onClose={closeCheckIn}
         onConfirm={confirmCheckIn}
+        onConfirmAfterPayment={confirmAfterCheckIn}
       />
 
       <ConfirmDialog

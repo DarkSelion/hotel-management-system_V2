@@ -1,0 +1,178 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { PaymentModal } from './PaymentModal'
+import type { Guest, Payment, Reservation, Room } from '@/types'
+
+const { mockMutate } = vi.hoisted(() => ({ mockMutate: vi.fn() }))
+
+vi.mock('@/hooks/useApi', () => ({
+  useCreatePayment: () => ({ mutateAsync: mockMutate, isPending: false }),
+}))
+
+type OnSuccess = (payment: Payment) => void
+type OnClose = () => void
+
+function reservation(overrides: Partial<Reservation> = {}): Reservation {
+  return {
+    id: 1,
+    reservation_number: 'BK-2026-0001',
+    guest: { first_name: 'John', last_name: 'Doe' } as Guest,
+    room: { room_number: '101' } as Room,
+    status: 'confirmed',
+    check_in: '2026-10-10',
+    check_out: '2026-10-12',
+    adults: 2,
+    children: 0,
+    total_amount: 330,
+    paid_amount: 0,
+    due_amount: 330,
+    payment_status: 'unpaid',
+    created_at: '2026-10-01T00:00:00.000000Z',
+    ...overrides,
+  }
+}
+
+function renderModal(overrides: {
+  reservation?: Reservation | null
+  reservations?: Reservation[]
+  onSuccess?: ReturnType<typeof vi.fn<OnSuccess>>
+  onClose?: ReturnType<typeof vi.fn<OnClose>>
+} = {}) {
+  const onSuccess = overrides.onSuccess ?? vi.fn<OnSuccess>()
+  const onClose = overrides.onClose ?? vi.fn<OnClose>()
+  render(
+    <PaymentModal
+      isOpen
+      onClose={onClose}
+      reservation={overrides.reservation === undefined ? reservation() : overrides.reservation}
+      reservations={overrides.reservations}
+      onSuccess={onSuccess}
+    />,
+  )
+  return { onSuccess, onClose }
+}
+
+const amountInput = () => screen.getByLabelText('Amount to collect') as HTMLInputElement
+const tenderedInput = () => screen.getByLabelText('Cash tendered') as HTMLInputElement
+
+describe('PaymentModal', () => {
+  beforeEach(() => {
+    mockMutate.mockReset()
+  })
+
+  it('defaults to the cash tab and shows the reservation summary', () => {
+    renderModal()
+
+    expect(screen.getByRole('button', { name: 'Cash' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'GCash' })).toBeInTheDocument()
+    expect(amountInput()).toBeInTheDocument()
+    expect(tenderedInput()).toBeInTheDocument()
+    expect(screen.getByText('Balance due')).toBeInTheDocument()
+    expect(amountInput()).toHaveValue(330)
+  })
+
+  it('computes change due from the amount tendered', () => {
+    renderModal()
+
+    fireEvent.change(amountInput(), { target: { value: '275' } })
+    fireEvent.change(tenderedInput(), { target: { value: '500' } })
+
+    expect(screen.getByText('Change due')).toBeInTheDocument()
+    expect(screen.getByText('₱225.00')).toBeInTheDocument()
+  })
+
+  it('shows the remaining amount when tendered is less than the amount', () => {
+    renderModal()
+
+    fireEvent.change(amountInput(), { target: { value: '275' } })
+    fireEvent.change(tenderedInput(), { target: { value: '200' } })
+
+    expect(screen.getByText('Guest still owes')).toBeInTheDocument()
+    expect(screen.getByText('₱75.00')).toBeInTheDocument()
+  })
+
+  it('records a full cash payment when the amount equals the balance', async () => {
+    const { onSuccess, onClose } = renderModal()
+    mockMutate.mockResolvedValue({ id: 50, amount: 330, status: 'completed' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reservation_id: 1,
+        amount: 330,
+        payment_method: 'cash',
+        payment_type: 'full',
+        status: 'completed',
+      }),
+    )
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled())
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+  })
+
+  it('records a partial cash payment via the Half quick button', () => {
+    renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Half' }))
+    expect(amountInput()).toHaveValue(165)
+
+    mockMutate.mockResolvedValue({ id: 51, amount: 165, status: 'completed' })
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ amount: 165, payment_method: 'cash', payment_type: 'partial', status: 'completed' }),
+    )
+  })
+
+  it('restores the full amount via the Full quick button', () => {
+    renderModal()
+
+    fireEvent.change(amountInput(), { target: { value: '100' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Full' }))
+    expect(amountInput()).toHaveValue(330)
+  })
+
+  it('records a pending GCash payment with the reference', () => {
+    renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'GCash' }))
+    expect(screen.getByText('pending')).toBeInTheDocument()
+    expect(screen.getByText(/Recorded as/)).toBeInTheDocument()
+    expect(screen.getByText(/verify on the Payments page/i)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Reference / Transaction ID'), { target: { value: 'GC-12345' } })
+    mockMutate.mockResolvedValue({ id: 52, amount: 330, status: 'pending' })
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: 330,
+        payment_method: 'gcash',
+        payment_type: 'full',
+        status: 'pending',
+        reference_number: 'GC-12345',
+      }),
+    )
+  })
+
+  it('surfaces server errors instead of closing', async () => {
+    const { onClose } = renderModal()
+    mockMutate.mockRejectedValue(new Error('The amount field is required.'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    await waitFor(() => expect(screen.getByText('The amount field is required.')).toBeInTheDocument())
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('shows a reservation picker when no reservation is preset and disables submit until one is chosen', () => {
+    renderModal({ reservation: null, reservations: [reservation()] })
+
+    const submit = screen.getByRole('button', { name: 'Record Payment' }) as HTMLButtonElement
+    expect(submit).toBeDisabled()
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } })
+    expect(screen.getByText('Balance due')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Record Payment' })).toBeEnabled()
+  })
+})
