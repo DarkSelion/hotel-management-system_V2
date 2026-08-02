@@ -1,3 +1,21 @@
-
-# YoYo AI version control directory
+# YoYo AI version control
 .yoyo/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend
+backend/vendor/
+backend/.env
+backend/storage/*.key
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*.log
+!backend/storage/.gitkeep
+
+# Local artifacts
+dev-server.log
+lint_out.txt
+$

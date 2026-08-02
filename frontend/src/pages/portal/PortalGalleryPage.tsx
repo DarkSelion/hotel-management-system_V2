@@ -1,0 +1,198 @@
+import { useState, useMemo } from 'react'
+import { useHotelName } from '@/hooks/usePortalApi'
+import { X, ChevronLeft, ChevronRight, Camera, LayoutGrid, BedDouble, Waves, UtensilsCrossed, Sparkles, Calendar } from 'lucide-react'
+
+interface GalleryPhoto {
+  id: number
+  src: string
+  title: string
+  category: string
+}
+
+const CATEGORIES = [
+  { value: 'All', label: 'All', icon: LayoutGrid },
+  { value: 'Rooms & Suites', label: 'Rooms & Suites', icon: BedDouble },
+  { value: 'Amenities', label: 'Amenities', icon: Waves },
+  { value: 'Dining', label: 'Dining', icon: UtensilsCrossed },
+  { value: 'Spa & Wellness', label: 'Spa & Wellness', icon: Sparkles },
+  { value: 'Events', label: 'Events', icon: Calendar },
+] as const
+
+const PHOTOS: GalleryPhoto[] = [
+  { id: 1, src: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80', title: 'Deluxe King Room', category: 'Rooms & Suites' },
+  { id: 2, src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80', title: 'Ocean View Suite', category: 'Rooms & Suites' },
+  { id: 3, src: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=800&q=80', title: 'Premier Suite', category: 'Rooms & Suites' },
+  { id: 4, src: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80', title: 'Premium Twin Room', category: 'Rooms & Suites' },
+  { id: 5, src: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80', title: 'Garden Suite', category: 'Rooms & Suites' },
+  { id: 6, src: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80', title: 'Family Room', category: 'Rooms & Suites' },
+  { id: 7, src: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80', title: 'Infinity Pool', category: 'Amenities' },
+  { id: 8, src: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80', title: 'Poolside Lounge', category: 'Amenities' },
+  { id: 9, src: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80', title: 'Swimming Pool', category: 'Amenities' },
+  { id: 10, src: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80', title: 'Hotel Lobby', category: 'Amenities' },
+  { id: 11, src: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80', title: 'Resort View', category: 'Amenities' },
+  { id: 12, src: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80', title: 'Fine Dining Restaurant', category: 'Dining' },
+  { id: 13, src: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80', title: 'Signature Cuisine', category: 'Dining' },
+  { id: 14, src: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80', title: 'Breakfast Spread', category: 'Dining' },
+  { id: 15, src: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80', title: 'Restaurant Interior', category: 'Dining' },
+  { id: 16, src: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80', title: 'Cozy Lounge', category: 'Spa & Wellness' },
+  { id: 17, src: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&q=80', title: 'Relaxation Lounge', category: 'Spa & Wellness' },
+  { id: 18, src: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80', title: 'Spa Treatment', category: 'Spa & Wellness' },
+  { id: 19, src: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80', title: 'Grand Ballroom', category: 'Events' },
+  { id: 20, src: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80', title: 'Conference Hall', category: 'Events' },
+  { id: 21, src: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80', title: 'Garden Wedding Venue', category: 'Events' },
+  { id: 22, src: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=800&q=80', title: 'Sunset Terrace', category: 'Events' },
+]
+
+export default function PortalGalleryPage() {
+  const hotelName = useHotelName()
+  const [activeCategory, setActiveCategory] = useState<string>('All')
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
+  const filteredPhotos = useMemo(() => {
+    if (activeCategory === 'All') return PHOTOS
+    return PHOTOS.filter(p => p.category === activeCategory)
+  }, [activeCategory])
+
+  function openLightbox(index: number) {
+    setLightboxIndex(index)
+  }
+
+  function closeLightbox() {
+    setLightboxIndex(null)
+  }
+
+  function prevPhoto() {
+    if (lightboxIndex === null) return
+    setLightboxIndex((lightboxIndex - 1 + filteredPhotos.length) % filteredPhotos.length)
+  }
+
+  function nextPhoto() {
+    if (lightboxIndex === null) return
+    setLightboxIndex((lightboxIndex + 1) % filteredPhotos.length)
+  }
+
+  const lightboxPhoto = lightboxIndex !== null ? filteredPhotos[lightboxIndex] : null
+
+  return (
+    <div className="min-h-screen bg-dark">
+      {/* Hero */}
+      <section className="relative py-20 bg-dark">
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent" />
+        <div className="relative max-w-7xl mx-auto px-4 text-center">
+          <p className="section-subtitle mb-4">{hotelName}</p>
+          <h1 className="font-serif text-4xl md:text-5xl text-white font-extralight mb-4">
+            Our Gallery
+          </h1>
+          <div className="gold-line mx-auto mb-6" />
+          <p className="text-white/40 text-sm max-w-lg mx-auto">
+            Explore the cozy comfort and charm that awaits you at {hotelName}.
+          </p>
+        </div>
+      </section>
+
+      {/* Category Tabs */}
+      <div className="sticky top-20 z-30 bg-cream/90 backdrop-blur-xl border-b border-cream-warm/50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-wrap justify-center gap-3 sm:flex-nowrap sm:overflow-x-auto">
+            {CATEGORIES.map((tab) => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveCategory(tab.value)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-[0.15em] transition-all duration-300 ${
+                    activeCategory === tab.value
+                      ? 'bg-gold text-dark shadow-md shadow-gold/20'
+                      : 'bg-white/50 text-dark/50 hover:bg-white hover:text-dark border border-transparent'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Photo Grid */}
+      <section className="bg-cream pb-20">
+        <div className="max-w-7xl mx-auto px-4 pt-8">
+          <p className="text-xs text-dark/40 uppercase tracking-[0.15em] mb-6">
+            {filteredPhotos.length} photo{filteredPhotos.length !== 1 ? 's' : ''}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredPhotos.map((photo, idx) => (
+              <button
+                key={photo.id}
+                onClick={() => openLightbox(idx)}
+                className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer"
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  <span className="text-xs uppercase tracking-[0.15em] text-gold font-medium">{photo.category}</span>
+                  <p className="text-white text-sm font-medium mt-0.5">{photo.title}</p>
+                </div>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                    <Camera className="h-3.5 w-3.5 text-white" />
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Lightbox */}
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center animate-fade-in"
+          onClick={closeLightbox}
+        >
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); prevPhoto() }}
+            className="absolute left-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+          >
+            <ChevronLeft className="h-6 w-6 text-white" />
+          </button>
+
+          <div className="max-w-5xl max-h-[85vh] mx-16" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={lightboxPhoto.src}
+              alt={lightboxPhoto.title}
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+            />
+            <div className="text-center mt-4">
+              <span className="text-xs uppercase tracking-[0.15em] text-gold">{lightboxPhoto.category}</span>
+              <p className="text-white text-sm mt-1">{lightboxPhoto.title}</p>
+              <p className="text-white/30 text-xs mt-2">
+                {lightboxIndex! + 1} / {filteredPhotos.length}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); nextPhoto() }}
+            className="absolute right-4 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-10"
+          >
+            <ChevronRight className="h-6 w-6 text-white" />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

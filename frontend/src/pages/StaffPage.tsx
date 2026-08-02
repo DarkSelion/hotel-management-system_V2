@@ -1,0 +1,751 @@
+import { useState } from 'react'
+import {
+  useStaffList, useStaffSchedules, useLeaveRequests, useRoles, useCreateStaff,
+} from '@/hooks/useApi'
+import { api } from '@/lib/api'
+import { useQueryClient } from '@tanstack/react-query'
+import type { User, Role } from '@/types'
+import { formatDateDisplay } from '@/lib/format'
+import { useAuthStore } from '@/stores/authStore'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { DataTable, type Column } from '@/components/shared/DataTable'
+import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { Modal } from '@/components/ui/modal'
+import { DatePicker } from '@/components/ui/date-picker'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/components/ui/toast'
+import {
+  Plus, Edit, Search, Eye, Calendar, Save, Check, X, AlertCircle, Inbox, Loader2, UserPlus,
+} from 'lucide-react'
+
+const ASSIGNABLE_ROLES: Record<string, string[]> = {
+  super_admin: ['super_admin', 'admin', 'hotel_manager', 'receptionist', 'housekeeping', 'cashier', 'staff'],
+  admin: ['admin', 'hotel_manager', 'receptionist', 'housekeeping', 'cashier', 'staff'],
+  hotel_manager: ['receptionist', 'housekeeping', 'cashier', 'staff'],
+}
+
+const STAFF_TABS = ['All Staff', 'Schedules', 'Leave Requests'] as const
+
+const LEAVE_TYPE_CONFIG: Record<string, { variant: 'info' | 'danger' | 'warning' | 'default'; label: string }> = {
+  annual: { variant: 'info', label: 'Annual' },
+  sick: { variant: 'danger', label: 'Sick' },
+  personal: { variant: 'warning', label: 'Personal' },
+  other: { variant: 'default', label: 'Other' },
+}
+
+const LEAVE_STATUS_CONFIG: Record<string, { variant: 'warning' | 'success' | 'danger' | 'default'; label: string }> = {
+  pending: { variant: 'warning', label: 'Pending' },
+  approved: { variant: 'success', label: 'Approved' },
+  rejected: { variant: 'danger', label: 'Rejected' },
+  cancelled: { variant: 'default', label: 'Cancelled' },
+}
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return '-'
+  return formatDateDisplay(dateStr)
+}
+
+
+
+export default function StaffPage() {
+  const [activeTab, setActiveTab] = useState<string>('All Staff')
+  const queryClient = useQueryClient()
+  const { addToast } = useToast()
+  const currentUserRole = useAuthStore((s) => s.user?.role ?? '')
+
+  const [search, setSearch] = useState('')
+  const [departmentFilter, setDepartmentFilter] = useState('')
+
+  const [viewStaffId, setViewStaffId] = useState<number | null>(null)
+  const [editStaff, setEditStaff] = useState<User | null>(null)
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', role_id: '', department: '', is_active: true })
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({})
+
+  const [showAddStaff, setShowAddStaff] = useState(false)
+  const [addForm, setAddForm] = useState({ name: '', email: '', password: '', role_id: '', phone: '', is_active: true })
+  const [addFormErrors, setAddFormErrors] = useState<Record<string, string>>({})
+
+  const [scheduleDateFilter, setScheduleDateFilter] = useState('')
+  const [scheduleStaffFilter, setScheduleStaffFilter] = useState('')
+  const [showAddSchedule, setShowAddSchedule] = useState(false)
+  const [scheduleForm, setScheduleForm] = useState({ staff_id: '', date: '', start_time: '', end_time: '', department: '', notes: '' })
+
+
+  const { data: staffList, isLoading: staffLoading, error: staffError, refetch: refetchStaff } = useStaffList()
+  const { data: rolesData } = useRoles()
+  const createStaff = useCreateStaff()
+  const { data: schedulesData, isLoading: schedulesLoading, error: schedulesError, refetch: refetchSchedules } = useStaffSchedules(
+    scheduleDateFilter || scheduleStaffFilter
+      ? { date: scheduleDateFilter || undefined, staff_id: scheduleStaffFilter || undefined }
+      : undefined,
+  )
+  const { data: leaveRequestsData, isLoading: leaveLoading, error: leaveError, refetch: refetchLeaves } = useLeaveRequests()
+
+  const staff = (staffList?.data ?? []) as User[]
+  const roles = (rolesData ?? []) as Role[]
+  const scheduleList = (schedulesData?.data ?? []) as any[]
+  const leaveList = (leaveRequestsData?.data ?? []) as any[]
+
+  const canAddStaff = ['super_admin', 'admin', 'hotel_manager'].includes(currentUserRole)
+  const assignableRoleIds = roles.filter((r) => (ASSIGNABLE_ROLES[currentUserRole] ?? []).includes(r.slug)).map((r) => r.id)
+
+  const filteredStaff = staff.filter((s) => {
+    const q = search.toLowerCase()
+    if (q && !s.name.toLowerCase().includes(q) && !s.email.toLowerCase().includes(q)) return false
+    if (departmentFilter && s.role?.slug !== departmentFilter) return false
+    return true
+  })
+
+  const staffColumns: Column<User>[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      sortable: true,
+      render: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
+    },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (s) => <span className="text-muted">{s.email}</span>,
+    },
+    {
+      key: 'role',
+      label: 'Role',
+      render: (s) => <Badge variant="info">{s.role?.name ?? '-'}</Badge>,
+    },
+    {
+      key: 'department',
+      label: 'Department',
+      render: (s) => <span className="text-muted">{s.department || '-'}</span>,
+    },
+    {
+      key: 'phone',
+      label: 'Phone',
+      render: (s) => <span className="text-muted">{s.phone || '-'}</span>,
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      render: (s) => <StatusBadge status={s.is_active ? 'active' : 'inactive'} />,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (s) => (
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" square onClick={() => setViewStaffId(s.id)}>
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" square onClick={() => openEditModal(s)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
+  function openEditModal(staff: User) {
+    setEditStaff(staff)
+    setEditForm({
+      name: staff.name,
+      email: staff.email,
+      phone: staff.phone ?? '',
+      role_id: staff.role?.id ? String(staff.role.id) : '',
+      department: staff.department ?? '',
+      is_active: staff.is_active,
+    })
+    setEditFormErrors({})
+  }
+
+  function closeEditModal() {
+    setEditStaff(null)
+    setEditForm({ name: '', email: '', phone: '', role_id: '', department: '', is_active: true })
+    setEditFormErrors({})
+  }
+
+  function validateEditForm() {
+    const errors: Record<string, string> = {}
+    if (!editForm.name.trim()) errors.name = 'Name is required'
+    if (!editForm.email.trim()) errors.email = 'Email is required'
+    setEditFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  function handleEditSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!validateEditForm() || !editStaff) return
+    const payload = {
+      ...editForm,
+      role_id: editForm.role_id ? Number(editForm.role_id) : undefined,
+    }
+    api.put(`/staff/${editStaff.id}`, payload).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['staff'] })
+      closeEditModal()
+      addToast('Staff updated successfully', 'success')
+    }).catch(() => {
+      addToast('Failed to update staff', 'error')
+    })
+  }
+
+  function handleAddStaff() {
+    const errors: Record<string, string> = {}
+    if (!addForm.name.trim()) errors.name = 'Name is required'
+    if (!addForm.email.trim()) errors.email = 'Email is required'
+    if (!addForm.password) errors.password = 'Password is required'
+    else if (addForm.password.length < 8) errors.password = 'Password must be at least 8 characters'
+    if (!addForm.role_id) errors.role_id = 'Role is required'
+    setAddFormErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
+    createStaff.mutate(
+      {
+        name: addForm.name,
+        email: addForm.email,
+        password: addForm.password,
+        role_id: Number(addForm.role_id),
+        phone: addForm.phone || undefined,
+        is_active: addForm.is_active,
+      },
+      {
+        onSuccess: () => {
+          addToast('Staff account created successfully', 'success')
+          setShowAddStaff(false)
+          setAddForm({ name: '', email: '', password: '', role_id: '', phone: '', is_active: true })
+          setAddFormErrors({})
+        },
+        onError: (err: Error) => {
+          addToast(err.message || 'Failed to create staff account', 'error')
+        },
+      },
+    )
+  }
+
+  function closeAddStaff() {
+    setShowAddStaff(false)
+    setAddForm({ name: '', email: '', password: '', role_id: '', phone: '', is_active: true })
+    setAddFormErrors({})
+  }
+
+  function handleApproveLeave(id: number) {
+    api.put(`/staff/leave-requests/${id}`, { status: 'approved' }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] })
+      addToast('Leave request approved', 'success')
+    }).catch(() => addToast('Failed to approve leave request', 'error'))
+  }
+
+  function handleRejectLeave(id: number) {
+    api.put(`/staff/leave-requests/${id}`, { status: 'rejected' }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] })
+      addToast('Leave request rejected', 'success')
+    }).catch(() => addToast('Failed to reject leave request', 'error'))
+  }
+
+  function handleAddSchedule(e: React.FormEvent) {
+    e.preventDefault()
+    api.post('/staff-schedules', scheduleForm).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['staff-schedules'] })
+      setShowAddSchedule(false)
+      setScheduleForm({ staff_id: '', date: '', start_time: '', end_time: '', department: '', notes: '' })
+      addToast('Schedule added successfully', 'success')
+    }).catch(() => addToast('Failed to add schedule', 'error'))
+  }
+
+  const leaveColumns: Column<any>[] = [
+    {
+      key: 'staff_name',
+      label: 'Staff Name',
+      render: (l) => <span className="font-medium text-gray-900">{l.staff?.name ?? l.staff_name ?? '-'}</span>,
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      render: (l) => {
+        const cfg = LEAVE_TYPE_CONFIG[l.type] ?? { variant: 'default' as const, label: l.type }
+        return <Badge variant={cfg.variant}>{cfg.label}</Badge>
+      },
+    },
+    {
+      key: 'start_date',
+      label: 'Start Date',
+      render: (l) => <span>{formatDate(l.start_date)}</span>,
+    },
+    {
+      key: 'end_date',
+      label: 'End Date',
+      render: (l) => <span>{formatDate(l.end_date)}</span>,
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (l) => {
+        const cfg = LEAVE_STATUS_CONFIG[l.status] ?? { variant: 'default' as const, label: l.status }
+        return <Badge variant={cfg.variant}>{cfg.label}</Badge>
+      },
+    },
+    {
+      key: 'reason',
+      label: 'Reason',
+      render: (l) => <span className="text-muted max-w-[200px] truncate">{l.reason || '-'}</span>,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (l) => (
+        <div className="flex items-center gap-1">
+          {l.status === 'pending' && (
+            <>
+              <Button variant="ghost" size="sm" square onClick={() => handleApproveLeave(l.id)} className="text-success hover:text-success">
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" square onClick={() => handleRejectLeave(l.id)} className="text-danger hover:text-danger">
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ]
+
+  const scheduleColumns: Column<any>[] = [
+    {
+      key: 'staff_name',
+      label: 'Staff Name',
+      render: (s) => <span className="font-medium text-gray-900">{s.staff?.name ?? s.staff_name ?? '-'}</span>,
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      render: (s) => <span>{formatDate(s.date)}</span>,
+    },
+    {
+      key: 'start_time',
+      label: 'Start Time',
+      render: (s) => <span>{s.start_time || '-'}</span>,
+    },
+    {
+      key: 'end_time',
+      label: 'End Time',
+      render: (s) => <span>{s.end_time || '-'}</span>,
+    },
+    {
+      key: 'department',
+      label: 'Department',
+      render: (s) => <span className="text-muted">{s.department || '-'}</span>,
+    },
+    {
+      key: 'notes',
+      label: 'Notes',
+      render: (s) => <span className="text-muted max-w-[200px] truncate">{s.notes || '-'}</span>,
+    },
+  ]
+
+  const viewStaff = viewStaffId ? staff.find((s) => s.id === viewStaffId) : null
+
+  return (
+    <div>
+      <PageHeader title="Staff Management" />
+
+      <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-0.5 w-fit">
+        {STAFF_TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === tab
+                ? 'bg-card text-primary shadow-sm'
+                : 'text-muted hover:text-gray-700'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'All Staff' && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div className="relative max-w-xs flex-1">
+                <Input
+                  placeholder="Search by name or email..."
+                  icon={<Search className="h-4 w-4" />}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="w-44"
+              >
+                <option value="">All Departments</option>
+                {[...new Set(staff.map((s) => s.role?.slug).filter(Boolean))].map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </Select>
+              {canAddStaff && (
+                <Button variant="primary" className="ml-auto" onClick={() => setShowAddStaff(true)}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Add Staff
+                </Button>
+              )}
+            </div>
+
+            <DataTable
+              columns={staffColumns}
+              data={filteredStaff}
+              loading={staffLoading}
+              error={staffError ? (staffError as Error).message : null}
+              onRetry={() => refetchStaff()}
+              keyExtractor={(s) => s.id}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {activeTab === 'Schedules' && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Staff Schedules</CardTitle>
+            <Button variant="primary" size="sm" onClick={() => setShowAddSchedule(true)}>
+              <Plus className="h-4 w-4" />
+              Add Schedule
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div className="w-44">
+                <DatePicker
+                  value={scheduleDateFilter}
+                  onChange={(v) => setScheduleDateFilter(v)}
+                />
+              </div>
+              <Select
+                value={scheduleStaffFilter}
+                onChange={(e) => setScheduleStaffFilter(e.target.value)}
+                className="w-44"
+              >
+                <option value="">All Staff</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </Select>
+            </div>
+
+            {schedulesLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : schedulesError ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
+                <AlertCircle className="mb-3 h-10 w-10 text-danger" />
+                <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
+                <p className="mb-4 text-sm text-muted">{(schedulesError as Error).message}</p>
+                <Button variant="outline" onClick={() => refetchSchedules()}>
+                  Retry
+                </Button>
+              </div>
+            ) : scheduleList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Calendar className="mb-3 h-10 w-10 text-muted/50" />
+                <p className="text-sm font-medium text-gray-900">No schedules for this period</p>
+              </div>
+            ) : (
+              <DataTable
+                columns={scheduleColumns}
+                data={scheduleList}
+                keyExtractor={(s: any) => s.id}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {activeTab === 'Leave Requests' && (
+        <Card>
+          <CardContent className="pt-6">
+            {leaveLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : leaveError ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
+                <AlertCircle className="mb-3 h-10 w-10 text-danger" />
+                <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
+                <p className="mb-4 text-sm text-muted">{(leaveError as Error).message}</p>
+                <Button variant="outline" onClick={() => refetchLeaves()}>
+                  Retry
+                </Button>
+              </div>
+            ) : leaveList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Inbox className="mb-3 h-10 w-10 text-muted/50" />
+                <p className="text-sm font-medium text-gray-900">No leave requests found</p>
+              </div>
+            ) : (
+              <DataTable
+                columns={leaveColumns}
+                data={leaveList}
+                keyExtractor={(l: any) => l.id}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <Modal
+        isOpen={viewStaffId !== null}
+        onClose={() => setViewStaffId(null)}
+        title="Staff Details"
+        size="lg"
+      >
+        {viewStaff ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+                {viewStaff.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">{viewStaff.name}</h3>
+                <p className="text-sm text-muted">{viewStaff.email}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <Badge variant="info">{viewStaff.role?.name ?? '-'}</Badge>
+                  <StatusBadge status={viewStaff.is_active ? 'active' : 'inactive'} />
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4">
+              <div>
+                <span className="text-xs font-medium text-muted">Phone</span>
+                <p className="text-sm text-gray-900">{viewStaff.phone || '-'}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-muted">Email</span>
+                <p className="text-sm text-gray-900">{viewStaff.email}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-muted">Role</span>
+                <p className="text-sm text-gray-900">{viewStaff.role?.name ?? '-'}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-muted">Department</span>
+                <p className="text-sm text-gray-900">{viewStaff.department || '-'}</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center py-8 text-center">
+            <AlertCircle className="mb-2 h-8 w-8 text-muted" />
+            <p className="text-sm text-muted">Could not load staff details.</p>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={showAddStaff}
+        onClose={closeAddStaff}
+        title="Add Staff"
+        size="lg"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={closeAddStaff} disabled={createStaff.isPending}>Cancel</Button>
+            <Button variant="primary" onClick={handleAddStaff} disabled={createStaff.isPending}>
+              {createStaff.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Account
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Name"
+              placeholder="Full name"
+              value={addForm.name}
+              onChange={(e) => setAddForm((p) => ({ ...p, name: e.target.value }))}
+              error={addFormErrors.name}
+            />
+            <Input
+              label="Email"
+              type="email"
+              placeholder="name@hotel.com"
+              value={addForm.email}
+              onChange={(e) => setAddForm((p) => ({ ...p, email: e.target.value }))}
+              error={addFormErrors.email}
+            />
+          </div>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Minimum 8 characters"
+            value={addForm.password}
+            onChange={(e) => setAddForm((p) => ({ ...p, password: e.target.value }))}
+            error={addFormErrors.password}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Role"
+              placeholder="Select role"
+              value={addForm.role_id}
+              onChange={(e) => setAddForm((p) => ({ ...p, role_id: e.target.value }))}
+              error={addFormErrors.role_id}
+            >
+              {roles.filter((r) => assignableRoleIds.includes(r.id)).map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </Select>
+            <Input
+              label="Phone"
+              placeholder="Optional"
+              value={addForm.phone}
+              onChange={(e) => setAddForm((p) => ({ ...p, phone: e.target.value }))}
+            />
+          </div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+              checked={addForm.is_active}
+              onChange={(e) => setAddForm((p) => ({ ...p, is_active: e.target.checked }))}
+            />
+            Active
+          </label>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={editStaff !== null}
+        onClose={closeEditModal}
+        title="Edit Staff"
+        size="lg"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={closeEditModal}>Cancel</Button>
+            <Button variant="primary" onClick={handleEditSubmit}>
+              <Save className="h-4 w-4" /> Save
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          <Input
+            label="Name"
+            value={editForm.name}
+            onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+            error={editFormErrors.name}
+          />
+          <Input
+            label="Email"
+            type="email"
+            value={editForm.email}
+            onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))}
+            error={editFormErrors.email}
+          />
+          <Input
+            label="Phone"
+            value={editForm.phone}
+            onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Role"
+              value={editForm.role_id}
+              onChange={(e) => setEditForm((p) => ({ ...p, role_id: e.target.value }))}
+            >
+              <option value="">Select role</option>
+              {roles.filter((r) => assignableRoleIds.includes(r.id)).map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </Select>
+            <Input
+              label="Department"
+              value={editForm.department}
+              onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))}
+            />
+          </div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+              checked={editForm.is_active}
+              onChange={(e) => setEditForm((p) => ({ ...p, is_active: e.target.checked }))}
+            />
+            Active
+          </label>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={showAddSchedule}
+        onClose={() => setShowAddSchedule(false)}
+        title="Add Schedule"
+        size="md"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setShowAddSchedule(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleAddSchedule}>
+              <Save className="h-4 w-4" /> Save
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleAddSchedule} className="space-y-4">
+          <Select
+            label="Staff"
+            value={scheduleForm.staff_id}
+            onChange={(e) => setScheduleForm((p) => ({ ...p, staff_id: e.target.value }))}
+          >
+            <option value="" disabled>Select staff</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </Select>
+          <DatePicker
+            label="Date"
+            value={scheduleForm.date}
+            onChange={(v) => setScheduleForm((p) => ({ ...p, date: v }))}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Start Time"
+              type="time"
+              value={scheduleForm.start_time}
+              onChange={(e) => setScheduleForm((p) => ({ ...p, start_time: e.target.value }))}
+            />
+            <Input
+              label="End Time"
+              type="time"
+              value={scheduleForm.end_time}
+              onChange={(e) => setScheduleForm((p) => ({ ...p, end_time: e.target.value }))}
+            />
+          </div>
+          <Input
+            label="Department"
+            value={scheduleForm.department}
+            onChange={(e) => setScheduleForm((p) => ({ ...p, department: e.target.value }))}
+          />
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+            <textarea
+              className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
+              placeholder="Notes..."
+              value={scheduleForm.notes}
+              onChange={(e) => setScheduleForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </div>
+        </form>
+      </Modal>
+    </div>
+  )
+}
+

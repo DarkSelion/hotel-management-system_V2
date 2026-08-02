@@ -1,0 +1,403 @@
+import { useState, useMemo, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import {
+  useReservations, useCancelReservation, useCheckIn, useCheckOut,
+} from '@/hooks/useApi'
+import { formatCurrency, formatDateDisplay } from '@/lib/format'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { DataTable, type Column } from '@/components/shared/DataTable'
+import { StatusBadge } from '@/components/shared/StatusBadge'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { ReservationDetailModal } from '@/components/shared/ReservationDetailModal'
+import { ReservationFormModal } from '@/components/shared/ReservationFormModal'
+import { ReservationCheckInOutModal } from '@/components/shared/ReservationCheckInOutModal'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
+import { Select } from '@/components/ui/select'
+import type { Reservation } from '@/types'
+import {
+  Plus, Eye, Pencil, XCircle, LogIn, LogOut,
+} from 'lucide-react'
+
+function formatDate(dateStr: string) {
+  return formatDateDisplay(dateStr)
+}
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'All Statuses' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'confirmed', label: 'Confirmed' },
+  { value: 'checked_in', label: 'Checked In' },
+  { value: 'checked_out', label: 'Checked Out' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'no_show', label: 'No Show' },
+]
+
+export default function ReservationsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [search, setSearch] = useState('')
+  const statusFilter = searchParams.get('status') ?? ''
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [sortBy, setSortBy] = useState('-created_at')
+  const [page, setPage] = useState(1)
+
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [showFormModal, setShowFormModal] = useState(false)
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
+
+  const [cancelTarget, setCancelTarget] = useState<Reservation | null>(null)
+  const [checkInTarget, setCheckInTarget] = useState<Reservation | null>(null)
+  const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
+  const [checkInLoading, setCheckInLoading] = useState<number | null>(null)
+  const [checkOutLoading, setCheckOutLoading] = useState<number | null>(null)
+
+  const queryParams = useMemo(() => {
+    const params: Record<string, string | number | undefined> = {
+      page,
+      sort: sortBy,
+    }
+    if (search) params.search = search
+    if (statusFilter) params.status = statusFilter
+    if (dateFrom) params.date_from = dateFrom
+    if (dateTo) params.date_to = dateTo
+    return params
+  }, [page, sortBy, search, statusFilter, dateFrom, dateTo])
+
+  const { data: reservationsData, isLoading, error, refetch } = useReservations(queryParams)
+
+  const cancelReservation = useCancelReservation()
+  const checkInMutation = useCheckIn()
+  const checkOutMutation = useCheckOut()
+
+  const reservations = reservationsData?.data ?? []
+  const totalPages = reservationsData?.last_page ?? 1
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value)
+    setPage(1)
+  }, [])
+
+  const handleStatusFilterChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    setPage(1)
+    setSearchParams((prev) => {
+      if (value) {
+        prev.set('status', value)
+      } else {
+        prev.delete('status')
+      }
+      return prev
+    })
+  }, [setSearchParams])
+
+  const handleSort = useCallback((key: string) => {
+    setSortBy(prev => prev === key ? `-${key}` : prev === `-${key}` ? key : key)
+  }, [])
+
+  function openDetailModal(reservation: Reservation) {
+    setSelectedReservation(reservation)
+    setShowDetailModal(true)
+  }
+
+  function openNewForm() {
+    setEditingReservation(null)
+    setShowFormModal(true)
+  }
+
+  function openEditForm(reservation: Reservation) {
+    setEditingReservation(reservation)
+    setShowDetailModal(false)
+    setShowFormModal(true)
+  }
+
+  function closeFormModal() {
+    setShowFormModal(false)
+    setEditingReservation(null)
+  }
+
+  function openCancelDialog(reservation: Reservation) {
+    setCancelTarget(reservation)
+  }
+
+  async function handleCancelConfirm() {
+    if (!cancelTarget) return
+    try {
+      await cancelReservation.mutateAsync(cancelTarget.id)
+      setCancelTarget(null)
+    } catch {
+      // handled by react-query
+    }
+  }
+
+  async function handleCheckInConfirm() {
+    if (!checkInTarget) return
+    setCheckInLoading(checkInTarget.id)
+    try {
+      await checkInMutation.mutateAsync(checkInTarget.id)
+      setCheckInTarget(null)
+    } catch {
+      // handled by react-query
+    } finally {
+      setCheckInLoading(null)
+    }
+  }
+
+  async function handleCheckOutConfirm() {
+    if (!checkOutTarget) return
+    setCheckOutLoading(checkOutTarget.id)
+    try {
+      await checkOutMutation.mutateAsync(checkOutTarget.id)
+      setCheckOutTarget(null)
+    } catch {
+      // handled by react-query
+    } finally {
+      setCheckOutLoading(null)
+    }
+  }
+
+  const columns: Column<Reservation>[] = useMemo(() => [
+    {
+      key: 'reservation_number',
+      label: 'Reservation #',
+      sortable: true,
+      render: (r) => (
+        <button
+          onClick={() => openDetailModal(r)}
+          className="text-primary hover:underline"
+        >
+          {r.reservation_number}
+        </button>
+      ),
+    },
+    {
+      key: 'guest',
+      label: 'Guest',
+      sortable: true,
+      className: 'truncate max-w-[300px]',
+      render: (r) => (
+        <span>{r.guest?.first_name} {r.guest?.last_name}</span>
+      ),
+    },
+    {
+      key: 'room',
+      label: 'Room',
+      sortable: true,
+      render: (r) => <span>{r.room?.room_number ?? '-'}</span>,
+    },
+    {
+      key: 'check_in',
+      label: 'Check In',
+      sortable: true,
+      className: 'whitespace-nowrap',
+      render: (r) => <span>{formatDate(r.check_in)}</span>,
+    },
+    {
+      key: 'check_out',
+      label: 'Check Out',
+      sortable: true,
+      className: 'whitespace-nowrap',
+      render: (r) => <span>{formatDate(r.check_out)}</span>,
+    },
+    {
+      key: 'total_amount',
+      label: 'Total',
+      sortable: true,
+      className: 'whitespace-nowrap tabular-nums',
+      render: (r) => <span className="font-medium">{formatCurrency(r.total_amount)}</span>,
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      className: 'whitespace-nowrap w-[120px] text-center',
+      render: (r) => <StatusBadge status={r.status} />,
+    },
+    {
+      key: 'payment_status',
+      label: 'Payment',
+      sortable: true,
+      className: 'whitespace-nowrap w-[120px] text-center',
+      render: (r) => <StatusBadge status={r.payment_status} />,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      className: 'whitespace-nowrap w-[170px] pl-6',
+      render: (r) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            square
+            className="px-0"
+            onClick={(e) => { e.stopPropagation(); openDetailModal(r) }}
+            title="View"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            square
+            className="px-0"
+            onClick={(e) => { e.stopPropagation(); openEditForm(r) }}
+            title="Edit"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          {(r.status === 'pending' || r.status === 'confirmed') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              square
+              className="px-0 text-danger hover:text-danger"
+              onClick={(e) => { e.stopPropagation(); openCancelDialog(r) }}
+              title="Cancel"
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
+          )}
+          {r.status === 'confirmed' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              square
+              className="px-0 text-success hover:text-success"
+              onClick={(e) => { e.stopPropagation(); setCheckInTarget(r) }}
+              title="Check In"
+            >
+              <LogIn className="h-4 w-4" />
+            </Button>
+          )}
+          {r.status === 'checked_in' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              square
+              className="px-0 text-muted hover:text-muted"
+              onClick={(e) => { e.stopPropagation(); setCheckOutTarget(r) }}
+              title="Check Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ], [cancelReservation.isPending])
+
+  return (
+    <div>
+      <PageHeader
+        title="Reservations"
+        description="Manage hotel reservations"
+        actions={
+          <Button variant="primary" onClick={openNewForm}>
+            <Plus className="h-4 w-4" />
+            New Reservation
+          </Button>
+        }
+      />
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <div className="relative max-w-sm flex-1">
+              <Input
+                placeholder="Search by reservation # or guest name..."
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
+            <div className="w-44">
+              <Select value={statusFilter} onChange={handleStatusFilterChange}>
+                {STATUS_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </Select>
+            </div>
+            <div className="w-44">
+              <DatePicker
+                value={dateFrom}
+                onChange={(v) => { setDateFrom(v); setPage(1) }}
+                placeholder="From date"
+              />
+            </div>
+            <div className="w-44">
+              <DatePicker
+                value={dateTo}
+                onChange={(v) => { setDateTo(v); setPage(1) }}
+                placeholder="To date"
+              />
+            </div>
+          </div>
+
+          <DataTable
+            columns={columns}
+            data={reservations}
+            loading={isLoading}
+            error={error ? 'Failed to load reservations' : null}
+            sortBy={sortBy}
+            onSort={handleSort}
+            pagination={reservationsData ? {
+              currentPage: page,
+              lastPage: totalPages,
+              total: reservationsData.total,
+              from: (reservationsData.current_page - 1) * reservationsData.per_page + 1,
+              to: Math.min(reservationsData.current_page * reservationsData.per_page, reservationsData.total),
+              onPageChange: setPage,
+            } : undefined}
+            onRetry={() => refetch()}
+            keyExtractor={(r) => r.id}
+          />
+        </CardContent>
+      </Card>
+
+      <ReservationDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        reservation={selectedReservation}
+        onEdit={openEditForm}
+      />
+
+      <ReservationFormModal
+        isOpen={showFormModal}
+        onClose={closeFormModal}
+        reservation={editingReservation}
+      />
+
+      <ReservationCheckInOutModal
+        mode="check-in"
+        reservation={checkInTarget}
+        isOpen={!!checkInTarget}
+        isLoading={checkInLoading === checkInTarget?.id}
+        onClose={() => setCheckInTarget(null)}
+        onConfirm={handleCheckInConfirm}
+      />
+
+      <ReservationCheckInOutModal
+        mode="check-out"
+        reservation={checkOutTarget}
+        isOpen={!!checkOutTarget}
+        isLoading={checkOutLoading === checkOutTarget?.id}
+        onClose={() => setCheckOutTarget(null)}
+        onConfirm={handleCheckOutConfirm}
+      />
+
+      <ConfirmDialog
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={handleCancelConfirm}
+        title="Cancel Reservation"
+        message="Are you sure you want to cancel this reservation? This action may be subject to cancellation fees based on the hotel's cancellation policy."
+        confirmLabel="Cancel Reservation"
+        variant="danger"
+        isLoading={cancelReservation.isPending}
+      />
+    </div>
+  )
+}
