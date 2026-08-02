@@ -1,7 +1,6 @@
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Eye, Pencil, XCircle, LogIn, LogOut, UserX } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
+import { Eye, Pencil, XCircle, LogIn, LogOut, UserX } from 'lucide-react'
 import type { Reservation } from '@/types'
 
 interface ReservationRowActionsProps {
@@ -14,8 +13,6 @@ interface ReservationRowActionsProps {
   onMarkNoShow?: () => void
   alwaysAllowCheckIn?: boolean
 }
-
-const ACTION_BOX = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border divide-x divide-border'
 
 export function ReservationRowActions({
   reservation,
@@ -31,54 +28,31 @@ export function ReservationRowActions({
 
   if (status === 'cancelled' || status === 'no_show' || status === 'checked_out') {
     return (
-      <div className={ACTION_BOX}>
-        <Button
-          variant="ghost"
-          size="sm"
-          square
-          className="rounded-none border-0 bg-gray-100 text-gray-600 hover:bg-gray-200"
-          onClick={(e) => { e.stopPropagation(); onView() }}
-          title="View"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
+      <RowActions>
+        <RowActionButton tone="neutral" title="View" icon={<Eye className="h-4 w-4" />} onClick={onView} />
+      </RowActions>
     )
   }
 
   const overdue = status === 'confirmed' && !!is_overdue && !alwaysAllowCheckIn
 
-  const iconBtn = (title: string, onClick: (() => void) | undefined, className: string, icon: ReactNode, key: string) => (
-    <Button
-      key={key}
-      variant="ghost"
-      size="sm"
-      square
-      className={cn('rounded-none border-0', className)}
-      title={title}
-      onClick={(e) => { e.stopPropagation(); onClick?.() }}
-    >
-      {icon}
-    </Button>
-  )
-
   const buttons: ReactNode[] = [
-    iconBtn('View', onView, 'bg-gray-100 text-gray-600 hover:bg-gray-200', <Eye className="h-4 w-4" />, 'view'),
-    iconBtn('Edit', onEdit, 'bg-gray-100 text-gray-600 hover:bg-gray-200', <Pencil className="h-4 w-4" />, 'edit'),
+    <RowActionButton key="view" tone="neutral" title="View" icon={<Eye className="h-4 w-4" />} onClick={onView} />,
+    <RowActionButton key="edit" tone="neutral" title="Edit" icon={<Pencil className="h-4 w-4" />} onClick={onEdit} />,
   ]
 
   if ((status === 'pending' || status === 'confirmed') && onCancel) {
-    buttons.push(iconBtn('Cancel', onCancel, 'bg-red-100 text-red-700 hover:bg-red-200', <XCircle className="h-4 w-4" />, 'cancel'))
+    buttons.push(<RowActionButton key="cancel" tone="danger" title="Cancel" icon={<XCircle className="h-4 w-4" />} onClick={onCancel} />)
   }
   if (status === 'confirmed' && !overdue && onCheckIn) {
-    buttons.push(iconBtn('Check In', onCheckIn, 'bg-green-100 text-green-700 hover:bg-green-200', <LogIn className="h-4 w-4" />, 'checkin'))
+    buttons.push(<RowActionButton key="checkin" tone="success" title="Check In" icon={<LogIn className="h-4 w-4" />} onClick={onCheckIn} />)
   }
   if (overdue && onMarkNoShow) {
-    buttons.push(iconBtn('Mark No Show', onMarkNoShow, 'bg-amber-100 text-amber-700 hover:bg-amber-200', <UserX className="h-4 w-4" />, 'noshow'))
+    buttons.push(<RowActionButton key="noshow" tone="warning" title="Mark No Show" icon={<UserX className="h-4 w-4" />} onClick={onMarkNoShow} />)
   }
   if (status === 'checked_in' && onCheckOut) {
-    buttons.push(iconBtn('Check Out', onCheckOut, 'bg-blue-100 text-blue-700 hover:bg-blue-200', <LogOut className="h-4 w-4" />, 'checkout'))
+    buttons.push(<RowActionButton key="checkout" tone="info" title="Check Out" icon={<LogOut className="h-4 w-4" />} onClick={onCheckOut} />)
   }
 
-  return <div className={ACTION_BOX}>{buttons}</div>
+  return <RowActions>{buttons}</RowActions>
 }
