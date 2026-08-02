@@ -4,7 +4,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PaymentModal } from '@/components/shared/PaymentModal'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
-import { AlertCircle, AlertTriangle, Banknote } from 'lucide-react'
+import { AlertCircle, AlertTriangle, Wallet } from 'lucide-react'
 import type { Payment, Reservation } from '@/types'
 
 interface ReservationCheckInOutModalProps {
@@ -117,12 +117,13 @@ export function ReservationCheckInOutModal({
               )}
               {!isRetry && (
                 <Button
-                  variant="gold"
-                  className="mt-2"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-3 text-amber-800 hover:bg-amber-100"
                   onClick={() => setShowPaymentModal(true)}
                 >
-                  <Banknote className="h-4 w-4" />
-                  Record Payment
+                  <Wallet className="h-4 w-4" />
+                  Collect {formatCurrency(reservation.due_amount)}
                 </Button>
               )}
             </div>

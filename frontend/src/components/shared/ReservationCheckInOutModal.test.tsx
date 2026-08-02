@@ -127,7 +127,7 @@ describe('ReservationCheckInOutModal', () => {
     renderModal({ reservation: reservation({ due_amount: 0, payment_status: 'paid' }) })
 
     expect(screen.queryByText(/Outstanding balance/i)).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Record Payment/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Collect/ })).not.toBeInTheDocument()
   })
 
   it('checks in without a payment when no payment is recorded', () => {
@@ -142,14 +142,14 @@ describe('ReservationCheckInOutModal', () => {
   it('opens the shared payment modal from Record Payment', () => {
     renderModal()
 
-    fireEvent.click(screen.getByRole('button', { name: /Record Payment/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Collect/ }))
     expect(screen.getByRole('button', { name: 'stub-Record & Check In' })).toBeInTheDocument()
   })
 
   it('records a payment then triggers check-in automatically via onSuccess', () => {
     const { onConfirmAfterPayment } = renderModal()
 
-    fireEvent.click(screen.getByRole('button', { name: /Record Payment/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Collect/ }))
     fireEvent.click(screen.getByRole('button', { name: 'stub-Record & Check In' }))
 
     expect(onConfirmAfterPayment).toHaveBeenCalledWith(expect.objectContaining({ amount: 330 }))
@@ -161,7 +161,7 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByText('Check Out Guest')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Check Out' })).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /Record Payment/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Collect/ }))
     expect(screen.getByRole('button', { name: 'stub-Record & Check Out' })).toBeInTheDocument()
   })
 
@@ -176,7 +176,7 @@ describe('ReservationCheckInOutModal', () => {
     })
 
     expect(screen.getByText(/Payment was recorded, but check-out failed/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Record Payment/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Collect/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Retry Check Out' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry Check Out' }))
@@ -185,7 +185,7 @@ describe('ReservationCheckInOutModal', () => {
 
   it('retry never re-opens the payment modal after a recorded-payment failure', () => {
     const { rerender, onConfirmAfterPayment } = renderModal()
-    fireEvent.click(screen.getByRole('button', { name: /Record Payment/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Collect/ }))
     expect(screen.getByRole('button', { name: 'stub-Record & Check In' })).toBeInTheDocument()
 
     rerender(
@@ -219,7 +219,7 @@ describe('ReservationCheckInOutModal', () => {
     })
 
     expect(screen.getByText('The amount field is required.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Record Payment/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Collect/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Check Out' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Check Out' }))
