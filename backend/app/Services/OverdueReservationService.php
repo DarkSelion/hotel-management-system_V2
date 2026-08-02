@@ -12,7 +12,7 @@ class OverdueReservationService
     {
         $today = now()->startOfDay();
         $overdueReservations = Reservation::where('status', 'confirmed')
-            ->whereDate('check_out', '<', $today)
+            ->whereDate('check_in', '<', $today)
             ->where('is_overdue', false)
             ->get();
 
@@ -22,7 +22,7 @@ class OverdueReservationService
         foreach ($overdueReservations as $reservation) {
             $reservation->update([
                 'is_overdue' => true,
-                'overdue_at' => $reservation->check_out->startOfDay(),
+                'overdue_at' => $reservation->check_in->startOfDay(),
             ]);
 
             ActivityLog::create([

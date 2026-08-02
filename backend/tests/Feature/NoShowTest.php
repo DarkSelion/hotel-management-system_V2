@@ -205,7 +205,7 @@ class NoShowTest extends TestCase
     // OVERDUE DETECTION SERVICE
     // =========================================================================
 
-    public function test_overdue_detection_flags_confirmed_past_checkout(): void
+    public function test_overdue_detection_flags_confirmed_past_check_in(): void
     {
         $reservation = $this->createReservation('confirmed', now()->subDays(5)->format('Y-m-d'), now()->subDays(3)->format('Y-m-d'));
 
@@ -216,6 +216,28 @@ class NoShowTest extends TestCase
         $this->assertContains($reservation->id, $result['reservation_ids']);
         $this->assertTrue($reservation->fresh()->is_overdue);
         $this->assertNotNull($reservation->fresh()->overdue_at);
+    }
+
+    public function test_overdue_detection_flags_confirmed_past_check_in_with_future_check_out(): void
+    {
+        $reservation = $this->createReservation('confirmed', now()->subDays(1)->format('Y-m-d'), now()->addDays(2)->format('Y-m-d'));
+
+        $service = new OverdueReservationService();
+        $result = $service->detectAndFlagOverdue();
+
+        $this->assertEquals(1, $result['count']);
+        $this->assertTrue($reservation->fresh()->is_overdue);
+    }
+
+    public function test_overdue_detection_ignores_confirmed_with_future_check_in(): void
+    {
+        $reservation = $this->createReservation('confirmed', now()->addDays(2)->format('Y-m-d'), now()->addDays(5)->format('Y-m-d'));
+
+        $service = new OverdueReservationService();
+        $result = $service->detectAndFlagOverdue();
+
+        $this->assertEquals(0, $result['count']);
+        $this->assertFalse($reservation->fresh()->is_overdue);
     }
 
     public function test_overdue_detection_ignores_pending_reservations(): void

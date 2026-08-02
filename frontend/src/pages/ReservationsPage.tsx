@@ -1,16 +1,21 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  useReservations, useCancelReservation, useCheckIn, useCheckOut,
+  useReservations, useCancelReservation, useCheckIn, useCheckOut, useMarkNoShow, useRefreshOverdue,
 } from '@/hooks/useApi'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
+import { isAdminRole } from '@/lib/permissions'
+import { useAuthStore } from '@/stores/authStore'
+import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { ReservationDetailModal } from '@/components/shared/ReservationDetailModal'
 import { ReservationFormModal } from '@/components/shared/ReservationFormModal'
 import { ReservationCheckInOutModal } from '@/components/shared/ReservationCheckInOutModal'
+import { ReservationRowActions } from '@/components/shared/ReservationRowActions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +23,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Select } from '@/components/ui/select'
 import type { Reservation } from '@/types'
 import {
-  Plus, Eye, Pencil, XCircle, LogIn, LogOut,
+  Plus, RefreshCw, AlertTriangle,
 } from 'lucide-react'
 
 function formatDate(dateStr: string) {
@@ -50,6 +55,7 @@ export default function ReservationsPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
 
   const [cancelTarget, setCancelTarget] = useState<Reservation | null>(null)
+  const [noShowTarget, setNoShowTarget] = useState<Reservation | null>(null)
   const [checkInTarget, setCheckInTarget] = useState<Reservation | null>(null)
   const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
   const [checkInLoading, setCheckInLoading] = useState<number | null>(null)
@@ -72,6 +78,10 @@ export default function ReservationsPage() {
   const cancelReservation = useCancelReservation()
   const checkInMutation = useCheckIn()
   const checkOutMutation = useCheckOut()
+  const markNoShow = useMarkNoShow()
+  const refreshOverdue = useRefreshOverdue()
+  const role = useAuthStore((s) => s.user?.role ?? '')
+  const isAdmin = isAdminRole(role)
 
   const reservations = reservationsData?.data ?? []
   const totalPages = reservationsData?.last_page ?? 1
@@ -159,6 +169,16 @@ export default function ReservationsPage() {
     }
   }
 
+  async function handleMarkNoShowConfirm() {
+    if (!noShowTarget) return
+    try {
+      await markNoShow.mutateAsync(noShowTarget.id)
+      setNoShowTarget(null)
+    } catch {
+      // handled by react-query
+    }
+  }
+
   const columns: Column<Reservation>[] = useMemo(() => [
     {
       key: 'reservation_number',
@@ -213,8 +233,18 @@ export default function ReservationsPage() {
       key: 'status',
       label: 'Status',
       sortable: true,
-      className: 'whitespace-nowrap w-[120px] text-center',
-      render: (r) => <StatusBadge status={r.status} />,
+      className: 'whitespace-nowrap w-[190px] text-center',
+      render: (r) => (
+        <div className="flex items-center justify-center gap-1.5">
+          <StatusBadge status={r.status} />
+          {r.status === 'confirmed' && r.is_overdue && (
+            <Badge variant="warning">
+              <AlertTriangle className="h-3 w-3" />
+              Overdue
+            </Badge>
+          )}
+        </div>
+      ),
     },
     {
       key: 'payment_status',
@@ -226,69 +256,20 @@ export default function ReservationsPage() {
     {
       key: 'actions',
       label: 'Actions',
-      className: 'whitespace-nowrap w-[170px] pl-6',
+      className: 'whitespace-nowrap pl-6',
       render: (r) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0"
-            onClick={(e) => { e.stopPropagation(); openDetailModal(r) }}
-            title="View"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0"
-            onClick={(e) => { e.stopPropagation(); openEditForm(r) }}
-            title="Edit"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          {(r.status === 'pending' || r.status === 'confirmed') && (
-            <Button
-              variant="ghost"
-              size="sm"
-              square
-              className="px-0 text-danger hover:text-danger"
-              onClick={(e) => { e.stopPropagation(); openCancelDialog(r) }}
-              title="Cancel"
-            >
-              <XCircle className="h-4 w-4" />
-            </Button>
-          )}
-          {r.status === 'confirmed' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              square
-              className="px-0 text-success hover:text-success"
-              onClick={(e) => { e.stopPropagation(); setCheckInTarget(r) }}
-              title="Check In"
-            >
-              <LogIn className="h-4 w-4" />
-            </Button>
-          )}
-          {r.status === 'checked_in' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              square
-              className="px-0 text-muted hover:text-muted"
-              onClick={(e) => { e.stopPropagation(); setCheckOutTarget(r) }}
-              title="Check Out"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+        <ReservationRowActions
+          reservation={r}
+          onView={() => openDetailModal(r)}
+          onEdit={() => openEditForm(r)}
+          onCancel={() => openCancelDialog(r)}
+          onCheckIn={() => setCheckInTarget(r)}
+          onCheckOut={() => setCheckOutTarget(r)}
+          onMarkNoShow={() => setNoShowTarget(r)}
+        />
       ),
     },
-  ], [cancelReservation.isPending])
+  ], [])
 
   return (
     <div>
@@ -296,10 +277,23 @@ export default function ReservationsPage() {
         title="Reservations"
         description="Manage hotel reservations"
         actions={
-          <Button variant="primary" onClick={openNewForm}>
-            <Plus className="h-4 w-4" />
-            New Reservation
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => refreshOverdue.mutate()}
+                disabled={refreshOverdue.isPending}
+                title="Re-run overdue detection for No Show review"
+              >
+                <RefreshCw className={cn('h-4 w-4', refreshOverdue.isPending && 'animate-spin')} />
+                Refresh Overdue
+              </Button>
+            )}
+            <Button variant="primary" onClick={openNewForm}>
+              <Plus className="h-4 w-4" />
+              New Reservation
+            </Button>
+          </div>
         }
       />
 
@@ -397,6 +391,17 @@ export default function ReservationsPage() {
         confirmLabel="Cancel Reservation"
         variant="danger"
         isLoading={cancelReservation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={!!noShowTarget}
+        onClose={() => setNoShowTarget(null)}
+        onConfirm={handleMarkNoShowConfirm}
+        title="Mark as No Show"
+        message={`Mark the reservation for ${noShowTarget?.guest?.first_name ?? ''} ${noShowTarget?.guest?.last_name ?? ''} as No Show? The room will be released and a no-show fee may apply.`}
+        confirmLabel="Mark No Show"
+        variant="danger"
+        isLoading={markNoShow.isPending}
       />
     </div>
   )

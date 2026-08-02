@@ -85,6 +85,9 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
         // Guests (write operations)
         Route::delete('/guests/{guest}', [GuestController::class, 'destroy']);
 
+        // Overdue refresh (manual trigger for No Show review)
+        Route::post('/reservations/refresh-overdue', [ReservationController::class, 'refreshOverdue']);
+
         // Rooms (write operations)
         Route::put('/rooms/{room}/status', [RoomController::class, 'updateStatus']);
         Route::post('/rooms', [RoomController::class, 'store']);

@@ -150,6 +150,28 @@ export function useCancelReservation() {
   })
 }
 
+export function useMarkNoShow() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.post(`/reservations/${id}/no-show`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reservations'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
+}
+
+export function useRefreshOverdue() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.post<{ count: number; reservation_ids: number[] }>('/reservations/refresh-overdue'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reservations'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
+}
+
 // ── Guests ─────────────────────────────────────────────
 
 export function useGuests(params?: Record<string, string | number | undefined>) {

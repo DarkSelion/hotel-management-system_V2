@@ -8,6 +8,7 @@ use App\Models\Guest;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\Setting;
+use App\Services\OverdueReservationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -385,6 +386,16 @@ class ReservationController extends Controller
         ]);
 
         return response()->json($reservation->load(['guest', 'room.roomType']));
+    }
+
+    public function refreshOverdue(OverdueReservationService $service)
+    {
+        $result = $service->detectAndFlagOverdue();
+
+        return response()->json([
+            'count' => $result['count'],
+            'reservation_ids' => $result['reservation_ids'],
+        ]);
     }
 
     private function roomHasOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeId = null): bool

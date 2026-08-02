@@ -100,6 +100,7 @@ export interface Reservation {
   paid_amount: number;
   due_amount: number;
   payment_status: 'unpaid' | 'partial' | 'paid' | 'refunded';
+  is_overdue?: boolean;
   special_requests?: string;
   source?: string;
   created_at: string;
