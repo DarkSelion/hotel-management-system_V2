@@ -11,7 +11,7 @@ interface ReservationCheckInOutModalProps {
   reservation: Reservation | null
   isOpen: boolean
   isLoading?: boolean
-  error?: string | null
+  error?: { message: string; paymentRecorded: boolean } | null
   onClose: () => void
   onConfirm: (paymentMethod?: 'cash' | 'gcash') => void
 }
@@ -29,15 +29,16 @@ export function ReservationCheckInOutModal({
 
   useEffect(() => {
     setSelectedMethod(null)
-  }, [reservation?.id])
+  }, [reservation?.id, error?.paymentRecorded])
 
   const isCheckIn = mode === 'check-in'
   const guestName = reservation ? `${reservation.guest?.first_name ?? ''} ${reservation.guest?.last_name ?? ''}`.trim() : ''
   const roomNumber = reservation?.room?.room_number ?? '-'
   const hasBalance = !!reservation && reservation.due_amount > 0
+  const isRetry = error?.paymentRecorded === true
 
   const verb = isCheckIn ? 'Check In' : 'Check Out'
-  const confirmLabel = error
+  const confirmLabel = isRetry
     ? `Retry ${verb}`
     : selectedMethod === 'cash'
       ? `Confirm Cash & ${verb}`
@@ -59,7 +60,10 @@ export function ReservationCheckInOutModal({
     <ConfirmDialog
       isOpen={isOpen}
       onClose={onClose}
-      onConfirm={() => onConfirm(selectedMethod ?? undefined)}
+      onConfirm={() => {
+        if (isRetry) onConfirm(undefined)
+        else onConfirm(selectedMethod ?? undefined)
+      }}
       title={isCheckIn ? 'Check In Guest' : 'Check Out Guest'}
       confirmLabel={confirmLabel}
       confirmVariant="primary"
@@ -99,7 +103,7 @@ export function ReservationCheckInOutModal({
         {error && (
           <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-            <span>{error}</span>
+            <span>{error.message}</span>
           </div>
         )}
 
@@ -111,9 +115,9 @@ export function ReservationCheckInOutModal({
                 Outstanding balance: {formatCurrency(reservation.due_amount)}
               </p>
               <p className="text-[13px] text-amber-700">
-                {!selectedMethod && `Guest will still be checked ${isCheckIn ? 'in' : 'out'}.`}
+                {(!selectedMethod || isRetry) && `Guest will still be checked ${isCheckIn ? 'in' : 'out'}.`}
               </p>
-              {!error && (
+              {!isRetry && (
                 <div className="mt-3 border-t border-amber-200 pt-2">
                   <p className="text-xs font-medium text-amber-800">How is the guest paying?</p>
                   <div className="mt-1.5 flex gap-2">

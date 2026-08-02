@@ -24,15 +24,16 @@ function reservation(overrides: Partial<Reservation> = {}): Reservation {
 }
 
 type OnConfirm = (paymentMethod?: 'cash' | 'gcash') => void
+type ModalError = { message: string; paymentRecorded: boolean }
 
 function renderModal(overrides: {
   mode?: 'check-in' | 'check-out'
   reservation?: Reservation
-  error?: string | null
+  error?: ModalError | null
   onConfirm?: ReturnType<typeof vi.fn<OnConfirm>>
 } = {}) {
   const onConfirm = overrides.onConfirm ?? vi.fn<OnConfirm>()
-  render(
+  const result = render(
     <ReservationCheckInOutModal
       mode={overrides.mode ?? 'check-in'}
       reservation={overrides.reservation ?? reservation()}
@@ -42,7 +43,7 @@ function renderModal(overrides: {
       onConfirm={onConfirm}
     />,
   )
-  return { onConfirm }
+  return { onConfirm, rerender: result.rerender }
 }
 
 describe('ReservationCheckInOutModal', () => {
@@ -145,7 +146,10 @@ describe('ReservationCheckInOutModal', () => {
     const { onConfirm } = renderModal({
       mode: 'check-out',
       reservation: reservation({ status: 'checked_in', due_amount: 330 }),
-      error: 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.',
+      error: {
+        message: 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.',
+        paymentRecorded: true,
+      },
     })
 
     expect(screen.getByText(/Payment was recorded, but check-out failed/i)).toBeInTheDocument()
@@ -154,5 +158,51 @@ describe('ReservationCheckInOutModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry Check Out' }))
     expect(onConfirm).toHaveBeenCalledWith(undefined)
+  })
+
+  it('retry never re-creates a payment even if a method was selected before the failure', () => {
+    const { rerender } = renderModal()
+    const onConfirm = vi.fn<OnConfirm>()
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    expect(screen.getByRole('button', { name: 'Confirm Cash & Check In' })).toBeInTheDocument()
+
+    rerender(
+      <ReservationCheckInOutModal
+        mode="check-in"
+        reservation={reservation({ due_amount: 330 })}
+        isOpen
+        error={{
+          message: 'Payment was recorded, but check-in failed.',
+          paymentRecorded: true,
+        }}
+        onClose={vi.fn()}
+        onConfirm={onConfirm}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'Retry Check In' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Retry Check In' }))
+    expect(onConfirm).toHaveBeenCalledWith(undefined)
+  })
+
+  it('keeps the payment toggle visible when the payment itself failed', () => {
+    const { onConfirm } = renderModal({
+      mode: 'check-out',
+      reservation: reservation({ status: 'checked_in', due_amount: 330 }),
+      error: {
+        message: 'The amount field is required.',
+        paymentRecorded: false,
+      },
+    })
+
+    expect(screen.getByText('The amount field is required.')).toBeInTheDocument()
+    expect(screen.getByText('How is the guest paying?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Check Out' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    expect(screen.getByRole('button', { name: 'Confirm Cash & Check Out' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Cash & Check Out' }))
+    expect(onConfirm).toHaveBeenCalledWith('cash')
   })
 })

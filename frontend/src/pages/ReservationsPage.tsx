@@ -58,8 +58,8 @@ export default function ReservationsPage() {
   const [noShowTarget, setNoShowTarget] = useState<Reservation | null>(null)
   const [checkInTarget, setCheckInTarget] = useState<Reservation | null>(null)
   const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
-  const [checkInError, setCheckInError] = useState<string | null>(null)
-  const [checkOutError, setCheckOutError] = useState<string | null>(null)
+  const [checkInError, setCheckInError] = useState<{ message: string; paymentRecorded: boolean } | null>(null)
+  const [checkOutError, setCheckOutError] = useState<{ message: string; paymentRecorded: boolean } | null>(null)
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -145,26 +145,36 @@ export default function ReservationsPage() {
   async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash') {
     if (!checkInTarget) return
     try {
-      await perform('check-in', checkInTarget, paymentMethod)
+      const method = checkInError?.paymentRecorded ? undefined : paymentMethod
+      await perform('check-in', checkInTarget, method)
       setCheckInTarget(null)
       setCheckInError(null)
     } catch (err) {
-      if ((err as { paymentRecorded?: boolean }).paymentRecorded) {
-        setCheckInError('Payment was recorded, but check-in failed. Retry to finish check-in — the amount has already been collected.')
-      }
+      const e = err as { paymentRecorded?: boolean; message?: string }
+      setCheckInError({
+        message: e.paymentRecorded
+          ? 'Payment was recorded, but check-in failed. Retry to finish check-in — the amount has already been collected.'
+          : (e.message || 'Check-in failed. Please try again.'),
+        paymentRecorded: !!e.paymentRecorded,
+      })
     }
   }
 
   async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash') {
     if (!checkOutTarget) return
     try {
-      await perform('check-out', checkOutTarget, paymentMethod)
+      const method = checkOutError?.paymentRecorded ? undefined : paymentMethod
+      await perform('check-out', checkOutTarget, method)
       setCheckOutTarget(null)
       setCheckOutError(null)
     } catch (err) {
-      if ((err as { paymentRecorded?: boolean }).paymentRecorded) {
-        setCheckOutError('Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.')
-      }
+      const e = err as { paymentRecorded?: boolean; message?: string }
+      setCheckOutError({
+        message: e.paymentRecorded
+          ? 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.'
+          : (e.message || 'Check-out failed. Please try again.'),
+        paymentRecorded: !!e.paymentRecorded,
+      })
     }
   }
 

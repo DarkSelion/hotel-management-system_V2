@@ -26,7 +26,7 @@ export default function CheckOutPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
 
   const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
-  const [checkOutError, setCheckOutError] = useState<string | null>(null)
+  const [checkOutError, setCheckOutError] = useState<{ message: string; paymentRecorded: boolean } | null>(null)
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -81,13 +81,18 @@ export default function CheckOutPage() {
   async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash') {
     if (!checkOutTarget) return
     try {
-      await perform('check-out', checkOutTarget, paymentMethod)
+      const method = checkOutError?.paymentRecorded ? undefined : paymentMethod
+      await perform('check-out', checkOutTarget, method)
       setCheckOutTarget(null)
       setCheckOutError(null)
     } catch (err) {
-      if ((err as { paymentRecorded?: boolean }).paymentRecorded) {
-        setCheckOutError('Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.')
-      }
+      const e = err as { paymentRecorded?: boolean; message?: string }
+      setCheckOutError({
+        message: e.paymentRecorded
+          ? 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.'
+          : (e.message || 'Check-out failed. Please try again.'),
+        paymentRecorded: !!e.paymentRecorded,
+      })
     }
   }
 

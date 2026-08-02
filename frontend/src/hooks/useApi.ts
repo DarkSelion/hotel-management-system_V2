@@ -184,18 +184,18 @@ export function useCheckInOutWithPayment() {
     paymentMethod?: 'cash' | 'gcash',
   ) => {
     let paymentRecorded = false
-    if (paymentMethod && reservation.due_amount > 0) {
-      await createPayment.mutateAsync({
-        reservation_id: reservation.id,
-        amount: reservation.due_amount,
-        payment_method: paymentMethod,
-        payment_type: 'full',
-        status: paymentMethod === 'gcash' ? 'pending' : 'completed',
-      })
-      paymentRecorded = true
-    }
-
     try {
+      if (paymentMethod && reservation.due_amount > 0) {
+        await createPayment.mutateAsync({
+          reservation_id: reservation.id,
+          amount: reservation.due_amount,
+          payment_method: paymentMethod,
+          payment_type: 'full',
+          status: paymentMethod === 'gcash' ? 'pending' : 'completed',
+        })
+        paymentRecorded = true
+      }
+
       if (action === 'check-in') await checkIn.mutateAsync(reservation.id)
       else await checkOut.mutateAsync(reservation.id)
     } catch (err) {
