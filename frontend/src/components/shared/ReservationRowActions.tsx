@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Eye, Pencil, XCircle, LogIn, LogOut, UserX } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Reservation } from '@/types'
@@ -13,6 +14,8 @@ interface ReservationRowActionsProps {
   onMarkNoShow: () => void
 }
 
+const ACTION_BOX = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border divide-x divide-border'
+
 export function ReservationRowActions({
   reservation,
   onView,
@@ -26,15 +29,18 @@ export function ReservationRowActions({
 
   if (status === 'cancelled' || status === 'no_show' || status === 'checked_out') {
     return (
-      <Button
-        variant="ghost"
-        size="sm"
-        square
-        onClick={(e) => { e.stopPropagation(); onView() }}
-        title="View"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
+      <div className={ACTION_BOX}>
+        <Button
+          variant="ghost"
+          size="sm"
+          square
+          className="rounded-none border-0"
+          onClick={(e) => { e.stopPropagation(); onView() }}
+          title="View"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      </div>
     )
   }
 
@@ -46,7 +52,7 @@ export function ReservationRowActions({
       variant="ghost"
       size="sm"
       square
-      className={className}
+      className={cn('rounded-none border-0', className)}
       title={title}
       onClick={(e) => { e.stopPropagation(); onClick() }}
     >
@@ -72,5 +78,5 @@ export function ReservationRowActions({
     buttons.push(iconBtn('Check Out', onCheckOut, 'text-muted hover:text-muted', <LogOut className="h-4 w-4" />, 'checkout'))
   }
 
-  return <div className="flex items-center gap-1">{buttons}</div>
+  return <div className={ACTION_BOX}>{buttons}</div>
 }
