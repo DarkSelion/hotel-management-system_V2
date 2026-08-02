@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import {
-  useReservations, useCheckOut,
+  useReservations, useCheckInOutWithPayment,
 } from '@/hooks/useApi'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -26,7 +26,7 @@ export default function CheckOutPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
 
   const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
-  const [checkOutLoading, setCheckOutLoading] = useState<number | null>(null)
+  const [checkOutError, setCheckOutError] = useState<string | null>(null)
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -40,7 +40,7 @@ export default function CheckOutPage() {
   }, [page, sortField, sortDir, search])
 
   const { data: reservationsData, isLoading, error, refetch } = useReservations(queryParams)
-  const checkOutMutation = useCheckOut()
+  const { perform, isLoading: frontDeskLoading } = useCheckInOutWithPayment()
 
   const reservations = reservationsData?.data ?? []
   const totalPages = reservationsData?.last_page ?? 1
@@ -78,16 +78,16 @@ export default function CheckOutPage() {
     setEditingReservation(null)
   }
 
-  async function handleCheckOutConfirm() {
+  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash') {
     if (!checkOutTarget) return
-    setCheckOutLoading(checkOutTarget.id)
     try {
-      await checkOutMutation.mutateAsync(checkOutTarget.id)
+      await perform('check-out', checkOutTarget, paymentMethod)
       setCheckOutTarget(null)
-    } catch {
-      // handled by react-query
-    } finally {
-      setCheckOutLoading(null)
+      setCheckOutError(null)
+    } catch (err) {
+      if ((err as { paymentRecorded?: boolean }).paymentRecorded) {
+        setCheckOutError('Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.')
+      }
     }
   }
 
@@ -217,8 +217,12 @@ export default function CheckOutPage() {
         mode="check-out"
         reservation={checkOutTarget}
         isOpen={!!checkOutTarget}
-        isLoading={checkOutLoading === checkOutTarget?.id}
-        onClose={() => setCheckOutTarget(null)}
+        isLoading={frontDeskLoading}
+        error={checkOutError}
+        onClose={() => {
+          setCheckOutTarget(null)
+          setCheckOutError(null)
+        }}
         onConfirm={handleCheckOutConfirm}
       />
     </div>

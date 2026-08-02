@@ -103,6 +103,7 @@ export interface Reservation {
   is_overdue?: boolean;
   special_requests?: string;
   source?: string;
+  payments?: Payment[];
   created_at: string;
 }
 

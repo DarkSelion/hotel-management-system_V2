@@ -172,6 +172,42 @@ export function useRefreshOverdue() {
   })
 }
 
+export function useCheckInOutWithPayment() {
+  const createPayment = useCreatePayment()
+  const checkIn = useCheckIn()
+  const checkOut = useCheckOut()
+  const isLoading = createPayment.isPending || checkIn.isPending || checkOut.isPending
+
+  const perform = async (
+    action: 'check-in' | 'check-out',
+    reservation: Reservation,
+    paymentMethod?: 'cash' | 'gcash',
+  ) => {
+    let paymentRecorded = false
+    if (paymentMethod && reservation.due_amount > 0) {
+      await createPayment.mutateAsync({
+        reservation_id: reservation.id,
+        amount: reservation.due_amount,
+        payment_method: paymentMethod,
+        payment_type: 'full',
+        status: paymentMethod === 'gcash' ? 'pending' : 'completed',
+      })
+      paymentRecorded = true
+    }
+
+    try {
+      if (action === 'check-in') await checkIn.mutateAsync(reservation.id)
+      else await checkOut.mutateAsync(reservation.id)
+    } catch (err) {
+      const e = err as Error & { paymentRecorded?: boolean }
+      e.paymentRecorded = paymentRecorded
+      throw e
+    }
+  }
+
+  return { perform, isLoading }
+}
+
 // ── Guests ─────────────────────────────────────────────
 
 export function useGuests(params?: Record<string, string | number | undefined>) {

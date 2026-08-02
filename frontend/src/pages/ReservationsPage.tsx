@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  useReservations, useCancelReservation, useCheckIn, useCheckOut, useMarkNoShow, useRefreshOverdue,
+  useReservations, useCancelReservation, useCheckInOutWithPayment, useMarkNoShow, useRefreshOverdue,
 } from '@/hooks/useApi'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { isAdminRole } from '@/lib/permissions'
@@ -58,8 +58,8 @@ export default function ReservationsPage() {
   const [noShowTarget, setNoShowTarget] = useState<Reservation | null>(null)
   const [checkInTarget, setCheckInTarget] = useState<Reservation | null>(null)
   const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
-  const [checkInLoading, setCheckInLoading] = useState<number | null>(null)
-  const [checkOutLoading, setCheckOutLoading] = useState<number | null>(null)
+  const [checkInError, setCheckInError] = useState<string | null>(null)
+  const [checkOutError, setCheckOutError] = useState<string | null>(null)
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -76,8 +76,7 @@ export default function ReservationsPage() {
   const { data: reservationsData, isLoading, error, refetch } = useReservations(queryParams)
 
   const cancelReservation = useCancelReservation()
-  const checkInMutation = useCheckIn()
-  const checkOutMutation = useCheckOut()
+  const { perform, isLoading: frontDeskLoading } = useCheckInOutWithPayment()
   const markNoShow = useMarkNoShow()
   const refreshOverdue = useRefreshOverdue()
   const role = useAuthStore((s) => s.user?.role ?? '')
@@ -143,29 +142,29 @@ export default function ReservationsPage() {
     }
   }
 
-  async function handleCheckInConfirm() {
+  async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash') {
     if (!checkInTarget) return
-    setCheckInLoading(checkInTarget.id)
     try {
-      await checkInMutation.mutateAsync(checkInTarget.id)
+      await perform('check-in', checkInTarget, paymentMethod)
       setCheckInTarget(null)
-    } catch {
-      // handled by react-query
-    } finally {
-      setCheckInLoading(null)
+      setCheckInError(null)
+    } catch (err) {
+      if ((err as { paymentRecorded?: boolean }).paymentRecorded) {
+        setCheckInError('Payment was recorded, but check-in failed. Retry to finish check-in — the amount has already been collected.')
+      }
     }
   }
 
-  async function handleCheckOutConfirm() {
+  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash') {
     if (!checkOutTarget) return
-    setCheckOutLoading(checkOutTarget.id)
     try {
-      await checkOutMutation.mutateAsync(checkOutTarget.id)
+      await perform('check-out', checkOutTarget, paymentMethod)
       setCheckOutTarget(null)
-    } catch {
-      // handled by react-query
-    } finally {
-      setCheckOutLoading(null)
+      setCheckOutError(null)
+    } catch (err) {
+      if ((err as { paymentRecorded?: boolean }).paymentRecorded) {
+        setCheckOutError('Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.')
+      }
     }
   }
 
@@ -368,8 +367,12 @@ export default function ReservationsPage() {
         mode="check-in"
         reservation={checkInTarget}
         isOpen={!!checkInTarget}
-        isLoading={checkInLoading === checkInTarget?.id}
-        onClose={() => setCheckInTarget(null)}
+        isLoading={frontDeskLoading}
+        error={checkInError}
+        onClose={() => {
+          setCheckInTarget(null)
+          setCheckInError(null)
+        }}
         onConfirm={handleCheckInConfirm}
       />
 
@@ -377,8 +380,12 @@ export default function ReservationsPage() {
         mode="check-out"
         reservation={checkOutTarget}
         isOpen={!!checkOutTarget}
-        isLoading={checkOutLoading === checkOutTarget?.id}
-        onClose={() => setCheckOutTarget(null)}
+        isLoading={frontDeskLoading}
+        error={checkOutError}
+        onClose={() => {
+          setCheckOutTarget(null)
+          setCheckOutError(null)
+        }}
         onConfirm={handleCheckOutConfirm}
       />
 
