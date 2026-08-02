@@ -233,9 +233,9 @@ export default function ReservationsPage() {
       key: 'status',
       label: 'Status',
       sortable: true,
-      className: 'whitespace-nowrap w-[190px] text-center',
+      className: 'whitespace-nowrap',
       render: (r) => (
-        <div className="flex items-center justify-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <StatusBadge status={r.status} />
           {r.status === 'confirmed' && r.is_overdue && (
             <Badge variant="warning">
