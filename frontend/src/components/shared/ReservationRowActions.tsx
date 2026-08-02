@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
 import { Eye, Pencil, XCircle, LogIn, LogOut, MoreVertical, UserX } from 'lucide-react'
 import type { Reservation } from '@/types'
 
@@ -13,8 +12,6 @@ interface ReservationRowActionsProps {
   onCheckOut: () => void
   onMarkNoShow: () => void
 }
-
-const GROUP_CLASS = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border'
 
 export function ReservationRowActions({
   reservation,
@@ -29,18 +26,15 @@ export function ReservationRowActions({
 
   if (status === 'cancelled' || status === 'no_show' || status === 'checked_out') {
     return (
-      <div className={GROUP_CLASS}>
-        <Button
-          variant="ghost"
-          size="sm"
-          square
-          className="rounded-none border-0"
-          onClick={(e) => { e.stopPropagation(); onView() }}
-          title="View"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        square
+        onClick={(e) => { e.stopPropagation(); onView() }}
+        title="View"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
     )
   }
 
@@ -65,13 +59,13 @@ export function ReservationRowActions({
   ]
 
   return (
-    <div className={GROUP_CLASS}>
+    <div className="flex items-center gap-1">
       {primary && (
         <Button
           variant="ghost"
           size="sm"
           square
-          className={cn('rounded-none border-0', primary.classes)}
+          className={primary.classes}
           title={primary.label}
           onClick={(e) => { e.stopPropagation(); primary.onClick() }}
         >
@@ -85,7 +79,6 @@ export function ReservationRowActions({
             variant="ghost"
             size="sm"
             square
-            className={cn('rounded-none border-0', primary && 'border-l border-border')}
             title="More actions"
           >
             <MoreVertical className="h-4 w-4" />
