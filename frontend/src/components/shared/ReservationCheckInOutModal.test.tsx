@@ -24,7 +24,7 @@ function reservation(overrides: Partial<Reservation> = {}): Reservation {
 }
 
 describe('ReservationCheckInOutModal', () => {
-  it('shows the check-in message with guest and room', () => {
+  it('shows the guest info table with guest and room', () => {
     render(
       <ReservationCheckInOutModal
         mode="check-in"
@@ -35,7 +35,11 @@ describe('ReservationCheckInOutModal', () => {
       />,
     )
 
-    expect(screen.getByText('Check in John Doe in room 101?')).toBeInTheDocument()
+    expect(screen.getByText('Guest')).toBeInTheDocument()
+    expect(screen.getByText('John Doe')).toBeInTheDocument()
+    expect(screen.getByText('Room 101')).toBeInTheDocument()
+    expect(screen.getByText('Stay')).toBeInTheDocument()
+    expect(screen.getByText('Check In Guest')).toBeInTheDocument()
   })
 
   it('shows the outstanding-balance warning when there is a due amount', () => {
@@ -49,7 +53,8 @@ describe('ReservationCheckInOutModal', () => {
       />,
     )
 
-    expect(screen.getByText(/Outstanding balance of ₱330/i)).toBeInTheDocument()
+    expect(screen.getByText(/Outstanding balance: ₱330/)).toBeInTheDocument()
+    expect(screen.getByText('Guest will still be checked in.')).toBeInTheDocument()
   })
 
   it('does not warn when the reservation is fully paid', () => {
@@ -66,7 +71,7 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.queryByText(/Outstanding balance/i)).not.toBeInTheDocument()
   })
 
-  it('shows the check-out message and balance warning in check-out mode', () => {
+  it('shows the check-out title and balance warning in check-out mode', () => {
     render(
       <ReservationCheckInOutModal
         mode="check-out"
@@ -77,7 +82,8 @@ describe('ReservationCheckInOutModal', () => {
       />,
     )
 
-    expect(screen.getByText('Check out John Doe from room 101?')).toBeInTheDocument()
-    expect(screen.getByText(/Outstanding balance of ₱120/i)).toBeInTheDocument()
+    expect(screen.getByText('Check Out Guest')).toBeInTheDocument()
+    expect(screen.getByText(/Outstanding balance: ₱120/)).toBeInTheDocument()
+    expect(screen.getByText('Guest will still be checked out.')).toBeInTheDocument()
   })
 })
