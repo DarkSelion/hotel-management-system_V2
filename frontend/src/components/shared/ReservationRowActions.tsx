@@ -14,7 +14,7 @@ interface ReservationRowActionsProps {
   onMarkNoShow: () => void
 }
 
-const GROUP_CLASS = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border shadow-sm'
+const GROUP_CLASS = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border'
 
 export function ReservationRowActions({
   reservation,
@@ -48,11 +48,11 @@ export function ReservationRowActions({
 
   const primary =
     overdue
-      ? { label: 'Mark No Show', icon: <UserX className="h-3.5 w-3.5" />, classes: 'bg-warning text-white hover:bg-amber-500', onClick: onMarkNoShow }
+      ? { label: 'Mark No Show', icon: <UserX className="h-4 w-4" />, classes: 'bg-warning text-white hover:bg-amber-500', onClick: onMarkNoShow }
       : status === 'confirmed'
-        ? { label: 'Check In', icon: <LogIn className="h-3.5 w-3.5" />, classes: 'bg-success text-white hover:bg-emerald-600', onClick: onCheckIn }
+        ? { label: 'Check In', icon: <LogIn className="h-4 w-4" />, classes: 'bg-success text-white hover:bg-emerald-600', onClick: onCheckIn }
         : status === 'checked_in'
-          ? { label: 'Check Out', icon: <LogOut className="h-3.5 w-3.5" />, classes: 'bg-primary text-white hover:bg-primary-light', onClick: onCheckOut }
+          ? { label: 'Check Out', icon: <LogOut className="h-4 w-4" />, classes: 'bg-primary text-white hover:bg-primary-light', onClick: onCheckOut }
           : null
 
   const kebabItems = [
@@ -68,12 +68,14 @@ export function ReservationRowActions({
     <div className={GROUP_CLASS}>
       {primary && (
         <Button
+          variant="ghost"
           size="sm"
-          className={cn('h-8 rounded-none border-0 px-3', primary.classes)}
+          square
+          className={cn('rounded-none border-0', primary.classes)}
+          title={primary.label}
           onClick={(e) => { e.stopPropagation(); primary.onClick() }}
         >
           {primary.icon}
-          {primary.label}
         </Button>
       )}
       <DropdownMenu
