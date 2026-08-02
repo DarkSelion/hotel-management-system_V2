@@ -320,8 +320,8 @@ class ReservationController extends Controller
             return response()->json(['message' => 'Reservation must be checked in to check out.'], 422);
         }
 
-        if ($reservation->due_amount > 0 && ! $reservation->payments()->exists()) {
-            return response()->json(['message' => 'Collect a payment before checking out.'], 422);
+        if ((float) $reservation->due_amount > 0) {
+            return response()->json(['message' => 'Settle the outstanding balance before checking out.'], 422);
         }
 
         $reservation->update([

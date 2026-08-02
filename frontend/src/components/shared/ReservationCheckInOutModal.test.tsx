@@ -200,6 +200,46 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByRole('button', { name: 'stub-Record & Check Out' })).toBeInTheDocument()
   })
 
+  it('requires full settlement at check-out even when a payment already exists', () => {
+    const { onConfirm } = renderModal({
+      mode: 'check-out',
+      reservation: reservation({
+        status: 'checked_in',
+        payment_status: 'partial',
+        paid_amount: 150,
+        due_amount: 180,
+        payments: [{ payment_method: 'cash', status: 'completed' } as Payment],
+      }),
+    })
+
+    expect(screen.getByText(/A payment is required before checking out/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Check Out' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Collect & Check Out' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collect & Check Out' }))
+    expect(screen.getByRole('button', { name: 'stub-Record & Check Out' })).toBeInTheDocument()
+    expect(onConfirm).not.toHaveBeenCalled()
+  })
+
+  it('allows plain check-out when fully settled', () => {
+    const { onConfirm } = renderModal({
+      mode: 'check-out',
+      reservation: reservation({
+        status: 'checked_in',
+        payment_status: 'paid',
+        paid_amount: 330,
+        due_amount: 0,
+        payments: [{ payment_method: 'cash', status: 'completed' } as Payment],
+      }),
+    })
+
+    expect(screen.queryByText(/Outstanding balance/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Check Out' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check Out' }))
+    expect(onConfirm).toHaveBeenCalled()
+  })
+
   it('shows a retry state when a payment was recorded but the status change failed', () => {
     const { onConfirmAfterPayment } = renderModal({
       mode: 'check-out',
@@ -211,11 +251,40 @@ describe('ReservationCheckInOutModal', () => {
     })
 
     expect(screen.getByText(/Payment was recorded, but check-out failed/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Collect/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Retry Check Out' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry Check Out' }))
     expect(onConfirmAfterPayment).toHaveBeenCalled()
+  })
+
+  it('keeps the Collect button available in the check-out retry state when a balance remains', () => {
+    renderModal({
+      mode: 'check-out',
+      reservation: reservation({ status: 'checked_in', due_amount: 330 }),
+      error: {
+        message: 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.',
+        paymentRecorded: true,
+      },
+    })
+
+    expect(screen.getByRole('button', { name: /Collect ₱330\.00/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Collect ₱330\.00/i }))
+    expect(screen.getByRole('button', { name: 'stub-Record & Check Out' })).toBeInTheDocument()
+  })
+
+  it('hides the Collect button in the check-out retry state once fully settled', () => {
+    renderModal({
+      mode: 'check-out',
+      reservation: reservation({ status: 'checked_in', due_amount: 0, payment_status: 'paid' }),
+      error: {
+        message: 'Payment was recorded, but check-out failed. Retry to finish check-out.',
+        paymentRecorded: true,
+      },
+    })
+
+    expect(screen.queryByRole('button', { name: /Collect/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry Check Out' })).toBeInTheDocument()
   })
 
   it('retry never re-opens the payment modal after a recorded-payment failure', () => {

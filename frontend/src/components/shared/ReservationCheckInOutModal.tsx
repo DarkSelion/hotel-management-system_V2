@@ -40,7 +40,9 @@ export function ReservationCheckInOutModal({
   const hasBalance = !!reservation && reservation.due_amount > 0
   const isRetry = error?.paymentRecorded === true
   const hasPayment = (reservation?.payments?.length ?? 0) > 0
-  const requiresPayment = hasBalance && !hasPayment && !isRetry
+  const requiresPayment = isCheckIn
+    ? hasBalance && !hasPayment && !isRetry
+    : hasBalance && !isRetry
 
   const verb = isCheckIn ? 'Check In' : 'Check Out'
   const confirmLabel = isRetry ? `Retry ${verb}` : requiresPayment ? `Collect & ${verb}` : verb
@@ -125,7 +127,7 @@ export function ReservationCheckInOutModal({
                   </p>
                 )
               )}
-              {!requiresPayment && !isRetry && (
+              {((isCheckIn && hasBalance && hasPayment && !isRetry) || (!isCheckIn && isRetry && hasBalance)) && (
                 <Button
                   variant="ghost"
                   size="sm"
