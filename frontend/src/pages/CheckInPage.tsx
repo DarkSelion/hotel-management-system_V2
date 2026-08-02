@@ -81,11 +81,11 @@ export default function CheckInPage() {
     setEditingReservation(null)
   }
 
-  async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash') {
+  async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
     if (!checkInTarget) return
     try {
-      const method = checkInError?.paymentRecorded ? undefined : paymentMethod
-      await perform('check-in', checkInTarget, method)
+      const isRetry = checkInError?.paymentRecorded
+      await perform('check-in', checkInTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
       setCheckInTarget(null)
       setCheckInError(null)
     } catch (err) {

@@ -14,6 +14,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string
   confirmVariant?: 'primary' | 'gold' | 'danger'
   isLoading?: boolean
+  disabled?: boolean
   icon?: ReactNode | null
   children?: ReactNode
 }
@@ -28,6 +29,7 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   confirmVariant,
   isLoading,
+  disabled,
   icon,
   children,
 }: ConfirmDialogProps) {
@@ -60,7 +62,7 @@ export function ConfirmDialog({
         <Button
           variant={confirmVariant ?? (variant === 'danger' ? 'danger' : 'gold')}
           onClick={onConfirm}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
         >
           {isLoading ? 'Processing...' : confirmLabel}
         </Button>

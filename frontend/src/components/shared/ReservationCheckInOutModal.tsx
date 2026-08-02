@@ -13,7 +13,7 @@ interface ReservationCheckInOutModalProps {
   isLoading?: boolean
   error?: { message: string; paymentRecorded: boolean } | null
   onClose: () => void
-  onConfirm: (paymentMethod?: 'cash' | 'gcash') => void
+  onConfirm: (paymentMethod?: 'cash' | 'gcash', amount?: number) => void
 }
 
 export function ReservationCheckInOutModal({
@@ -26,9 +26,11 @@ export function ReservationCheckInOutModal({
   onConfirm,
 }: ReservationCheckInOutModalProps) {
   const [selectedMethod, setSelectedMethod] = useState<'cash' | 'gcash' | null>(null)
+  const [amount, setAmount] = useState(0)
 
   useEffect(() => {
     setSelectedMethod(null)
+    setAmount(reservation?.due_amount ?? 0)
   }, [reservation?.id, error?.paymentRecorded])
 
   const isCheckIn = mode === 'check-in'
@@ -46,6 +48,8 @@ export function ReservationCheckInOutModal({
         ? `Confirm GCash & ${verb}`
         : verb
 
+  const confirmDisabled = !!selectedMethod && amount <= 0
+
   const lastPaymentMethod = reservation?.payments?.[0]?.payment_method
   const paymentLabel =
     reservation?.payment_status === 'paid'
@@ -61,14 +65,16 @@ export function ReservationCheckInOutModal({
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={() => {
-        if (isRetry) onConfirm(undefined)
-        else onConfirm(selectedMethod ?? undefined)
+        if (isRetry) onConfirm(undefined, undefined)
+        else if (selectedMethod) onConfirm(selectedMethod, amount)
+        else onConfirm(undefined, undefined)
       }}
       title={isCheckIn ? 'Check In Guest' : 'Check Out Guest'}
       confirmLabel={confirmLabel}
       confirmVariant="primary"
       icon={null}
       isLoading={isLoading}
+      disabled={confirmDisabled}
     >
       <div className="mt-4 w-full space-y-3 text-left">
         {reservation && (
@@ -150,6 +156,54 @@ export function ReservationCheckInOutModal({
                     <p className="mt-1.5 text-[11px] text-amber-700">
                       Recorded as pending — verify on the Payments page.
                     </p>
+                  )}
+
+                  {selectedMethod && (
+                    <div className="mt-2 border-t border-amber-200 pt-2">
+                      <p className="text-xs font-medium text-amber-800">Amount</p>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-amber-700">
+                            ₱
+                          </span>
+                          <input
+                            type="number"
+                            aria-label="Amount to collect"
+                            min={0}
+                            max={reservation.due_amount}
+                            step="0.01"
+                            value={amount}
+                            onChange={(e) => {
+                              const parsed = parseFloat(e.target.value)
+                              const next = Number.isNaN(parsed)
+                                ? 0
+                                : Math.min(Math.max(parsed, 0), reservation.due_amount)
+                              setAmount(next)
+                            }}
+                            className="w-full rounded-md border border-amber-300 bg-white/60 py-1.5 pl-6 pr-2 text-xs font-medium text-amber-900 outline-none transition-colors focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setAmount(reservation.due_amount)}
+                          className="rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-medium text-amber-900 shadow-sm transition-colors hover:bg-amber-100"
+                        >
+                          Full
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAmount(Math.round(reservation.due_amount / 2))}
+                          className="rounded-md border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-medium text-amber-900 shadow-sm transition-colors hover:bg-amber-100"
+                        >
+                          Half
+                        </button>
+                      </div>
+                      {amount <= 0 && (
+                        <p className="mt-1 text-[11px] text-amber-700">
+                          Enter an amount to collect.
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               )}

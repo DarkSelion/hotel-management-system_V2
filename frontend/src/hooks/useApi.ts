@@ -182,15 +182,16 @@ export function useCheckInOutWithPayment() {
     action: 'check-in' | 'check-out',
     reservation: Reservation,
     paymentMethod?: 'cash' | 'gcash',
+    amount?: number,
   ) => {
     let paymentRecorded = false
     try {
-      if (paymentMethod && reservation.due_amount > 0) {
+      if (paymentMethod && amount && amount > 0) {
         await createPayment.mutateAsync({
           reservation_id: reservation.id,
-          amount: reservation.due_amount,
+          amount: Math.min(amount, reservation.due_amount),
           payment_method: paymentMethod,
-          payment_type: 'full',
+          payment_type: amount >= reservation.due_amount ? 'full' : 'partial',
           status: paymentMethod === 'gcash' ? 'pending' : 'completed',
         })
         paymentRecorded = true

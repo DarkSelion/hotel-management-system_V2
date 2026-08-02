@@ -142,11 +142,11 @@ export default function ReservationsPage() {
     }
   }
 
-  async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash') {
+  async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
     if (!checkInTarget) return
     try {
-      const method = checkInError?.paymentRecorded ? undefined : paymentMethod
-      await perform('check-in', checkInTarget, method)
+      const isRetry = checkInError?.paymentRecorded
+      await perform('check-in', checkInTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
       setCheckInTarget(null)
       setCheckInError(null)
     } catch (err) {
@@ -160,11 +160,11 @@ export default function ReservationsPage() {
     }
   }
 
-  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash') {
+  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
     if (!checkOutTarget) return
     try {
-      const method = checkOutError?.paymentRecorded ? undefined : paymentMethod
-      await perform('check-out', checkOutTarget, method)
+      const isRetry = checkOutError?.paymentRecorded
+      await perform('check-out', checkOutTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
       setCheckOutTarget(null)
       setCheckOutError(null)
     } catch (err) {

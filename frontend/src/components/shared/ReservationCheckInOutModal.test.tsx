@@ -23,7 +23,7 @@ function reservation(overrides: Partial<Reservation> = {}): Reservation {
   }
 }
 
-type OnConfirm = (paymentMethod?: 'cash' | 'gcash') => void
+type OnConfirm = (paymentMethod?: 'cash' | 'gcash', amount?: number) => void
 type ModalError = { message: string; paymentRecorded: boolean }
 
 function renderModal(overrides: {
@@ -44,6 +44,10 @@ function renderModal(overrides: {
     />,
   )
   return { onConfirm, rerender: result.rerender }
+}
+
+function amountInput() {
+  return screen.getByLabelText('Amount to collect') as HTMLInputElement
 }
 
 describe('ReservationCheckInOutModal', () => {
@@ -104,18 +108,19 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByText('Guest will still be checked in.')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Check In' }))
-    expect(onConfirm).toHaveBeenCalledWith(undefined)
+    expect(onConfirm).toHaveBeenCalledWith(undefined, undefined)
   })
 
-  it('records cash payment: labels the button and passes the method', () => {
+  it('records cash payment: defaults to the full due amount', () => {
     const { onConfirm } = renderModal()
 
     fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
     expect(screen.getByRole('button', { name: 'Confirm Cash & Check In' })).toBeInTheDocument()
     expect(screen.queryByText('Guest will still be checked in.')).not.toBeInTheDocument()
+    expect(amountInput()).toHaveValue(330)
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirm Cash & Check In' }))
-    expect(onConfirm).toHaveBeenCalledWith('cash')
+    expect(onConfirm).toHaveBeenCalledWith('cash', 330)
   })
 
   it('records GCash payment: shows pending note and passes the method', () => {
@@ -126,7 +131,70 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByText(/Recorded as pending — verify on the Payments page/i)).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirm GCash & Check In' }))
-    expect(onConfirm).toHaveBeenCalledWith('gcash')
+    expect(onConfirm).toHaveBeenCalledWith('gcash', 330)
+  })
+
+  it('collects half of the due amount via the Half quick button', () => {
+    const { onConfirm } = renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Half' }))
+    expect(amountInput()).toHaveValue(165)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Cash & Check In' }))
+    expect(onConfirm).toHaveBeenCalledWith('cash', 165)
+  })
+
+  it('collects a custom partial amount typed into the field', () => {
+    const { onConfirm } = renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    fireEvent.change(amountInput(), { target: { value: '100' } })
+    expect(amountInput()).toHaveValue(100)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Cash & Check In' }))
+    expect(onConfirm).toHaveBeenCalledWith('cash', 100)
+  })
+
+  it('restores the full amount via the Full quick button', () => {
+    renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    fireEvent.change(amountInput(), { target: { value: '50' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Full' }))
+    expect(amountInput()).toHaveValue(330)
+  })
+
+  it('clamps the amount to the due amount', () => {
+    renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    fireEvent.change(amountInput(), { target: { value: '999' } })
+    expect(amountInput()).toHaveValue(330)
+  })
+
+  it('disables confirm and shows a hint when the amount is cleared', () => {
+    renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    fireEvent.change(amountInput(), { target: { value: '' } })
+
+    expect(screen.getByText('Enter an amount to collect.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Confirm Cash & Check In' })).toBeDisabled()
+  })
+
+  it('lets the staff deselect a payment method and check in unpaid', () => {
+    const { onConfirm } = renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    expect(screen.getByRole('button', { name: 'Confirm Cash & Check In' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
+    expect(screen.queryByText('Amount')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Check In' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check In' }))
+    expect(onConfirm).toHaveBeenCalledWith(undefined, undefined)
   })
 
   it('uses the check-out verb in labels', () => {
@@ -157,7 +225,7 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByRole('button', { name: 'Retry Check Out' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry Check Out' }))
-    expect(onConfirm).toHaveBeenCalledWith(undefined)
+    expect(onConfirm).toHaveBeenCalledWith(undefined, undefined)
   })
 
   it('retry never re-creates a payment even if a method was selected before the failure', () => {
@@ -182,7 +250,7 @@ describe('ReservationCheckInOutModal', () => {
 
     expect(screen.getByRole('button', { name: 'Retry Check In' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Retry Check In' }))
-    expect(onConfirm).toHaveBeenCalledWith(undefined)
+    expect(onConfirm).toHaveBeenCalledWith(undefined, undefined)
   })
 
   it('keeps the payment toggle visible when the payment itself failed', () => {
@@ -203,6 +271,6 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByRole('button', { name: 'Confirm Cash & Check Out' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirm Cash & Check Out' }))
-    expect(onConfirm).toHaveBeenCalledWith('cash')
+    expect(onConfirm).toHaveBeenCalledWith('cash', 330)
   })
 })

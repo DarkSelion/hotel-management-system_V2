@@ -78,11 +78,11 @@ export default function CheckOutPage() {
     setEditingReservation(null)
   }
 
-  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash') {
+  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
     if (!checkOutTarget) return
     try {
-      const method = checkOutError?.paymentRecorded ? undefined : paymentMethod
-      await perform('check-out', checkOutTarget, method)
+      const isRetry = checkOutError?.paymentRecorded
+      await perform('check-out', checkOutTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
       setCheckOutTarget(null)
       setCheckOutError(null)
     } catch (err) {
