@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { AlertCircle, AlertTriangle } from 'lucide-react'
@@ -84,7 +85,13 @@ export function ReservationCheckInOutModal({
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Payment</dt>
-              <dd className="font-medium text-gray-900">{paymentLabel}</dd>
+              <dd className="font-medium text-gray-900">
+                {reservation.payment_status === 'unpaid' ? (
+                  <StatusBadge status="unpaid" />
+                ) : (
+                  paymentLabel
+                )}
+              </dd>
             </div>
           </dl>
         )}
@@ -104,10 +111,10 @@ export function ReservationCheckInOutModal({
                 Outstanding balance: {formatCurrency(reservation.due_amount)}
               </p>
               <p className="text-[13px] text-amber-700">
-                Guest will still be checked {isCheckIn ? 'in' : 'out'}.
+                {!selectedMethod && `Guest will still be checked ${isCheckIn ? 'in' : 'out'}.`}
               </p>
               {!error && (
-                <div className="mt-2 border-t border-amber-200 pt-2">
+                <div className="mt-3 border-t border-amber-200 pt-2">
                   <p className="text-xs font-medium text-amber-800">How is the guest paying?</p>
                   <div className="mt-1.5 flex gap-2">
                     <button
@@ -116,7 +123,7 @@ export function ReservationCheckInOutModal({
                       className={cn(
                         'flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors',
                         selectedMethod === 'cash'
-                          ? 'border-transparent bg-amber-900 text-white'
+                          ? 'border-amber-900 bg-amber-900 text-white shadow-sm'
                           : 'border-amber-300 bg-white/60 text-amber-900 hover:bg-amber-100',
                       )}
                     >
@@ -128,7 +135,7 @@ export function ReservationCheckInOutModal({
                       className={cn(
                         'flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors',
                         selectedMethod === 'gcash'
-                          ? 'border-transparent bg-amber-900 text-white'
+                          ? 'border-amber-900 bg-amber-900 text-white shadow-sm'
                           : 'border-amber-300 bg-white/60 text-amber-900 hover:bg-amber-100',
                       )}
                     >

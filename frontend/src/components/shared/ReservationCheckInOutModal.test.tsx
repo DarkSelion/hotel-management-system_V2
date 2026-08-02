@@ -54,6 +54,7 @@ describe('ReservationCheckInOutModal', () => {
     expect(screen.getByText('Room 101')).toBeInTheDocument()
     expect(screen.getByText('Stay')).toBeInTheDocument()
     expect(screen.getByText('Payment')).toBeInTheDocument()
+    expect(screen.getByText('Unpaid')).toBeInTheDocument()
     expect(screen.getByText('Check In Guest')).toBeInTheDocument()
   })
 
@@ -99,6 +100,8 @@ describe('ReservationCheckInOutModal', () => {
   it('confirms without a payment method when nothing is selected', () => {
     const { onConfirm } = renderModal()
 
+    expect(screen.getByText('Guest will still be checked in.')).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: 'Check In' }))
     expect(onConfirm).toHaveBeenCalledWith(undefined)
   })
@@ -108,6 +111,7 @@ describe('ReservationCheckInOutModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cash' }))
     expect(screen.getByRole('button', { name: 'Confirm Cash & Check In' })).toBeInTheDocument()
+    expect(screen.queryByText('Guest will still be checked in.')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirm Cash & Check In' }))
     expect(onConfirm).toHaveBeenCalledWith('cash')
