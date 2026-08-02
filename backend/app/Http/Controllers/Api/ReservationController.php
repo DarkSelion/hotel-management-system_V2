@@ -17,7 +17,7 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reservation::with(['guest', 'room.roomType']);
+        $query = Reservation::with(['guest', 'room.roomType', 'payments']);
 
         if ($search = $request->search) {
             $query->where(function ($q) use ($search) {
@@ -290,6 +290,10 @@ class ReservationController extends Controller
             return response()->json(['message' => 'Only confirmed or pending reservations can be checked in.'], 422);
         }
 
+        if ($reservation->due_amount > 0 && ! $reservation->payments()->exists()) {
+            return response()->json(['message' => 'Collect a payment before checking in.'], 422);
+        }
+
         $reservation->update([
             'status' => 'checked_in',
             'checked_in_by' => $request->user()->id,
@@ -314,6 +318,10 @@ class ReservationController extends Controller
     {
         if ($reservation->status !== 'checked_in') {
             return response()->json(['message' => 'Reservation must be checked in to check out.'], 422);
+        }
+
+        if ($reservation->due_amount > 0 && ! $reservation->payments()->exists()) {
+            return response()->json(['message' => 'Collect a payment before checking out.'], 422);
         }
 
         $reservation->update([

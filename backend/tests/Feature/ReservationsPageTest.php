@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ActivityLog;
 use App\Models\Guest;
+use App\Models\Payment;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Models\RoomType;
@@ -109,6 +110,18 @@ class ReservationsPageTest extends TestCase
             'tax_amount' => 200,
             'payment_status' => 'unpaid',
             'source' => 'direct',
+        ], $overrides));
+    }
+
+    protected function recordPayment(Reservation $reservation, array $overrides = []): Payment
+    {
+        return Payment::create(array_merge([
+            'reservation_id' => $reservation->id,
+            'guest_id' => $reservation->guest_id,
+            'amount' => $reservation->due_amount,
+            'payment_method' => 'cash',
+            'payment_type' => 'full',
+            'status' => 'completed',
         ], $overrides));
     }
 
@@ -508,6 +521,7 @@ class ReservationsPageTest extends TestCase
 
         $reservation = $this->reservation(['status' => 'confirmed']);
         $reservation->room->update(['status' => 'reserved']);
+        $this->recordPayment($reservation);
 
         $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
         $response->assertStatus(200);
@@ -533,6 +547,7 @@ class ReservationsPageTest extends TestCase
         Sanctum::actingAs($admin);
 
         $reservation = $this->reservation(['status' => 'pending']);
+        $this->recordPayment($reservation);
 
         $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
         $response->assertStatus(200);
@@ -592,6 +607,7 @@ class ReservationsPageTest extends TestCase
 
         $reservation = $this->reservation(['status' => 'checked_in']);
         $reservation->room->update(['status' => 'occupied']);
+        $this->recordPayment($reservation);
 
         $response = $this->postJson("/api/reservations/{$reservation->id}/check-out");
         $response->assertStatus(200);
@@ -632,6 +648,73 @@ class ReservationsPageTest extends TestCase
 
         $response = $this->postJson("/api/reservations/{$reservation->id}/check-out");
         $response->assertStatus(422);
+    }
+
+    // ─── Payment required before check-in / check-out ─────────
+
+    public function test_check_in_rejected_when_balance_unpaid_and_no_payment(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Collect a payment before checking in.');
+        $this->assertEquals('confirmed', $reservation->fresh()->status);
+    }
+
+    public function test_check_in_allowed_when_pending_gcash_payment_recorded(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+        $this->recordPayment($reservation, ['payment_method' => 'gcash', 'status' => 'pending']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
+        $response->assertStatus(200);
+        $this->assertEquals('checked_in', $reservation->fresh()->status);
+    }
+
+    public function test_check_in_allowed_when_partial_payment_recorded(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+        $this->recordPayment($reservation, ['amount' => 1000, 'payment_type' => 'partial']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
+        $response->assertStatus(200);
+        $this->assertEquals('checked_in', $reservation->fresh()->status);
+    }
+
+    public function test_check_out_rejected_when_balance_unpaid_and_no_payment(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'checked_in']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-out");
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Collect a payment before checking out.');
+        $this->assertEquals('checked_in', $reservation->fresh()->status);
+    }
+
+    public function test_check_out_allowed_when_pending_gcash_payment_recorded(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'checked_in']);
+        $this->recordPayment($reservation, ['payment_method' => 'gcash', 'status' => 'pending']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-out");
+        $response->assertStatus(200);
+        $this->assertEquals('checked_out', $reservation->fresh()->status);
     }
 
     // ─── Cancel ───────────────────────────────────────────────

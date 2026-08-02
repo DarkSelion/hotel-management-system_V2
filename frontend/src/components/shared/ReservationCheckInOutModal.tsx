@@ -39,8 +39,11 @@ export function ReservationCheckInOutModal({
   const roomNumber = reservation?.room?.room_number ?? '-'
   const hasBalance = !!reservation && reservation.due_amount > 0
   const isRetry = error?.paymentRecorded === true
+  const hasPayment = (reservation?.payments?.length ?? 0) > 0
+  const requiresPayment = hasBalance && !hasPayment && !isRetry
 
   const verb = isCheckIn ? 'Check In' : 'Check Out'
+  const confirmLabel = isRetry ? `Retry ${verb}` : requiresPayment ? `Collect & ${verb}` : verb
 
   const lastPaymentMethod = reservation?.payments?.[0]?.payment_method
   const paymentLabel =
@@ -58,10 +61,11 @@ export function ReservationCheckInOutModal({
       onClose={onClose}
       onConfirm={() => {
         if (isRetry) onConfirmAfterPayment?.()
+        else if (requiresPayment) setShowPaymentModal(true)
         else onConfirm()
       }}
       title={isCheckIn ? 'Check In Guest' : 'Check Out Guest'}
-      confirmLabel={isRetry ? `Retry ${verb}` : verb}
+      confirmLabel={confirmLabel}
       confirmVariant="primary"
       icon={null}
       isLoading={isLoading}
@@ -110,12 +114,18 @@ export function ReservationCheckInOutModal({
               <p className="font-medium text-amber-900">
                 Outstanding balance: {formatCurrency(reservation.due_amount)}
               </p>
-              {!isRetry && (
+              {requiresPayment ? (
                 <p className="text-[13px] text-amber-700">
-                  Guest will still be checked {isCheckIn ? 'in' : 'out'} — payments are optional.
+                  A payment is required before {isCheckIn ? 'checking in' : 'checking out'}.
                 </p>
+              ) : (
+                !isRetry && (
+                  <p className="text-[13px] text-amber-700">
+                    Guest will still be checked {isCheckIn ? 'in' : 'out'} — payments are optional.
+                  </p>
+                )
               )}
-              {!isRetry && (
+              {!requiresPayment && !isRetry && (
                 <Button
                   variant="ghost"
                   size="sm"
