@@ -1,7 +1,8 @@
 import { useState, useMemo, useCallback } from 'react'
 import {
-  useReservations, useCheckInOutWithPayment,
+  useReservations,
 } from '@/hooks/useApi'
+import { useCheckInOutModal } from '@/hooks/useCheckInOutModal'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
@@ -25,8 +26,8 @@ export default function CheckOutPage() {
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
 
-  const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
-  const [checkOutError, setCheckOutError] = useState<{ message: string; paymentRecorded: boolean } | null>(null)
+  const checkOutModal = useCheckInOutModal('check-out')
+  const { open: openCheckOut, close: closeCheckOut, confirm: confirmCheckOut } = checkOutModal
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -40,7 +41,6 @@ export default function CheckOutPage() {
   }, [page, sortField, sortDir, search])
 
   const { data: reservationsData, isLoading, error, refetch } = useReservations(queryParams)
-  const { perform, isLoading: frontDeskLoading } = useCheckInOutWithPayment()
 
   const reservations = reservationsData?.data ?? []
   const totalPages = reservationsData?.last_page ?? 1
@@ -76,24 +76,6 @@ export default function CheckOutPage() {
   function closeFormModal() {
     setShowFormModal(false)
     setEditingReservation(null)
-  }
-
-  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
-    if (!checkOutTarget) return
-    try {
-      const isRetry = checkOutError?.paymentRecorded
-      await perform('check-out', checkOutTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
-      setCheckOutTarget(null)
-      setCheckOutError(null)
-    } catch (err) {
-      const e = err as { paymentRecorded?: boolean; message?: string }
-      setCheckOutError({
-        message: e.paymentRecorded
-          ? 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.'
-          : (e.message || 'Check-out failed. Please try again.'),
-        paymentRecorded: !!e.paymentRecorded,
-      })
-    }
   }
 
   const columns: Column<Reservation>[] = useMemo(() => [
@@ -159,11 +141,11 @@ export default function CheckOutPage() {
           reservation={r}
           onView={() => openDetailModal(r)}
           onEdit={() => openEditForm(r)}
-          onCheckOut={() => setCheckOutTarget(r)}
+          onCheckOut={() => openCheckOut(r)}
         />
       ),
     },
-  ], [])
+  ], [openCheckOut])
 
   return (
     <div>
@@ -220,15 +202,12 @@ export default function CheckOutPage() {
 
       <ReservationCheckInOutModal
         mode="check-out"
-        reservation={checkOutTarget}
-        isOpen={!!checkOutTarget}
-        isLoading={frontDeskLoading}
-        error={checkOutError}
-        onClose={() => {
-          setCheckOutTarget(null)
-          setCheckOutError(null)
-        }}
-        onConfirm={handleCheckOutConfirm}
+        reservation={checkOutModal.target}
+        isOpen={checkOutModal.isOpen}
+        isLoading={checkOutModal.isLoading}
+        error={checkOutModal.error}
+        onClose={closeCheckOut}
+        onConfirm={confirmCheckOut}
       />
     </div>
   )

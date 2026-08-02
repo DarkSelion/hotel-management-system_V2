@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  useReservations, useCancelReservation, useCheckInOutWithPayment, useMarkNoShow, useRefreshOverdue,
+  useReservations, useCancelReservation, useMarkNoShow, useRefreshOverdue,
 } from '@/hooks/useApi'
+import { useCheckInOutModal } from '@/hooks/useCheckInOutModal'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { isAdminRole } from '@/lib/permissions'
 import { useAuthStore } from '@/stores/authStore'
@@ -56,10 +57,11 @@ export default function ReservationsPage() {
 
   const [cancelTarget, setCancelTarget] = useState<Reservation | null>(null)
   const [noShowTarget, setNoShowTarget] = useState<Reservation | null>(null)
-  const [checkInTarget, setCheckInTarget] = useState<Reservation | null>(null)
-  const [checkOutTarget, setCheckOutTarget] = useState<Reservation | null>(null)
-  const [checkInError, setCheckInError] = useState<{ message: string; paymentRecorded: boolean } | null>(null)
-  const [checkOutError, setCheckOutError] = useState<{ message: string; paymentRecorded: boolean } | null>(null)
+
+  const checkInModal = useCheckInOutModal('check-in')
+  const checkOutModal = useCheckInOutModal('check-out')
+  const { open: openCheckIn } = checkInModal
+  const { open: openCheckOut } = checkOutModal
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
@@ -76,7 +78,6 @@ export default function ReservationsPage() {
   const { data: reservationsData, isLoading, error, refetch } = useReservations(queryParams)
 
   const cancelReservation = useCancelReservation()
-  const { perform, isLoading: frontDeskLoading } = useCheckInOutWithPayment()
   const markNoShow = useMarkNoShow()
   const refreshOverdue = useRefreshOverdue()
   const role = useAuthStore((s) => s.user?.role ?? '')
@@ -139,42 +140,6 @@ export default function ReservationsPage() {
       setCancelTarget(null)
     } catch {
       // handled by react-query
-    }
-  }
-
-  async function handleCheckInConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
-    if (!checkInTarget) return
-    try {
-      const isRetry = checkInError?.paymentRecorded
-      await perform('check-in', checkInTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
-      setCheckInTarget(null)
-      setCheckInError(null)
-    } catch (err) {
-      const e = err as { paymentRecorded?: boolean; message?: string }
-      setCheckInError({
-        message: e.paymentRecorded
-          ? 'Payment was recorded, but check-in failed. Retry to finish check-in — the amount has already been collected.'
-          : (e.message || 'Check-in failed. Please try again.'),
-        paymentRecorded: !!e.paymentRecorded,
-      })
-    }
-  }
-
-  async function handleCheckOutConfirm(paymentMethod?: 'cash' | 'gcash', amount?: number) {
-    if (!checkOutTarget) return
-    try {
-      const isRetry = checkOutError?.paymentRecorded
-      await perform('check-out', checkOutTarget, isRetry ? undefined : paymentMethod, isRetry ? undefined : amount)
-      setCheckOutTarget(null)
-      setCheckOutError(null)
-    } catch (err) {
-      const e = err as { paymentRecorded?: boolean; message?: string }
-      setCheckOutError({
-        message: e.paymentRecorded
-          ? 'Payment was recorded, but check-out failed. Retry to finish check-out — the amount has already been collected.'
-          : (e.message || 'Check-out failed. Please try again.'),
-        paymentRecorded: !!e.paymentRecorded,
-      })
     }
   }
 
@@ -272,13 +237,13 @@ export default function ReservationsPage() {
           onView={() => openDetailModal(r)}
           onEdit={() => openEditForm(r)}
           onCancel={() => openCancelDialog(r)}
-          onCheckIn={() => setCheckInTarget(r)}
-          onCheckOut={() => setCheckOutTarget(r)}
+          onCheckIn={() => openCheckIn(r)}
+          onCheckOut={() => openCheckOut(r)}
           onMarkNoShow={() => setNoShowTarget(r)}
         />
       ),
     },
-  ], [])
+  ], [openCheckIn, openCheckOut])
 
   return (
     <div>
@@ -375,28 +340,22 @@ export default function ReservationsPage() {
 
       <ReservationCheckInOutModal
         mode="check-in"
-        reservation={checkInTarget}
-        isOpen={!!checkInTarget}
-        isLoading={frontDeskLoading}
-        error={checkInError}
-        onClose={() => {
-          setCheckInTarget(null)
-          setCheckInError(null)
-        }}
-        onConfirm={handleCheckInConfirm}
+        reservation={checkInModal.target}
+        isOpen={checkInModal.isOpen}
+        isLoading={checkInModal.isLoading}
+        error={checkInModal.error}
+        onClose={checkInModal.close}
+        onConfirm={checkInModal.confirm}
       />
 
       <ReservationCheckInOutModal
         mode="check-out"
-        reservation={checkOutTarget}
-        isOpen={!!checkOutTarget}
-        isLoading={frontDeskLoading}
-        error={checkOutError}
-        onClose={() => {
-          setCheckOutTarget(null)
-          setCheckOutError(null)
-        }}
-        onConfirm={handleCheckOutConfirm}
+        reservation={checkOutModal.target}
+        isOpen={checkOutModal.isOpen}
+        isLoading={checkOutModal.isLoading}
+        error={checkOutModal.error}
+        onClose={checkOutModal.close}
+        onConfirm={checkOutModal.confirm}
       />
 
       <ConfirmDialog
