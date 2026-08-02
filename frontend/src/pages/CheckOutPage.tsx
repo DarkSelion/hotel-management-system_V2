@@ -5,14 +5,13 @@ import {
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { ReservationRowActions } from '@/components/shared/ReservationRowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ReservationDetailModal } from '@/components/shared/ReservationDetailModal'
 import { ReservationFormModal } from '@/components/shared/ReservationFormModal'
 import { ReservationCheckInOutModal } from '@/components/shared/ReservationCheckInOutModal'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, Pencil, LogOut } from 'lucide-react'
 import type { Reservation } from '@/types'
 
 export default function CheckOutPage() {
@@ -125,7 +124,7 @@ export default function CheckOutPage() {
       key: 'payment_status',
       label: 'Payment',
       sortable: true,
-      className: 'whitespace-nowrap w-[120px] text-center',
+      className: 'whitespace-nowrap',
       render: (r) => <StatusBadge status={r.payment_status} />,
     },
     {
@@ -149,40 +148,14 @@ export default function CheckOutPage() {
     {
       key: 'actions',
       label: 'Actions',
-      className: 'whitespace-nowrap w-[200px] pl-6',
+      className: 'whitespace-nowrap',
       render: (r) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0"
-            onClick={(e) => { e.stopPropagation(); openDetailModal(r) }}
-            title="View"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0"
-            onClick={(e) => { e.stopPropagation(); openEditForm(r) }}
-            title="Edit"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0 text-muted hover:text-muted"
-            onClick={(e) => { e.stopPropagation(); setCheckOutTarget(r) }}
-            title="Check Out"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+        <ReservationRowActions
+          reservation={r}
+          onView={() => openDetailModal(r)}
+          onEdit={() => openEditForm(r)}
+          onCheckOut={() => setCheckOutTarget(r)}
+        />
       ),
     },
   ], [])

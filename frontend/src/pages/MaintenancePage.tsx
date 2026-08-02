@@ -7,6 +7,7 @@ import type { MaintenanceRequest } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -209,31 +210,47 @@ export default function MaintenancePage() {
       key: 'actions',
       label: 'Actions',
       render: (r) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" square onClick={() => openDetailModal(r)}>
-            <Eye className="h-4 w-4" />
-          </Button>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="View"
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => openDetailModal(r)}
+          />
           {isAdmin && r.status === 'reported' && (
-            <Button variant="ghost" size="sm" onClick={() => openAssignModal(r)}>
-              <User className="h-3.5 w-3.5" /> Assign
-            </Button>
+            <RowActionButton
+              tone="info"
+              title="Assign"
+              label="Assign"
+              icon={<User className="h-4 w-4" />}
+              onClick={() => openAssignModal(r)}
+            />
           )}
           {isAdmin && r.status === 'assigned' && (
-            <Button variant="ghost" size="sm" onClick={() => handleQuickAction(r.id, 'in_progress')}>
-              Start Work
-            </Button>
+            <RowActionButton
+              tone="success"
+              title="Start Work"
+              label="Start Work"
+              onClick={() => handleQuickAction(r.id, 'in_progress')}
+            />
           )}
           {isAdmin && r.status === 'in_progress' && (
-            <Button variant="ghost" size="sm" onClick={() => handleQuickAction(r.id, 'completed')}>
-              Complete
-            </Button>
+            <RowActionButton
+              tone="success"
+              title="Complete"
+              label="Complete"
+              onClick={() => handleQuickAction(r.id, 'completed')}
+            />
           )}
           {isAdmin && (r.status === 'reported' || r.status === 'assigned' || r.status === 'in_progress') && (
-            <Button variant="ghost" size="sm" className="text-danger" onClick={() => handleQuickAction(r.id, 'cancelled')}>
-              Cancel
-            </Button>
+            <RowActionButton
+              tone="danger"
+              title="Cancel"
+              label="Cancel"
+              onClick={() => handleQuickAction(r.id, 'cancelled')}
+            />
           )}
-        </div>
+        </RowActions>
       ),
     },
   ]

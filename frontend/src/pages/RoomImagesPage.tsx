@@ -6,6 +6,7 @@ import {
 import type { RoomImage } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -83,14 +84,20 @@ export default function RoomImagesPage() {
       key: 'actions',
       label: 'Actions',
       render: (r) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" square onClick={() => setEditRoomId(r.id)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" square onClick={() => setDeleteConfirmId(r.id)} className="text-danger hover:text-danger">
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="Edit"
+            icon={<Edit className="h-4 w-4" />}
+            onClick={() => setEditRoomId(r.id)}
+          />
+          <RowActionButton
+            tone="danger"
+            title="Delete"
+            icon={<Trash2 className="h-4 w-4" />}
+            onClick={() => setDeleteConfirmId(r.id)}
+          />
+        </RowActions>
       ),
     },
   ]

@@ -8,6 +8,7 @@ import type { HousekeepingTask } from '@/types'
 import { formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
@@ -254,36 +255,55 @@ export default function HousekeepingPage() {
       key: 'actions',
       label: 'Actions',
       render: (t) => (
-        <div className="flex items-center gap-1">
+        <RowActions>
           {t.status === 'pending' && (
             <>
-              <Button variant="ghost" size="sm" onClick={() => openAssignModal(t)}>
-                <User className="h-3.5 w-3.5" /> Assign
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => handleQuickAction(t.id, 'in_progress')}>
-                Start
-              </Button>
+              <RowActionButton
+                tone="info"
+                title="Assign"
+                label="Assign"
+                icon={<User className="h-4 w-4" />}
+                onClick={() => openAssignModal(t)}
+              />
+              <RowActionButton
+                tone="success"
+                title="Start"
+                label="Start"
+                onClick={() => handleQuickAction(t.id, 'in_progress')}
+              />
             </>
           )}
           {t.status === 'in_progress' && (
-            <Button variant="ghost" size="sm" onClick={() => handleQuickAction(t.id, 'completed')}>
-              Complete
-            </Button>
+            <RowActionButton
+              tone="success"
+              title="Complete"
+              label="Complete"
+              onClick={() => handleQuickAction(t.id, 'completed')}
+            />
           )}
           {t.status === 'completed' && (
-            <Button variant="ghost" size="sm" onClick={() => handleQuickAction(t.id, 'inspected')}>
-              Inspect
-            </Button>
+            <RowActionButton
+              tone="info"
+              title="Inspect"
+              label="Inspect"
+              onClick={() => handleQuickAction(t.id, 'inspected')}
+            />
           )}
-          <Button variant="ghost" size="sm" square onClick={() => openEditModal(t)}>
-            <Edit className="h-3.5 w-3.5" />
-          </Button>
+          <RowActionButton
+            tone="neutral"
+            title="Edit"
+            icon={<Edit className="h-4 w-4" />}
+            onClick={() => openEditModal(t)}
+          />
           {isAdmin && t.status === 'pending' && (
-            <Button variant="ghost" size="sm" square onClick={() => setDeleteConfirmId(t.id)} className="text-danger hover:text-danger">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <RowActionButton
+              tone="danger"
+              title="Delete"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => setDeleteConfirmId(t.id)}
+            />
           )}
-        </div>
+        </RowActions>
       ),
     },
   ]

@@ -5,15 +5,14 @@ import {
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { ReservationRowActions } from '@/components/shared/ReservationRowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { ReservationDetailModal } from '@/components/shared/ReservationDetailModal'
 import { ReservationFormModal } from '@/components/shared/ReservationFormModal'
 import { ReservationCheckInOutModal } from '@/components/shared/ReservationCheckInOutModal'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, Pencil, XCircle, LogIn } from 'lucide-react'
 import type { Reservation } from '@/types'
 
 export default function CheckInPage() {
@@ -147,7 +146,7 @@ export default function CheckInPage() {
       key: 'payment_status',
       label: 'Payment',
       sortable: true,
-      className: 'whitespace-nowrap w-[120px] text-center',
+      className: 'whitespace-nowrap',
       render: (r) => <StatusBadge status={r.payment_status} />,
     },
     {
@@ -160,50 +159,16 @@ export default function CheckInPage() {
     {
       key: 'actions',
       label: 'Actions',
-      className: 'whitespace-nowrap w-[220px] pl-6',
+      className: 'whitespace-nowrap',
       render: (r) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0"
-            onClick={(e) => { e.stopPropagation(); openDetailModal(r) }}
-            title="View"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0"
-            onClick={(e) => { e.stopPropagation(); openEditForm(r) }}
-            title="Edit"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0 text-danger hover:text-danger"
-            onClick={(e) => { e.stopPropagation(); setCancelTarget(r) }}
-            title="Cancel"
-          >
-            <XCircle className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            className="px-0 text-success hover:text-success"
-            onClick={(e) => { e.stopPropagation(); setCheckInTarget(r) }}
-            title="Check In"
-          >
-            <LogIn className="h-4 w-4" />
-          </Button>
-        </div>
+        <ReservationRowActions
+          reservation={r}
+          onView={() => openDetailModal(r)}
+          onEdit={() => openEditForm(r)}
+          onCancel={() => setCancelTarget(r)}
+          onCheckIn={() => setCheckInTarget(r)}
+          alwaysAllowCheckIn
+        />
       ),
     },
   ], [])

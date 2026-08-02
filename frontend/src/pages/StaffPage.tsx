@@ -9,6 +9,7 @@ import { formatDateDisplay } from '@/lib/format'
 import { useAuthStore } from '@/stores/authStore'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -137,14 +138,20 @@ export default function StaffPage() {
       key: 'actions',
       label: 'Actions',
       render: (s) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" square onClick={() => setViewStaffId(s.id)}>
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" square onClick={() => openEditModal(s)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-        </div>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="View"
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => setViewStaffId(s.id)}
+          />
+          <RowActionButton
+            tone="neutral"
+            title="Edit"
+            icon={<Edit className="h-4 w-4" />}
+            onClick={() => openEditModal(s)}
+          />
+        </RowActions>
       ),
     },
   ]
@@ -296,18 +303,24 @@ export default function StaffPage() {
       key: 'actions',
       label: 'Actions',
       render: (l) => (
-        <div className="flex items-center gap-1">
+        <RowActions>
           {l.status === 'pending' && (
             <>
-              <Button variant="ghost" size="sm" square onClick={() => handleApproveLeave(l.id)} className="text-success hover:text-success">
-                <Check className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" square onClick={() => handleRejectLeave(l.id)} className="text-danger hover:text-danger">
-                <X className="h-4 w-4" />
-              </Button>
+              <RowActionButton
+                tone="success"
+                title="Approve"
+                icon={<Check className="h-4 w-4" />}
+                onClick={() => handleApproveLeave(l.id)}
+              />
+              <RowActionButton
+                tone="danger"
+                title="Reject"
+                icon={<X className="h-4 w-4" />}
+                onClick={() => handleRejectLeave(l.id)}
+              />
             </>
           )}
-        </div>
+        </RowActions>
       ),
     },
   ]

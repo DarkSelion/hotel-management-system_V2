@@ -4,6 +4,7 @@ import type { ContactMessage } from '@/types'
 import { formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -85,14 +86,20 @@ export default function InquiriesPage() {
       key: 'actions',
       label: 'Actions',
       render: (r) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" square onClick={() => openDetail(r)} title="View">
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" square onClick={() => setDeleteConfirmId(r.id)} title="Delete">
-            <Trash2 className="h-4 w-4 text-danger" />
-          </Button>
-        </div>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="View"
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => openDetail(r)}
+          />
+          <RowActionButton
+            tone="danger"
+            title="Delete"
+            icon={<Trash2 className="h-4 w-4" />}
+            onClick={() => setDeleteConfirmId(r.id)}
+          />
+        </RowActions>
       ),
     },
   ]

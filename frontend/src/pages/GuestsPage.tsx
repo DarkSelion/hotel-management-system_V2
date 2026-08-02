@@ -4,6 +4,7 @@ import type { Guest, Reservation } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
@@ -290,19 +291,28 @@ export default function GuestsPage() {
       key: 'actions',
       label: 'Actions',
       render: (g) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" square onClick={() => setDetailGuestId(g.id)}>
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" square onClick={() => openEditModal(g)}>
-            <Edit className="h-4 w-4" />
-          </Button>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="View"
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => setDetailGuestId(g.id)}
+          />
+          <RowActionButton
+            tone="neutral"
+            title="Edit"
+            icon={<Edit className="h-4 w-4" />}
+            onClick={() => openEditModal(g)}
+          />
           {isAdmin && (
-            <Button variant="ghost" size="sm" square onClick={() => setDeleteConfirmId(g.id)}>
-              <Trash2 className="h-4 w-4 text-danger" />
-            </Button>
+            <RowActionButton
+              tone="danger"
+              title="Delete"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => setDeleteConfirmId(g.id)}
+            />
           )}
-        </div>
+        </RowActions>
       ),
     },
   ]

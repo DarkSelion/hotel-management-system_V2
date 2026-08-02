@@ -9,6 +9,7 @@ import { useHotelName, useHotelSettings } from '@/hooks/usePortalApi'
 import { useToast } from '@/components/ui/toast'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
@@ -358,22 +359,34 @@ export default function InvoicesPage() {
       key: 'actions',
       label: 'Actions',
       render: (r) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" square onClick={() => openDetailModal(r)} title="View">
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" square onClick={() => openEditForm(r)} title="Edit">
-            <Edit className="h-4 w-4" />
-          </Button>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="View"
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => openDetailModal(r)}
+          />
+          <RowActionButton
+            tone="neutral"
+            title="Edit"
+            icon={<Edit className="h-4 w-4" />}
+            onClick={() => openEditForm(r)}
+          />
           {r.status === 'draft' && (
-            <Button variant="ghost" size="sm" square onClick={() => setDeleteConfirmId(r.id)} title="Delete">
-              <Trash2 className="h-4 w-4 text-danger" />
-            </Button>
+            <RowActionButton
+              tone="danger"
+              title="Delete"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => setDeleteConfirmId(r.id)}
+            />
           )}
-          <Button variant="ghost" size="sm" square onClick={() => handleDownloadPdf(r.id)} title="Download PDF">
-            <Download className="h-4 w-4" />
-          </Button>
-        </div>
+          <RowActionButton
+            tone="info"
+            title="Download PDF"
+            icon={<Download className="h-4 w-4" />}
+            onClick={() => handleDownloadPdf(r.id)}
+          />
+        </RowActions>
       ),
     },
   ]

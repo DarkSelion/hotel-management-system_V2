@@ -4,6 +4,7 @@ import type { Payment, Reservation } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -206,11 +207,14 @@ export default function PaymentsPage() {
       key: 'actions',
       label: 'Actions',
       render: (r) => (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" square onClick={() => openDetailModal(r)} title="View">
-            <Eye className="h-4 w-4" />
-          </Button>
-        </div>
+        <RowActions>
+          <RowActionButton
+            tone="neutral"
+            title="View"
+            icon={<Eye className="h-4 w-4" />}
+            onClick={() => openDetailModal(r)}
+          />
+        </RowActions>
       ),
     },
   ]

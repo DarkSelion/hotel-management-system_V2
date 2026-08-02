@@ -8,10 +8,11 @@ interface ReservationRowActionsProps {
   reservation: Reservation
   onView: () => void
   onEdit: () => void
-  onCancel: () => void
-  onCheckIn: () => void
-  onCheckOut: () => void
-  onMarkNoShow: () => void
+  onCancel?: () => void
+  onCheckIn?: () => void
+  onCheckOut?: () => void
+  onMarkNoShow?: () => void
+  alwaysAllowCheckIn?: boolean
 }
 
 const ACTION_BOX = 'inline-flex h-8 items-stretch overflow-hidden rounded-lg border border-border divide-x divide-border'
@@ -24,6 +25,7 @@ export function ReservationRowActions({
   onCheckIn,
   onCheckOut,
   onMarkNoShow,
+  alwaysAllowCheckIn,
 }: ReservationRowActionsProps) {
   const { status, is_overdue } = reservation
 
@@ -44,9 +46,9 @@ export function ReservationRowActions({
     )
   }
 
-  const overdue = status === 'confirmed' && !!is_overdue
+  const overdue = status === 'confirmed' && !!is_overdue && !alwaysAllowCheckIn
 
-  const iconBtn = (title: string, onClick: () => void, className: string, icon: ReactNode, key: string) => (
+  const iconBtn = (title: string, onClick: (() => void) | undefined, className: string, icon: ReactNode, key: string) => (
     <Button
       key={key}
       variant="ghost"
@@ -54,7 +56,7 @@ export function ReservationRowActions({
       square
       className={cn('rounded-none border-0', className)}
       title={title}
-      onClick={(e) => { e.stopPropagation(); onClick() }}
+      onClick={(e) => { e.stopPropagation(); onClick?.() }}
     >
       {icon}
     </Button>
@@ -65,16 +67,16 @@ export function ReservationRowActions({
     iconBtn('Edit', onEdit, 'bg-gray-100 text-gray-600 hover:bg-gray-200', <Pencil className="h-4 w-4" />, 'edit'),
   ]
 
-  if (status === 'pending' || status === 'confirmed') {
+  if ((status === 'pending' || status === 'confirmed') && onCancel) {
     buttons.push(iconBtn('Cancel', onCancel, 'bg-red-100 text-red-700 hover:bg-red-200', <XCircle className="h-4 w-4" />, 'cancel'))
   }
-  if (status === 'confirmed' && !overdue) {
+  if (status === 'confirmed' && !overdue && onCheckIn) {
     buttons.push(iconBtn('Check In', onCheckIn, 'bg-green-100 text-green-700 hover:bg-green-200', <LogIn className="h-4 w-4" />, 'checkin'))
   }
-  if (overdue) {
+  if (overdue && onMarkNoShow) {
     buttons.push(iconBtn('Mark No Show', onMarkNoShow, 'bg-amber-100 text-amber-700 hover:bg-amber-200', <UserX className="h-4 w-4" />, 'noshow'))
   }
-  if (status === 'checked_in') {
+  if (status === 'checked_in' && onCheckOut) {
     buttons.push(iconBtn('Check Out', onCheckOut, 'bg-blue-100 text-blue-700 hover:bg-blue-200', <LogOut className="h-4 w-4" />, 'checkout'))
   }
 

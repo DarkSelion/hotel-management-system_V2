@@ -4,6 +4,7 @@ import type { Room } from '@/types'
 import { formatCurrency } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
+import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
@@ -281,18 +282,24 @@ export default function RoomsPage() {
       key: 'actions',
       label: 'Actions',
       render: (r) => (
-        <div className="flex items-center gap-1">
+        <RowActions>
           {isAdmin && (
             <>
-              <Button variant="ghost" size="sm" square onClick={() => openEditModal(r)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" square onClick={() => setDeleteConfirmId(r.id)}>
-                <Trash2 className="h-4 w-4 text-danger" />
-              </Button>
+              <RowActionButton
+                tone="neutral"
+                title="Edit"
+                icon={<Edit className="h-4 w-4" />}
+                onClick={() => openEditModal(r)}
+              />
+              <RowActionButton
+                tone="danger"
+                title="Delete"
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={() => setDeleteConfirmId(r.id)}
+              />
             </>
           )}
-        </div>
+        </RowActions>
       ),
     },
   ]
