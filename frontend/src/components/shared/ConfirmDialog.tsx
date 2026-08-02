@@ -1,6 +1,7 @@
 import { Modal } from '../ui/modal'
 import { Button } from '../ui/button'
 import { AlertTriangle, Trash2 } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface ConfirmDialogProps {
   variant?: 'danger' | 'warning'
   confirmLabel?: string
   isLoading?: boolean
+  children?: ReactNode
 }
 
 export function ConfirmDialog({
@@ -22,6 +24,7 @@ export function ConfirmDialog({
   variant = 'danger',
   confirmLabel = 'Confirm',
   isLoading,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
@@ -39,6 +42,7 @@ export function ConfirmDialog({
         </div>
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         <p className="mt-2 text-sm text-muted">{message}</p>
+        {children}
       </div>
       <div className="mt-6 flex justify-center gap-3">
         <Button variant="outline" onClick={onClose} disabled={isLoading}>
