@@ -78,7 +78,6 @@ export function ReservationRowActions({
             square
             className="px-0"
             title="More actions"
-            onClick={(e) => e.stopPropagation()}
           >
             <MoreVertical className="h-4 w-4" />
           </Button>

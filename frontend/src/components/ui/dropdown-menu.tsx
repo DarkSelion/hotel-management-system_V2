@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/utils'
 
@@ -18,28 +18,70 @@ interface DropdownMenuProps {
 
 export function DropdownMenu({ trigger, items, align = 'left' }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [anchor, setAnchor] = useState<{ top: number; left: number; right: number } | null>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  function openMenu() {
+    const rect = wrapperRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setAnchor({ top: rect.bottom + 4, left: rect.left, right: rect.right })
+    setIsOpen(true)
+  }
+
+  function closeMenu() {
+    setIsOpen(false)
+    setAnchor(null)
+  }
+
+  useLayoutEffect(() => {
+    if (!isOpen || !anchor || !menuRef.current) return
+    const menu = menuRef.current
+    const { width } = menu.getBoundingClientRect()
+    const margin = 8
+    let left = align === 'right' ? anchor.right - width : anchor.left
+    left = Math.min(Math.max(left, margin), Math.max(window.innerWidth - width - margin, margin))
+    menu.style.left = `${left}px`
+    menu.style.top = `${anchor.top}px`
+    menu.style.visibility = 'visible'
+  }, [isOpen, anchor, align])
 
   useEffect(() => {
+    if (!isOpen) return
+
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false)
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        closeMenu()
       }
     }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+    function handleScrollOrResize() {
+      closeMenu()
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeMenu()
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('scroll', handleScrollOrResize, true)
+    window.addEventListener('resize', handleScrollOrResize)
+    document.addEventListener('keydown', handleKeydown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleScrollOrResize, true)
+      window.removeEventListener('resize', handleScrollOrResize)
+      document.removeEventListener('keydown', handleKeydown)
+    }
   }, [isOpen])
 
   return (
-    <div ref={ref} className="relative inline-block">
-      <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
-      {isOpen && (
+    <div ref={wrapperRef} className="inline-block">
+      <div onClick={() => (isOpen ? closeMenu() : openMenu())}>{trigger}</div>
+      {isOpen && anchor && (
         <div
+          ref={menuRef}
+          style={{ position: 'fixed', top: 0, left: 0, visibility: 'hidden' }}
           className={cn(
-            'absolute z-50 mt-1 min-w-[12rem] rounded-lg border border-border bg-card py-1 shadow-lg',
-            align === 'right' ? 'right-0' : 'left-0',
+            'z-50 min-w-[12rem] rounded-lg border border-border bg-card py-1 shadow-lg',
           )}
         >
           {items.map((item, i) => (
@@ -52,7 +94,7 @@ export function DropdownMenu({ trigger, items, align = 'left' }: DropdownMenuPro
                 )}
                 onClick={() => {
                   item.onClick?.()
-                  setIsOpen(false)
+                  closeMenu()
                 }}
               >
                 {item.icon && <span className="h-4 w-4">{item.icon}</span>}
