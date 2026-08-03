@@ -22,7 +22,7 @@ class OverdueReservationService
         foreach ($overdueReservations as $reservation) {
             $reservation->update([
                 'is_overdue' => true,
-                'overdue_at' => $reservation->check_in->startOfDay(),
+                'overdue_at' => now()->parse($reservation->check_in)->startOfDay(),
             ]);
 
             ActivityLog::create([

@@ -30,7 +30,7 @@ class InventoryItem extends Model
             'quantity' => 'decimal:2',
             'min_quantity' => 'decimal:2',
             'price_per_unit' => 'decimal:2',
-            'expiration_date' => 'date',
+            'expiration_date' => 'date:Y-m-d',
             'is_active' => 'boolean',
         ];
     }

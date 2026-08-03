@@ -49,8 +49,8 @@ class Reservation extends Model
     protected function casts(): array
     {
         return [
-            'check_in' => 'date',
-            'check_out' => 'date',
+            'check_in' => 'date:Y-m-d',
+            'check_out' => 'date:Y-m-d',
             'checked_in_at' => 'datetime',
             'checked_out_at' => 'datetime',
             'overdue_at' => 'datetime',
