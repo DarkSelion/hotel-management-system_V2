@@ -17,11 +17,11 @@ class ExpenseController extends Controller
             $query->where('category', $category);
         }
 
-        if ($from = $request->from_date) {
+        if ($from = $request->date_from) {
             $query->where('date', '>=', $from);
         }
 
-        if ($to = $request->to_date) {
+        if ($to = $request->date_to) {
             $query->where('date', '<=', $to);
         }
 

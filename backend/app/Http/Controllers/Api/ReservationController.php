@@ -34,11 +34,11 @@ class ReservationController extends Controller
             $query->whereIn('status', $statuses);
         }
 
-        if ($from = $request->from_date) {
+        if ($from = $request->date_from) {
             $query->where('check_in', '>=', $from);
         }
 
-        if ($to = $request->to_date) {
+        if ($to = $request->date_to) {
             $query->where('check_out', '<=', $to);
         }
 

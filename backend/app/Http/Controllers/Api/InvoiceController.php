@@ -20,6 +20,14 @@ class InvoiceController extends Controller
             $query->where('status', $status);
         }
 
+        if ($from = $request->date_from) {
+            $query->where('issued_date', '>=', $from);
+        }
+
+        if ($to = $request->date_to) {
+            $query->where('issued_date', '<=', $to);
+        }
+
         return response()->json(
             $query->orderBy('created_at', 'desc')->paginate($request->per_page ?? 10)
         );
