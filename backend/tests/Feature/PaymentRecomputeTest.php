@@ -188,4 +188,243 @@ class PaymentRecomputeTest extends TestCase
             'due_amount' => 0,
         ]);
     }
+
+    public function test_zero_amount_payment_rejected(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 0,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(422)->assertJsonValidationErrors('amount');
+
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_overpay_rejected(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 500,
+            'payment_method' => 'cash',
+            'payment_type' => 'full',
+        ])->assertStatus(422)->assertJsonValidationErrors('amount');
+
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'paid_amount' => 0,
+            'due_amount' => 275,
+        ]);
+    }
+
+    public function test_uncompleting_a_completed_payment_reverts_totals(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $created = $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+        $paymentId = $created->json('id');
+
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'paid_amount' => 165,
+            'due_amount' => 110,
+        ]);
+
+        $this->putJson("/api/payments/{$paymentId}", ['status' => 'pending'])->assertStatus(200);
+
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'paid_amount' => 0,
+            'payment_status' => 'partial',
+            'due_amount' => 275,
+        ]);
+    }
+
+    public function test_refunding_a_completed_payment_reverts_totals(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $created = $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 275,
+            'payment_method' => 'cash',
+            'payment_type' => 'full',
+        ])->assertStatus(201);
+        $paymentId = $created->json('id');
+
+        $this->putJson("/api/payments/{$paymentId}", ['status' => 'refunded'])->assertStatus(200);
+
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'paid_amount' => 0,
+            'payment_status' => 'partial',
+            'due_amount' => 275,
+        ]);
+    }
+
+    public function test_method_only_update_does_not_recompute(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $created = $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+        $paymentId = $created->json('id');
+
+        $this->putJson("/api/payments/{$paymentId}", ['payment_method' => 'gcash'])->assertStatus(200);
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $paymentId,
+            'payment_method' => 'gcash',
+        ]);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'paid_amount' => 165,
+            'due_amount' => 110,
+        ]);
+    }
+
+    public function test_store_creates_activity_log(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('activity_logs', [
+            'user_id' => $admin->id,
+            'module' => 'payments',
+            'model_type' => 'Payment',
+        ]);
+    }
+
+    public function test_destroy_returns_422(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $created = $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+        $paymentId = $created->json('id');
+
+        $this->deleteJson("/api/payments/{$paymentId}")->assertStatus(422);
+
+        $this->assertDatabaseHas('payments', ['id' => $paymentId]);
+    }
+
+    public function test_index_filters_by_method_status_and_date_range(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 110,
+            'payment_method' => 'gcash',
+            'payment_type' => 'partial',
+            'status' => 'pending',
+        ])->assertStatus(201);
+
+        $this->getJson('/api/payments?payment_method=cash&status=completed')->assertJsonCount(1, 'data');
+        $this->getJson('/api/payments?payment_method=gcash')->assertJsonCount(1, 'data');
+        $this->getJson('/api/payments?status=pending')->assertJsonCount(1, 'data');
+        $this->getJson('/api/payments?date_from=' . now()->toDateString() . '&date_to=' . now()->toDateString())
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_index_search_by_reference_number(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+            'reference_number' => 'RCV-7777',
+        ])->assertStatus(201);
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 110,
+            'payment_method' => 'gcash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+
+        $this->getJson('/api/payments?search=RCV-7777')->assertJsonCount(1, 'data');
+    }
+
+    public function test_index_sort_by_paid_at_allowed(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+
+        $this->getJson('/api/payments?sort=-paid_at')->assertStatus(200)->assertJsonCount(1, 'data');
+    }
+
+    public function test_index_invalid_sort_falls_back_to_created_at(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+        $reservation = $this->makeReservation(275);
+
+        $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 165,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ])->assertStatus(201);
+
+        $this->getJson('/api/payments?sort=no_such_field')->assertStatus(200)->assertJsonCount(1, 'data');
+    }
 }

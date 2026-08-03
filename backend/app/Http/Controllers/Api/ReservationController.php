@@ -290,7 +290,7 @@ class ReservationController extends Controller
             return response()->json(['message' => 'Only confirmed or pending reservations can be checked in.'], 422);
         }
 
-        if ($reservation->due_amount > 0 && ! $reservation->payments()->exists()) {
+        if ($reservation->due_amount > 0 && ! $reservation->payments()->whereIn('status', ['completed', 'pending'])->exists()) {
             return response()->json(['message' => 'Collect a payment before checking in.'], 422);
         }
 

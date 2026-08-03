@@ -15,6 +15,7 @@ interface PaymentModalProps {
   reservation?: Reservation | null
   reservations?: Reservation[]
   confirmLabel?: string
+  hideHalf?: boolean
   onSuccess?: (payment: Payment) => void
 }
 
@@ -32,6 +33,7 @@ export function PaymentModal({
   reservation,
   reservations,
   confirmLabel = 'Record Payment',
+  hideHalf = false,
   onSuccess,
 }: PaymentModalProps) {
   const createPayment = useCreatePayment()
@@ -139,17 +141,17 @@ export function PaymentModal({
 
         {activeReservation && (
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-border bg-gray-50/70 px-3 py-2.5 text-sm">
-            <span className="text-muted">Guest</span>
+            <span className="text-muted text-left">Guest</span>
             <span className="font-medium text-gray-900 text-right">
               {activeReservation.guest?.first_name} {activeReservation.guest?.last_name}
             </span>
-            <span className="text-muted">Room</span>
+            <span className="text-muted text-left">Room</span>
             <span className="font-medium text-gray-900 text-right">Room {activeReservation.room?.room_number ?? '-'}</span>
-            <span className="text-muted">Stay</span>
+            <span className="text-muted text-left">Stay</span>
             <span className="font-medium text-gray-900 text-right">
               {formatDateDisplay(activeReservation.check_in)} – {formatDateDisplay(activeReservation.check_out)}
             </span>
-            <span className="text-muted">Balance due</span>
+            <span className="text-muted text-left">Balance due</span>
             <span className="font-semibold text-gray-900 text-right">{formatCurrency(due)}</span>
           </div>
         )}
@@ -178,13 +180,15 @@ export function PaymentModal({
                   >
                     Full
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAmountChange(Math.round(due / 2))}
-                    className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
-                  >
-                    Half
-                  </button>
+                  {!hideHalf && (
+                    <button
+                      type="button"
+                      onClick={() => handleAmountChange(Math.round(due / 2))}
+                      className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
+                    >
+                      Half
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="relative">
@@ -254,13 +258,15 @@ export function PaymentModal({
                   >
                     Full
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAmountChange(Math.round(due / 2))}
-                    className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
-                  >
-                    Half
-                  </button>
+                  {!hideHalf && (
+                    <button
+                      type="button"
+                      onClick={() => handleAmountChange(Math.round(due / 2))}
+                      className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
+                    >
+                      Half
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="relative">

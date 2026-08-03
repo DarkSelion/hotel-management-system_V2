@@ -132,6 +132,24 @@ describe('PaymentModal', () => {
     expect(amountInput()).toHaveValue(330)
   })
 
+  it('hides the Half quick button when hideHalf is set, on both tabs', () => {
+    render(
+      <PaymentModal
+        isOpen
+        onClose={vi.fn()}
+        reservation={reservation()}
+        hideHalf
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: 'Half' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Full' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'GCash' }))
+    expect(screen.queryByRole('button', { name: 'Half' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Full' })).toBeInTheDocument()
+  })
+
   it('records a pending GCash payment with the reference', () => {
     renderModal()
 
@@ -163,6 +181,54 @@ describe('PaymentModal', () => {
 
     await waitFor(() => expect(screen.getByText('The amount field is required.')).toBeInTheDocument())
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('clamps the amount to the outstanding balance when over-typed', () => {
+    renderModal()
+
+    fireEvent.change(amountInput(), { target: { value: '500' } })
+    expect(amountInput()).toHaveValue(330)
+  })
+
+  it('clamps negative amounts to zero', () => {
+    renderModal()
+
+    fireEvent.change(amountInput(), { target: { value: '-50' } })
+    expect(amountInput()).toHaveValue(0)
+  })
+
+  it('disables submit when the amount is zero', () => {
+    renderModal()
+
+    fireEvent.change(amountInput(), { target: { value: '0' } })
+    expect(screen.getByRole('button', { name: 'Record Payment' })).toBeDisabled()
+  })
+
+  it('clears the previous error when reopened', async () => {
+    const onClose = vi.fn<OnClose>()
+    const onSuccess = vi.fn<OnSuccess>()
+    const result = render(
+      <PaymentModal isOpen onClose={onClose} reservation={reservation()} onSuccess={onSuccess} />,
+    )
+    mockMutate.mockRejectedValue(new Error('The amount field is required.'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+    await waitFor(() => expect(screen.getByText('The amount field is required.')).toBeInTheDocument())
+
+    result.rerender(<PaymentModal isOpen={false} onClose={onClose} reservation={reservation()} onSuccess={onSuccess} />)
+    result.rerender(<PaymentModal isOpen onClose={onClose} reservation={reservation()} onSuccess={onSuccess} />)
+
+    expect(screen.queryByText('The amount field is required.')).not.toBeInTheDocument()
+  })
+
+  it('resets amount and tendered to the selected reservation balance in the picker', () => {
+    renderModal({
+      reservation: null,
+      reservations: [reservation({ id: 2, due_amount: 100 }), reservation({ id: 3, due_amount: 250 })],
+    })
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3' } })
+    expect(amountInput()).toHaveValue(250)
   })
 
   it('shows a reservation picker when no reservation is preset and disables submit until one is chosen', () => {

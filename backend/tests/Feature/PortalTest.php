@@ -1305,6 +1305,75 @@ class PortalTest extends TestCase
         ]);
     }
 
+    public function test_portal_payment_rejected_on_no_show_reservation(): void
+    {
+        $reservation = $this->makeReservation(['status' => 'no_show']);
+        Sanctum::actingAs($reservation->guest);
+
+        $response = $this->postJson('/api/portal/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 200,
+            'payment_method' => 'cash',
+            'payment_type' => 'full',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('reservation_id');
+    }
+
+    public function test_portal_payment_zero_amount_rejected(): void
+    {
+        $reservation = $this->makeReservation();
+        Sanctum::actingAs($reservation->guest);
+
+        $response = $this->postJson('/api/portal/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 0,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('amount');
+    }
+
+    public function test_portal_payment_overpay_rejected(): void
+    {
+        $reservation = $this->makeReservation();
+        Sanctum::actingAs($reservation->guest);
+
+        $response = $this->postJson('/api/portal/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 500,
+            'payment_method' => 'cash',
+            'payment_type' => 'full',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('amount');
+
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_portal_payment_activity_log_has_null_user(): void
+    {
+        $reservation = $this->makeReservation();
+        Sanctum::actingAs($reservation->guest);
+
+        $this->postJson('/api/portal/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 440,
+            'payment_method' => 'cash',
+            'payment_type' => 'full',
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('activity_logs', [
+            'module' => 'payments',
+            'model_type' => 'Payment',
+            'user_id' => null,
+        ]);
+    }
+
     // =========================================================================
     // CONTACT
     // =========================================================================

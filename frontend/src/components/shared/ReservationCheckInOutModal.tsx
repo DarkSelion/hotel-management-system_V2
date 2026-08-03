@@ -39,7 +39,8 @@ export function ReservationCheckInOutModal({
   const roomNumber = reservation?.room?.room_number ?? '-'
   const hasBalance = !!reservation && reservation.due_amount > 0
   const isRetry = error?.paymentRecorded === true
-  const hasPayment = (reservation?.payments?.length ?? 0) > 0
+  const hasPayment =
+    (reservation?.payments?.filter((p) => p.status === 'completed' || p.status === 'pending').length ?? 0) > 0
   const requiresPayment = isCheckIn
     ? hasBalance && !hasPayment && !isRetry
     : hasBalance && !isRetry
@@ -148,6 +149,7 @@ export function ReservationCheckInOutModal({
         onClose={() => setShowPaymentModal(false)}
         reservation={reservation}
         confirmLabel={isCheckIn ? 'Record & Check In' : 'Record & Check Out'}
+        hideHalf={!isCheckIn}
         onSuccess={(payment) => {
           setShowPaymentModal(false)
           onConfirmAfterPayment?.(payment)

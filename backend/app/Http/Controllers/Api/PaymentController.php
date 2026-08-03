@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PaymentController extends Controller
 {
@@ -44,7 +45,7 @@ class PaymentController extends Controller
         $sort = $request->sort ?? '-created_at';
         $dir = $sort[0] === '-' ? 'desc' : 'asc';
         $field = ltrim($sort, '-');
-        $allowed = ['created_at', 'amount', 'status', 'payment_method', 'reference_number'];
+        $allowed = ['created_at', 'paid_at', 'amount', 'status', 'payment_method', 'reference_number'];
         if (in_array($field, $allowed)) {
             $query->orderBy($field, $dir);
         } else {
@@ -60,9 +61,9 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'reservation_id' => 'required|exists:reservations,id',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|in:cash,gcash',
-            'payment_type' => 'required|in:full,partial,deposit,refund',
+            'payment_type' => 'required|in:full,partial,deposit',
             'status' => 'sometimes|in:pending,completed,failed,refunded',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string',
@@ -70,6 +71,12 @@ class PaymentController extends Controller
 
         $payment = DB::transaction(function () use ($data, $request) {
             $reservation = Reservation::findOrFail($data['reservation_id']);
+
+            if ($data['amount'] > (float) $reservation->due_amount) {
+                throw ValidationException::withMessages([
+                    'amount' => ['The amount cannot exceed the outstanding balance of '.number_format((float) $reservation->due_amount, 2).'.'],
+                ]);
+            }
 
             $data['guest_id'] = $reservation->guest_id;
             $data['paid_at'] = now();
@@ -148,6 +155,6 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment)
     {
-        return response()->json(['message' => 'Payments cannot be deleted. Use refund instead.'], 422);
+        return response()->json(['message' => 'Payments cannot be deleted.'], 422);
     }
 }

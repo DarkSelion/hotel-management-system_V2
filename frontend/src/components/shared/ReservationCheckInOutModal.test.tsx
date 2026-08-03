@@ -8,13 +8,16 @@ vi.mock('@/components/shared/PaymentModal', () => ({
     isOpen,
     onSuccess,
     confirmLabel,
+    hideHalf,
   }: {
     isOpen: boolean
     onSuccess?: (payment: Payment) => void
     confirmLabel?: string
+    hideHalf?: boolean
   }) =>
     isOpen ? (
       <button
+        data-half={String(hideHalf)}
         onClick={() =>
           onSuccess?.({
             id: 99,
@@ -168,6 +171,41 @@ describe('ReservationCheckInOutModal', () => {
     expect(onConfirm).toHaveBeenCalled()
   })
 
+  it('does not count a failed payment as collected, so check-in still requires payment', () => {
+    const { onConfirm } = renderModal({
+      reservation: reservation({
+        payment_status: 'partial',
+        paid_amount: 0,
+        due_amount: 330,
+        payments: [{ payment_method: 'gcash', status: 'failed' } as Payment],
+      }),
+    })
+
+    expect(screen.getByRole('button', { name: 'Collect & Check In' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Check In' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collect & Check In' }))
+    expect(screen.getByRole('button', { name: 'stub-Record & Check In' })).toBeInTheDocument()
+    expect(onConfirm).not.toHaveBeenCalled()
+  })
+
+  it('counts a pending payment as recorded for check-in purposes', () => {
+    const { onConfirm } = renderModal({
+      reservation: reservation({
+        payment_status: 'partial',
+        paid_amount: 0,
+        due_amount: 330,
+        payments: [{ payment_method: 'gcash', status: 'pending' } as Payment],
+      }),
+    })
+
+    expect(screen.getByText(/payments are optional/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Check In' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check In' }))
+    expect(onConfirm).toHaveBeenCalled()
+  })
+
   it('shows the ghost Collect button only when a payment already exists', () => {
     renderModal({
       reservation: reservation({
@@ -198,6 +236,25 @@ describe('ReservationCheckInOutModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Collect & Check Out' }))
     expect(screen.getByRole('button', { name: 'stub-Record & Check Out' })).toBeInTheDocument()
+  })
+
+  it('hides the Half quick button only when the payment modal is used for check-out', () => {
+    renderModal()
+    fireEvent.click(screen.getByRole('button', { name: 'Collect & Check In' }))
+    expect(screen.getByRole('button', { name: 'stub-Record & Check In' })).toHaveAttribute('data-half', 'false')
+
+    const { unmount } = render(
+      <ReservationCheckInOutModal
+        mode="check-out"
+        reservation={reservation({ status: 'checked_in', due_amount: 330 })}
+        isOpen
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Collect & Check Out' }))
+    expect(screen.getByRole('button', { name: 'stub-Record & Check Out' })).toHaveAttribute('data-half', 'true')
+    unmount()
   })
 
   it('requires full settlement at check-out even when a payment already exists', () => {

@@ -16,7 +16,7 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'reservation_id' => 'required|exists:reservations,id',
-            'amount' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|in:cash,gcash',
             'payment_type' => 'required|in:full,partial,deposit',
             'reference_number' => 'nullable|string|max:100',
@@ -41,6 +41,12 @@ class PaymentController extends Controller
         if ($reservation->payment_status === 'paid') {
             throw ValidationException::withMessages([
                 'reservation_id' => ['This reservation is already fully paid.'],
+            ]);
+        }
+
+        if ($data['amount'] > (float) $reservation->due_amount) {
+            throw ValidationException::withMessages([
+                'amount' => ['The amount cannot exceed the outstanding balance of '.number_format((float) $reservation->due_amount, 2).'.'],
             ]);
         }
 

@@ -703,6 +703,34 @@ class ReservationsPageTest extends TestCase
         $this->assertEquals('checked_in', $reservation->fresh()->status);
     }
 
+    public function test_check_in_rejected_when_only_failed_payment_recorded(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+        $this->recordPayment($reservation, ['status' => 'failed']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Collect a payment before checking in.');
+        $this->assertEquals('confirmed', $reservation->fresh()->status);
+    }
+
+    public function test_check_in_rejected_when_only_refunded_payment_recorded(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+        $this->recordPayment($reservation, ['status' => 'refunded']);
+
+        $response = $this->postJson("/api/reservations/{$reservation->id}/check-in");
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Collect a payment before checking in.');
+        $this->assertEquals('confirmed', $reservation->fresh()->status);
+    }
+
     public function test_check_out_rejected_when_balance_unpaid_and_no_payment(): void
     {
         $admin = $this->admin();
