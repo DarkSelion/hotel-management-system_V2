@@ -169,12 +169,14 @@ export default function ReportsPage() {
               <DatePicker
                 value={revenueFrom}
                 onChange={(v) => setRevenueFrom(v)}
+                clearable
               />
             </div>
             <div className="w-44">
               <DatePicker
                 value={revenueTo}
                 onChange={(v) => setRevenueTo(v)}
+                clearable
               />
             </div>
             <Button
@@ -282,12 +284,14 @@ export default function ReportsPage() {
               <DatePicker
                 value={occupancyFrom}
                 onChange={(v) => setOccupancyFrom(v)}
+                clearable
               />
             </div>
             <div className="w-44">
               <DatePicker
                 value={occupancyTo}
                 onChange={(v) => setOccupancyTo(v)}
+                clearable
               />
             </div>
             <Button
@@ -400,12 +404,14 @@ export default function ReportsPage() {
               <DatePicker
                 value={reservationFrom}
                 onChange={(v) => setReservationFrom(v)}
+                clearable
               />
             </div>
             <div className="w-44">
               <DatePicker
                 value={reservationTo}
                 onChange={(v) => setReservationTo(v)}
+                clearable
               />
             </div>
             <Button

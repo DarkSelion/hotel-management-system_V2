@@ -481,7 +481,7 @@ export default function HousekeepingPage() {
               ))}
             </Select>
             <div className="w-44">
-              <DatePicker value={dateFilter} onChange={(v) => setDateFilter(v)} placeholder="Filter by date" />
+              <DatePicker value={dateFilter} onChange={(v) => setDateFilter(v)} placeholder="Filter by date" clearable />
             </div>
           </div>
 

@@ -293,6 +293,7 @@ export default function ReservationsPage() {
                 value={dateFrom}
                 onChange={(v) => { setDateFrom(v); setPage(1) }}
                 placeholder="From date"
+                clearable
               />
             </div>
             <div className="w-44">
@@ -300,6 +301,7 @@ export default function ReservationsPage() {
                 value={dateTo}
                 onChange={(v) => { setDateTo(v); setPage(1) }}
                 placeholder="To date"
+                clearable
               />
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { cn } from '@/lib/utils'
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, X } from 'lucide-react'
 
 interface DatePickerProps {
   value: string
@@ -12,6 +12,7 @@ interface DatePickerProps {
   error?: string
   className?: string
   label?: string
+  clearable?: boolean
 }
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -39,7 +40,7 @@ function isBefore(a: Date, b: Date): boolean {
   return a.getTime() < b.getTime()
 }
 
-export function DatePicker({ value, onChange, min, max, placeholder = 'Select date', error, className, label }: DatePickerProps) {
+export function DatePicker({ value, onChange, min, max, placeholder = 'Select date', error, className, label, clearable = false }: DatePickerProps) {
   const selected = parseDate(value)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -183,11 +184,27 @@ export function DatePicker({ value, onChange, min, max, placeholder = 'Select da
             'hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary',
             error ? 'border-danger focus-visible:ring-danger/50' : 'border-border',
             !selected && 'text-muted',
+            clearable && selected && 'pr-8',
           )}
         >
           <Calendar className="mr-2 h-4 w-4 shrink-0 text-muted" />
           <span className="flex-1 truncate">{display || placeholder}</span>
         </button>
+
+        {clearable && selected && (
+          <button
+            type="button"
+            aria-label="Clear date"
+            onClick={(e) => {
+              e.stopPropagation()
+              onChange('')
+              setOpen(false)
+            }}
+            className="absolute right-2 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:bg-gray-100 hover:text-gray-700"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
 
         {open && ReactDOM.createPortal(calendar, document.body)}
       </div>

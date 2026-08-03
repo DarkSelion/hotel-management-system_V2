@@ -437,6 +437,7 @@ export default function StaffPage() {
                 <DatePicker
                   value={scheduleDateFilter}
                   onChange={(v) => setScheduleDateFilter(v)}
+                  clearable
                 />
               </div>
               <Select
