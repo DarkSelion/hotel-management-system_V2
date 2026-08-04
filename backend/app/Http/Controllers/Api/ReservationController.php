@@ -217,24 +217,7 @@ class ReservationController extends Controller
         $reservation->update($data);
 
         if (isset($data['price_per_night']) || isset($data['check_in']) || isset($data['check_out'])) {
-            $rate = $reservation->price_per_night;
-            $nights = now()->parse($reservation->check_in)->diffInDays(now()->parse($reservation->check_out));
-            $subtotal = $rate * $nights;
-            $discount = $subtotal * (($reservation->discount_percent ?? 0) / 100);
-            $taxSetting = Setting::where('key', 'tax_rate')->first();
-            $taxRate = ((float) ($taxSetting ? $taxSetting->getRawOriginal('value') : '10')) / 100;
-            $tax = ($subtotal - $discount) * $taxRate;
-            $total = round($subtotal - $discount + $tax, 2);
-
-            $reservation->update([
-                'total_nights' => $nights,
-                'subtotal' => $subtotal,
-                'discount_amount' => $discount,
-                'tax_percent' => $taxRate * 100,
-                'tax_amount' => $tax,
-                'total_amount' => $total,
-                'due_amount' => $total - ($reservation->paid_amount ?? 0),
-            ]);
+            $this->recalculatePricing($reservation);
         }
 
         if (isset($data['room_id']) && (int) $data['room_id'] !== $oldRoomId) {
@@ -406,13 +389,77 @@ class ReservationController extends Controller
         ]);
     }
 
+    public function extendStay(Request $request, Reservation $reservation)
+    {
+        if ($reservation->status !== 'checked_in') {
+            return response()->json(['message' => 'Only checked-in reservations can be extended.'], 422);
+        }
+
+        $data = $request->validate([
+            'new_check_out' => ['required', 'date', function ($attribute, $value, $fail) use ($reservation) {
+                if (now()->parse($value)->lte(now()->parse($reservation->check_out))) {
+                    $fail('The new check-out date must be after the current check-out date.');
+                }
+            }],
+        ]);
+
+        $newCheckOut = $data['new_check_out'];
+
+        $overlap = $this->roomHasOverlap(
+            $reservation->room_id,
+            $reservation->check_in->toDateString(),
+            $newCheckOut,
+            $reservation->id
+        );
+
+        if ($overlap) {
+            return response()->json(['message' => 'The room is already reserved for another guest during the extended period.'], 422);
+        }
+
+        DB::transaction(function () use ($reservation, $newCheckOut) {
+            $reservation->update(['check_out' => $newCheckOut]);
+            $this->recalculatePricing($reservation);
+        });
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'extended_stay',
+            'module' => 'reservations',
+            'model_type' => 'Reservation',
+            'model_id' => $reservation->id,
+            'description' => "Extended stay for reservation #{$reservation->reservation_number} to {$newCheckOut}",
+        ]);
+
+        return response()->json($reservation->fresh()->load(['guest', 'room.roomType']));
+    }
+
+    private function recalculatePricing(Reservation $reservation): void
+    {
+        $rate = (float) $reservation->price_per_night;
+        $nights = now()->parse($reservation->check_in)->diffInDays(now()->parse($reservation->check_out));
+        $subtotal = $rate * $nights;
+        $discount = $subtotal * (($reservation->discount_percent ?? 0) / 100);
+        $taxSetting = Setting::where('key', 'tax_rate')->first();
+        $taxRate = ((float) ($taxSetting ? $taxSetting->getRawOriginal('value') : '10')) / 100;
+        $tax = ($subtotal - $discount) * $taxRate;
+        $total = round($subtotal - $discount + $tax, 2);
+
+        $reservation->update([
+            'total_nights' => $nights,
+            'subtotal' => $subtotal,
+            'discount_amount' => $discount,
+            'tax_percent' => $taxRate * 100,
+            'tax_amount' => $tax,
+            'total_amount' => $total,
+            'due_amount' => $total - ($reservation->paid_amount ?? 0),
+        ]);
+    }
+
     private function roomHasOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeId = null): bool
     {
         return Reservation::where('room_id', $roomId)
-            ->active()
+            ->overlapping($checkIn, $checkOut)
             ->when($excludeId !== null, fn ($query) => $query->where('id', '!=', $excludeId))
-            ->where('check_in', '<', $checkOut)
-            ->where('check_out', '>', $checkIn)
             ->exists();
     }
 

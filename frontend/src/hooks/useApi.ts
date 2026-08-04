@@ -161,6 +161,18 @@ export function useMarkNoShow() {
   })
 }
 
+export function useExtendStay() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, new_check_out }: { id: number; new_check_out: string }) =>
+      api.post<ApiResponse<Reservation>>(`/reservations/${id}/extend-stay`, { new_check_out }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reservations'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
+}
+
 export function useRefreshOverdue() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -50,6 +50,7 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
     Route::post('/reservations/{reservation}/check-out', [ReservationController::class, 'checkOut']);
     Route::post('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel']);
     Route::post('/reservations/{reservation}/no-show', [ReservationController::class, 'markNoShow']);
+    Route::post('/reservations/{reservation}/extend-stay', [ReservationController::class, 'extendStay']);
 
     // Guests
     Route::apiResource('guests', GuestController::class)->except(['destroy']);

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  useReservations, useCancelReservation, useMarkNoShow, useRefreshOverdue,
+  useReservations, useCancelReservation, useMarkNoShow, useRefreshOverdue, useExtendStay,
 } from '@/hooks/useApi'
 import { useCheckInOutModal } from '@/hooks/useCheckInOutModal'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
@@ -17,6 +17,7 @@ import { ReservationDetailModal } from '@/components/shared/ReservationDetailMod
 import { ReservationFormModal } from '@/components/shared/ReservationFormModal'
 import { ReservationCheckInOutModal } from '@/components/shared/ReservationCheckInOutModal'
 import { ReservationRowActions } from '@/components/shared/ReservationRowActions'
+import { ExtendStayModal } from '@/components/shared/ExtendStayModal'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,6 +58,7 @@ export default function ReservationsPage() {
 
   const [cancelTarget, setCancelTarget] = useState<Reservation | null>(null)
   const [noShowTarget, setNoShowTarget] = useState<Reservation | null>(null)
+  const [extendTarget, setExtendTarget] = useState<Reservation | null>(null)
 
   const checkInModal = useCheckInOutModal('check-in')
   const checkOutModal = useCheckInOutModal('check-out')
@@ -80,6 +82,7 @@ export default function ReservationsPage() {
   const cancelReservation = useCancelReservation()
   const markNoShow = useMarkNoShow()
   const refreshOverdue = useRefreshOverdue()
+  const extendStay = useExtendStay()
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
 
@@ -153,6 +156,21 @@ export default function ReservationsPage() {
     }
   }
 
+  function openExtendStay(reservation: Reservation) {
+    setShowDetailModal(false)
+    setExtendTarget(reservation)
+  }
+
+  async function handleExtendStayConfirm(newCheckOut: string) {
+    if (!extendTarget) return
+    try {
+      await extendStay.mutateAsync({ id: extendTarget.id, new_check_out: newCheckOut })
+      setExtendTarget(null)
+    } catch {
+      // handled by react-query
+    }
+  }
+
   const columns: Column<Reservation>[] = useMemo(() => [
     {
       key: 'reservation_number',
@@ -217,6 +235,12 @@ export default function ReservationsPage() {
               Overdue
             </Badge>
           )}
+          {r.is_overstay && (
+            <Badge variant="danger">
+              <AlertTriangle className="h-3 w-3" />
+              Overstaying
+            </Badge>
+          )}
         </div>
       ),
     },
@@ -240,6 +264,7 @@ export default function ReservationsPage() {
           onCheckIn={() => openCheckIn(r)}
           onCheckOut={() => openCheckOut(r)}
           onMarkNoShow={() => setNoShowTarget(r)}
+          onExtendStay={() => openExtendStay(r)}
         />
       ),
     },
@@ -332,6 +357,7 @@ export default function ReservationsPage() {
         onClose={() => setShowDetailModal(false)}
         reservation={selectedReservation}
         onEdit={openEditForm}
+        onExtendStay={openExtendStay}
       />
 
       <ReservationFormModal
@@ -360,6 +386,15 @@ export default function ReservationsPage() {
         onClose={checkOutModal.close}
         onConfirm={checkOutModal.confirm}
         onConfirmAfterPayment={confirmAfterCheckOut}
+      />
+
+      <ExtendStayModal
+        isOpen={!!extendTarget}
+        onClose={() => setExtendTarget(null)}
+        reservation={extendTarget}
+        isLoading={extendStay.isPending}
+        error={extendStay.error?.message ?? null}
+        onConfirm={handleExtendStayConfirm}
       />
 
       <ConfirmDialog

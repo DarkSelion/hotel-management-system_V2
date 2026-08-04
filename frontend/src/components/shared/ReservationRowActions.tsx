@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { RowActions, RowActionButton } from '@/components/shared/RowActions'
-import { Eye, Pencil, XCircle, LogIn, LogOut, UserX } from 'lucide-react'
+import { Eye, Pencil, XCircle, LogIn, LogOut, UserX, CalendarPlus } from 'lucide-react'
 import type { Reservation } from '@/types'
 
 interface ReservationRowActionsProps {
@@ -11,6 +11,7 @@ interface ReservationRowActionsProps {
   onCheckIn?: () => void
   onCheckOut?: () => void
   onMarkNoShow?: () => void
+  onExtendStay?: () => void
   alwaysAllowCheckIn?: boolean
 }
 
@@ -22,6 +23,7 @@ export function ReservationRowActions({
   onCheckIn,
   onCheckOut,
   onMarkNoShow,
+  onExtendStay,
   alwaysAllowCheckIn,
 }: ReservationRowActionsProps) {
   const { status, is_overdue } = reservation
@@ -52,6 +54,9 @@ export function ReservationRowActions({
   }
   if (status === 'checked_in' && onCheckOut) {
     buttons.push(<RowActionButton key="checkout" tone="info" title="Check Out" icon={<LogOut className="h-4 w-4" />} onClick={onCheckOut} />)
+  }
+  if (status === 'checked_in' && onExtendStay) {
+    buttons.push(<RowActionButton key="extend" tone="warning" title="Extend Stay" icon={<CalendarPlus className="h-4 w-4" />} onClick={onExtendStay} />)
   }
 
   return <RowActions>{buttons}</RowActions>

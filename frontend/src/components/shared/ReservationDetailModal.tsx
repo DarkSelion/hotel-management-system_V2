@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { BOOKING_SOURCES } from '@/lib/constants'
-import { Pencil } from 'lucide-react'
+import { Pencil, CalendarPlus } from 'lucide-react'
 import type { Reservation } from '@/types'
 
 interface ReservationDetailModalProps {
@@ -11,9 +11,10 @@ interface ReservationDetailModalProps {
   onClose: () => void
   reservation: Reservation | null
   onEdit: (reservation: Reservation) => void
+  onExtendStay?: (reservation: Reservation) => void
 }
 
-export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }: ReservationDetailModalProps) {
+export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit, onExtendStay }: ReservationDetailModalProps) {
   if (!reservation) return null
 
   return (
@@ -76,6 +77,12 @@ export function ReservationDetailModal({ isOpen, onClose, reservation, onEdit }:
         </div>
         <div className="flex gap-2 pt-2">
           <Button variant="outline" onClick={onClose}>Close</Button>
+          {reservation.status === 'checked_in' && onExtendStay && (
+            <Button variant="outline" onClick={() => onExtendStay(reservation)}>
+              <CalendarPlus className="h-4 w-4" />
+              Extend Stay
+            </Button>
+          )}
           <Button variant="primary" onClick={() => onEdit(reservation)}>
             <Pencil className="h-4 w-4" />
             Edit
