@@ -605,13 +605,13 @@ export default function GuestsPage() {
               <div>
                 <span className="text-xs font-medium text-muted">Total Bookings</span>
                 <p className="text-sm text-gray-900">
-                  {detailGuest.reservations?.length ?? 0}
+                  {(detailGuest.reservations ?? []).filter(r => ['pending', 'confirmed', 'checked_in'].includes(r.status)).length}
                 </p>
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Total Spent</span>
                 <p className="text-sm font-semibold text-gray-900">
-                  {formatCurrency(getTotalSpent(detailGuest.reservations || []))}
+                  {formatCurrency(getTotalSpent((detailGuest.reservations ?? []).filter(r => ['pending', 'confirmed', 'checked_in', 'checked_out'].includes(r.status))))}
                 </p>
               </div>
             </div>

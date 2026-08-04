@@ -90,6 +90,7 @@ export function useCreateReservation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -102,6 +103,7 @@ export function useUpdateReservation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -113,6 +115,7 @@ export function useDeleteReservation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -124,6 +127,7 @@ export function useCheckIn() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -135,6 +139,7 @@ export function useCheckOut() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -146,6 +151,7 @@ export function useCancelReservation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -157,6 +163,7 @@ export function useMarkNoShow() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
@@ -169,6 +176,7 @@ export function useExtendStay() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['guests'] })
     },
   })
 }
