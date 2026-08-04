@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Breadcrumb } from './Breadcrumb'
 import { useAuthStore } from '../../stores/authStore'
@@ -17,6 +17,7 @@ import {
   DoorOpen,
   BedDouble,
   X,
+  CheckCheck,
 } from 'lucide-react'
 
 import type { ActivityLog } from '../../types'
@@ -101,6 +102,34 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
   const { data: activities } = useRecentActivities()
   const { data: searchData } = useSearch(searchQuery)
 
+  const [readIds, setReadIds] = useState<Set<number>>(() => {
+    try {
+      const stored = localStorage.getItem(`notifications_read_${user?.id}`)
+      return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch { return new Set() }
+  })
+
+  const activityList = activities ?? []
+
+  const unreadCount = useMemo(
+    () => activityList.filter((a) => !readIds.has(a.id)).length,
+    [activityList, readIds],
+  )
+
+  function markAsRead(id: number) {
+    if (readIds.has(id)) return
+    const next = new Set(readIds)
+    next.add(id)
+    setReadIds(next)
+    localStorage.setItem(`notifications_read_${user?.id}`, JSON.stringify([...next]))
+  }
+
+  function markAllAsRead() {
+    const allIds = new Set(activityList.map((a) => a.id))
+    setReadIds(allIds)
+    localStorage.setItem(`notifications_read_${user?.id}`, JSON.stringify([...allIds]))
+  }
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -123,7 +152,6 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U'
 
-  const activityList = activities ?? []
   const results = searchData?.results ?? []
 
   function handleResultClick(route: string) {
@@ -275,9 +303,9 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
             className="relative rounded-lg p-2 text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <Bell className="h-5 w-5" />
-            {activityList.length > 0 && (
+            {unreadCount > 0 && (
               <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[10px] font-bold text-white">
-                {activityList.length > 9 ? '9+' : activityList.length}
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
@@ -286,7 +314,17 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
             <div className="absolute right-0 top-full mt-1 w-80 rounded-lg border border-border bg-card shadow-lg">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <h4 className="text-sm font-semibold text-gray-900">Notifications</h4>
-                <span className="text-xs text-muted">{activityList.length} activities</span>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <CheckCheck className="h-3.5 w-3.5" />
+                      Mark all read
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {activityList.length === 0 ? (
@@ -294,24 +332,28 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
                     No recent activities
                   </div>
                 ) : (
-                  activityList.map((activity) => (
-                    <button
-                      key={activity.id}
-                      onClick={() => {
-                        setShowNotifications(false)
-                        navigate(getActivityRoute(activity))
-                      }}
-                      className="w-full text-left border-b border-border px-4 py-3 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <p className="text-sm text-gray-900">{activity.description ?? activity.action}</p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                          {activity.module}
-                        </span>
-                        <span className="text-xs text-muted">{timeAgo(activity.created_at)}</span>
-                      </div>
-                    </button>
-                  ))
+                  activityList.map((activity) => {
+                    const isRead = readIds.has(activity.id)
+                    return (
+                      <button
+                        key={activity.id}
+                        onClick={() => {
+                          markAsRead(activity.id)
+                          setShowNotifications(false)
+                          navigate(getActivityRoute(activity))
+                        }}
+                        className={`w-full text-left border-b border-border px-4 py-3 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer ${isRead ? 'opacity-50' : ''}`}
+                      >
+                        <p className="text-sm text-gray-900">{activity.description ?? activity.action}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                            {activity.module}
+                          </span>
+                          <span className="text-xs text-muted">{timeAgo(activity.created_at)}</span>
+                        </div>
+                      </button>
+                    )
+                  })
                 )}
               </div>
             </div>
