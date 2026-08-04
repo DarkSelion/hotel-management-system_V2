@@ -68,7 +68,8 @@ class DashboardController extends Controller
             ->where('created_at', '>=', now()->subDays($days))
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(amount) as revenue'))
             ->groupBy('date')
-            ->pluck('revenue', 'date');
+            ->pluck('revenue', 'date')
+            ->map(fn ($v) => (float) $v);
 
         $bookingData = Reservation::where('created_at', '>=', now()->subDays($days))
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as bookings'))

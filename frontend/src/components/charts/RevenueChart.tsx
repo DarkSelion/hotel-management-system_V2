@@ -36,8 +36,8 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
     const recent = data.slice(midpoint)
     const prior = data.slice(0, midpoint)
 
-    const recentTotal = recent.reduce((sum, d) => sum + d[valueKey], 0)
-    const priorTotal = prior.reduce((sum, d) => sum + d[valueKey], 0)
+    const recentTotal = recent.reduce((sum, d) => sum + Number(d[valueKey]), 0)
+    const priorTotal = prior.reduce((sum, d) => sum + Number(d[valueKey]), 0)
     let change: number | null = null
     if (priorTotal > 0) {
       change = ((recentTotal - priorTotal) / priorTotal) * 100
@@ -51,8 +51,8 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
     const midpoint = Math.ceil(data.length / 2)
     const recent = data.slice(midpoint)
     return {
-      revenue: recent.reduce((sum, d) => sum + d.revenue, 0),
-      bookings: recent.reduce((sum, d) => sum + d.bookings, 0),
+      revenue: recent.reduce((sum, d) => sum + Number(d.revenue), 0),
+      bookings: recent.reduce((sum, d) => sum + Number(d.bookings), 0),
     }
   }, [data])
 
