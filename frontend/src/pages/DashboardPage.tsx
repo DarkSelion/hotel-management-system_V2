@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import {
   DollarSign, Percent, DoorOpen, CalendarCheck, LogIn, LogOut, Clock, SprayCan,
-  Activity, RefreshCw, Calendar, ArrowRight,
+  Activity, RefreshCw, Calendar, ArrowRight, CalendarClock, AlertTriangle,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -116,10 +116,10 @@ export default function DashboardPage() {
       <PageHeader title="Dashboard" description="Hotel overview & statistics" />
 
       {/* Stats Grid */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {initialLoading ? (
           <>
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 9 }).map((_, i) => (
               <StatCardSkeleton key={i} />
             ))}
           </>
@@ -168,6 +168,12 @@ export default function DashboardPage() {
               label="Pending Reservations"
               value={stats.pending_reservations}
               accent="warning"
+            />
+            <StatCard
+              icon={<CalendarClock className="h-5 w-5" />}
+              label="Overstaying Guests"
+              value={stats.overstaying}
+              accent="danger"
             />
             <StatCard
               icon={<SprayCan className="h-5 w-5" />}
@@ -383,7 +389,14 @@ export default function DashboardPage() {
                       <div className="hidden sm:block text-xs text-muted">
                         {formatDate(reservation.check_in)} â†’ {formatDate(reservation.check_out)}
                       </div>
-                      <StatusBadge status={reservation.status} />
+                      {reservation.is_overstay ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                          <AlertTriangle className="h-3 w-3" />
+                          Overstaying
+                        </span>
+                      ) : (
+                        <StatusBadge status={reservation.status} />
+                      )}
                       <span className="shrink-0 text-sm font-semibold text-gray-900">
                         {formatCurrency(reservation.total_amount)}
                       </span>

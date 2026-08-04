@@ -101,6 +101,10 @@ export interface Reservation {
   due_amount: number;
   payment_status: 'unpaid' | 'partial' | 'paid' | 'refunded';
   is_overdue?: boolean;
+  is_overstay?: boolean;
+  price_per_night?: number;
+  discount_percent?: number;
+  tax_percent?: number;
   special_requests?: string;
   source?: string;
   payments?: Payment[];
@@ -208,6 +212,7 @@ export interface DashboardStats {
   check_ins_today: number;
   check_outs_today: number;
   pending_reservations: number;
+  overstaying: number;
   total_rooms: number;
 }
 

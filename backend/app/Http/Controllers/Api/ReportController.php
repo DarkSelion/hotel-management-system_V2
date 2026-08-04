@@ -51,14 +51,17 @@ class ReportController extends Controller
 
         $dates = collect(range(0, $days))->map(fn ($day) => $from->copy()->addDays($day)->format('Y-m-d'));
 
-        $reservations = Reservation::select('check_in', 'check_out')
-            ->whereIn('status', ['checked_in', 'confirmed'])
+        $reservations = Reservation::select('check_in', 'check_out', 'status')
+            ->where('status', 'in', ['checked_in', 'confirmed'])
             ->where('check_in', '<=', $to->format('Y-m-d'))
-            ->where('check_out', '>=', $from->format('Y-m-d'))
+            ->where(function ($q) use ($from) {
+                $q->where('check_out', '>=', $from->format('Y-m-d'))
+                    ->orWhere('status', 'checked_in');
+            })
             ->get();
 
         $results = $dates->map(function ($date) use ($reservations, $totalRooms) {
-            $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && $r->check_out > $date)->count();
+            $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && ($r->status === 'checked_in' || $r->check_out > $date))->count();
 
             return [
                 'date' => $date,
@@ -142,14 +145,17 @@ class ReportController extends Controller
                 $days = $rangeStart->diffInDays($rangeEnd->copy()->startOfDay());
                 $dates = collect(range(0, $days))->map(fn($d) => $rangeStart->copy()->addDays($d)->format('Y-m-d'));
 
-                $reservations = Reservation::select('check_in', 'check_out')
+                $reservations = Reservation::select('check_in', 'check_out', 'status')
                     ->whereIn('status', ['checked_in', 'confirmed'])
                     ->where('check_in', '<=', $rangeEnd->format('Y-m-d'))
-                    ->where('check_out', '>=', $rangeStart->format('Y-m-d'))
+                    ->where(function ($q) use ($rangeStart) {
+                        $q->where('check_out', '>=', $rangeStart->format('Y-m-d'))
+                            ->orWhere('status', 'checked_in');
+                    })
                     ->get();
 
                 foreach ($dates as $date) {
-                    $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && $r->check_out > $date)->count();
+                    $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && ($r->status === 'checked_in' || $r->check_out > $date))->count();
                     fputcsv($handle, [$date, $occupied, $totalRooms - $occupied, $totalRooms > 0 ? round(($occupied / $totalRooms) * 100, 2) : 0]);
                 }
                 break;

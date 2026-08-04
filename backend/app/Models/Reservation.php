@@ -46,6 +46,8 @@ class Reservation extends Model
         'checked_out_at',
     ];
 
+    protected $appends = ['is_overstay'];
+
     protected function casts(): array
     {
         return [
@@ -110,5 +112,25 @@ class Reservation extends Model
     public function scopeActive(Builder $query)
     {
         $query->whereNotIn('status', ['cancelled', 'checked_out', 'no_show']);
+    }
+
+    public function scopeOverstay(Builder $query)
+    {
+        $query->where('status', 'checked_in')
+            ->where('check_out', '<', now()->startOfDay()->toDateString());
+    }
+
+    public function scopeOverlapping(Builder $query, string $checkIn, string $checkOut)
+    {
+        $query->active()
+            ->where('check_in', '<', $checkOut)
+            ->where('check_out', '>', $checkIn);
+    }
+
+    protected function getIsOverstayAttribute(): bool
+    {
+        return $this->status === 'checked_in'
+            && $this->check_out !== null
+            && $this->check_out->lt(now()->startOfDay());
     }
 }

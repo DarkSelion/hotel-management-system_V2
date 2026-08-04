@@ -16,16 +16,7 @@ class RoomController extends Controller
         $query = RoomType::where('is_active', true);
 
         if ($request->filled(['check_in', 'check_out'])) {
-            $bookedRoomIds = Reservation::where(function ($q) use ($request) {
-                $q->whereBetween('check_in', [$request->check_in, $request->check_out])
-                    ->orWhereBetween('check_out', [$request->check_in, $request->check_out])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('check_in', '<=', $request->check_in)
-                            ->where('check_out', '>=', $request->check_out);
-                    });
-            })
-                ->active()
-                ->pluck('room_id');
+            $bookedRoomIds = Reservation::overlapping($request->check_in, $request->check_out)->pluck('room_id');
 
             $query->whereHas('rooms', function ($q) use ($bookedRoomIds) {
                 $q->where('status', 'available')
@@ -88,16 +79,7 @@ class RoomController extends Controller
             $query->where('room_type_id', $roomTypeId);
         }
 
-        $bookedRoomIds = Reservation::where(function ($q) use ($data) {
-            $q->whereBetween('check_in', [$data['check_in'], $data['check_out']])
-                ->orWhereBetween('check_out', [$data['check_in'], $data['check_out']])
-                ->orWhere(function ($q) use ($data) {
-                    $q->where('check_in', '<=', $data['check_in'])
-                        ->where('check_out', '>=', $data['check_out']);
-                });
-        })
-            ->active()
-            ->pluck('room_id');
+        $bookedRoomIds = Reservation::overlapping($data['check_in'], $data['check_out'])->pluck('room_id');
 
         $rooms = $query->whereNotIn('id', $bookedRoomIds)->get();
 

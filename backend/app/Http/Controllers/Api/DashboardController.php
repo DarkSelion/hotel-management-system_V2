@@ -45,6 +45,8 @@ class DashboardController extends Controller
 
         $pendingReservations = Reservation::where('status', 'pending')->count();
 
+        $overstaying = Reservation::overstay()->count();
+
         return response()->json([
             'today_revenue' => $todayRevenue,
             'occupancy_rate' => $occupancyRate,
@@ -53,6 +55,7 @@ class DashboardController extends Controller
             'check_ins_today' => $checkInsToday,
             'check_outs_today' => $checkOutsToday,
             'pending_reservations' => $pendingReservations,
+            'overstaying' => $overstaying,
             'total_rooms' => $totalRooms,
         ]);
     }
@@ -92,14 +95,17 @@ class DashboardController extends Controller
         $windowEnd = now()->endOfDay();
         $dates = collect(range(29, 0))->map(fn ($daysAgo) => now()->subDays($daysAgo)->format('Y-m-d'));
 
-        $reservations = Reservation::select('check_in', 'check_out')
+        $reservations = Reservation::select('check_in', 'check_out', 'status')
             ->where('status', 'in', ['checked_in', 'confirmed'])
             ->where('check_in', '<=', $windowEnd->format('Y-m-d'))
-            ->where('check_out', '>=', $windowStart->format('Y-m-d'))
+            ->where(function ($q) use ($windowStart) {
+                $q->where('check_out', '>=', $windowStart->format('Y-m-d'))
+                    ->orWhere('status', 'checked_in');
+            })
             ->get();
 
         $data = $dates->map(function ($date) use ($reservations, $totalRooms) {
-            $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && $r->check_out > $date)->count();
+            $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && ($r->status === 'checked_in' || $r->check_out > $date))->count();
 
             return [
                 'date' => $date,
