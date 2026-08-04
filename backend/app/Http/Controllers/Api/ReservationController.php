@@ -17,6 +17,8 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
+        (new OverdueReservationService())->detectAndFlagOverdue();
+
         $query = Reservation::with(['guest', 'room.roomType', 'payments']);
 
         if ($search = $request->search) {

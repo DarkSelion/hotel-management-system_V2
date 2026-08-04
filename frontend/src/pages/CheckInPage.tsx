@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import {
-  useReservations, useCancelReservation,
+  useReservations, useCancelReservation, useMarkNoShow,
 } from '@/hooks/useApi'
 import { useCheckInOutModal } from '@/hooks/useCheckInOutModal'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
@@ -27,6 +27,7 @@ export default function CheckInPage() {
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
   const [cancelTarget, setCancelTarget] = useState<Reservation | null>(null)
+  const [noShowTarget, setNoShowTarget] = useState<Reservation | null>(null)
 
   const checkInModal = useCheckInOutModal('check-in')
   const {
@@ -46,6 +47,7 @@ export default function CheckInPage() {
 
   const { data: reservationsData, isLoading, error, refetch } = useReservations(queryParams)
   const cancelReservation = useCancelReservation()
+  const markNoShow = useMarkNoShow()
 
   const reservations = reservationsData?.data ?? []
   const totalPages = reservationsData?.last_page ?? 1
@@ -88,6 +90,20 @@ export default function CheckInPage() {
     try {
       await cancelReservation.mutateAsync(cancelTarget.id)
       setCancelTarget(null)
+    } catch {
+      // handled by react-query
+    }
+  }
+
+  function handleMarkNoShow(reservation: Reservation) {
+    setNoShowTarget(reservation)
+  }
+
+  async function handleMarkNoShowConfirm() {
+    if (!noShowTarget) return
+    try {
+      await markNoShow.mutateAsync(noShowTarget.id)
+      setNoShowTarget(null)
     } catch {
       // handled by react-query
     }
@@ -156,7 +172,7 @@ export default function CheckInPage() {
           onEdit={() => openEditForm(r)}
           onCancel={() => setCancelTarget(r)}
           onCheckIn={() => openCheckIn(r)}
-          alwaysAllowCheckIn
+          onMarkNoShow={() => handleMarkNoShow(r)}
         />
       ),
     },
@@ -235,6 +251,17 @@ export default function CheckInPage() {
         confirmLabel="Cancel Reservation"
         variant="danger"
         isLoading={cancelReservation.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={!!noShowTarget}
+        onClose={() => setNoShowTarget(null)}
+        onConfirm={handleMarkNoShowConfirm}
+        title="Mark No Show"
+        message={`Mark the reservation for ${noShowTarget?.guest?.first_name ?? ''} ${noShowTarget?.guest?.last_name ?? ''} as No Show? The room will be released and a no-show fee may apply.`}
+        confirmLabel="Mark No Show"
+        variant="warning"
+        isLoading={markNoShow.isPending}
       />
     </div>
   )
