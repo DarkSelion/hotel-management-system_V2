@@ -12,14 +12,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
-
-import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/stores/authStore'
 import { isAdminRole } from '@/lib/permissions'
 import {
-  Plus, Search, LayoutGrid, List, Users,
-  Edit, Trash2, Save, RotateCcw, AlertCircle, DoorOpen,
-  ChevronDown, MapPin, Maximize2
+  Plus, Search, Users,
+  Edit, Trash2, Save, MapPin
 } from 'lucide-react'
 
 const ROOM_STATUS_OPTIONS = [
@@ -40,14 +37,6 @@ const FLOOR_OPTIONS = [
   { value: '2', label: 'Floor 2' },
   { value: '3', label: 'Floor 3' },
 ]
-
-const STATUS_COLORS: Record<string, string> = {
-  available: 'border-l-4 border-l-green-500',
-  occupied: 'border-l-4 border-l-red-500',
-  maintenance: 'border-l-4 border-l-amber-500',
-  reserved: 'border-l-4 border-l-blue-500',
-  cleaning: 'border-l-4 border-l-gray-500',
-}
 
 interface RoomFormData {
   room_number: string
@@ -74,7 +63,6 @@ export default function RoomsPage() {
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
   const [currentPage, setCurrentPage] = useState(1)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [statusFilter, setStatusFilter] = useState('')
   const [floorFilter, setFloorFilter] = useState('')
   const [roomTypeFilter, setRoomTypeFilter] = useState('')
@@ -188,10 +176,6 @@ export default function RoomsPage() {
     deleteRoom.mutate(deleteConfirmId, {
       onSuccess: () => setDeleteConfirmId(null),
     })
-  }
-
-  function handleQuickStatusChange(roomId: number, newStatus: string) {
-    setStatusChangeConfirm({ id: roomId, status: newStatus })
   }
 
   function confirmStatusChange() {
@@ -311,24 +295,6 @@ export default function RoomsPage() {
         description="Manage hotel rooms and their availability."
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex overflow-hidden rounded-lg border border-border">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                square
-                onClick={() => setViewMode('grid')}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                square
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
             {isAdmin && (
               <Button variant="gold" onClick={openAddModal}>
                 <Plus className="h-4 w-4" />
@@ -383,151 +349,25 @@ export default function RoomsPage() {
             )}
           </div>
 
-          {viewMode === 'grid' ? (
-            roomsLoading ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Card key={i}>
-                    <CardContent className="p-5">
-                      <Skeleton className="mb-3 h-6 w-16" />
-                      <Skeleton className="mb-2 h-4 w-24" />
-                      <Skeleton className="mb-4 h-4 w-20" />
-                      <div className="flex gap-2">
-                        <Skeleton className="h-6 w-20 rounded-full" />
-                        <Skeleton className="h-6 w-16 rounded-full" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : roomsError ? (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
-                <AlertCircle className="mb-3 h-10 w-10 text-danger" />
-                <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
-                <p className="mb-4 text-sm text-muted">{(roomsError as Error).message}</p>
-                <Button variant="outline" onClick={() => refetchRooms()}>
-                  <RotateCcw className="h-4 w-4" /> Retry
-                </Button>
-              </div>
-            ) : rooms.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
-                <DoorOpen className="mb-3 h-10 w-10 text-muted/50" />
-                <p className="mb-1 text-sm font-medium text-gray-900">No rooms found</p>
-                <p className="text-sm text-muted">Try adjusting your search or filters.</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {rooms.map((room) => (
-                    <Card key={room.id} className={STATUS_COLORS[room.status] ?? ''}>
-                      <CardContent className="p-5">
-                        <div className="mb-3 flex items-start justify-between">
-                          <div>
-                            <p className="text-2xl font-bold text-gray-900">{room.room_number}</p>
-                            <p className="text-sm text-muted">{getRoomTypeName(room)}</p>
-                          </div>
-                          <StatusBadge status={room.status} />
-                        </div>
-
-                        <div className="mb-3 flex items-center gap-3 text-xs text-muted">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> Floor {room.floor}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Maximize2 className="h-3 w-3" /> {room.capacity} guests
-                          </span>
-                        </div>
-
-                        <div className="mb-4 flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
-                          <span className="text-sm font-semibold text-gray-900">
-                            {formatCurrency(getPrice(room))}
-                          </span>
-                          <span className="flex items-center gap-1 text-xs text-muted">
-                            <Users className="h-3 w-3" /> {room.capacity}
-                          </span>
-                        </div>
-
-                        <div className="mb-3 flex items-center gap-2">
-                          <StatusBadge status={room.cleaning_status ?? 'clean'} />
-                        </div>
-
-                        <div className="flex items-center gap-2 border-t border-border pt-3">
-                          {isAdmin && (
-                            <Button variant="ghost" size="sm" onClick={() => openEditModal(room)}>
-                              <Edit className="h-3.5 w-3.5" /> Edit
-                            </Button>
-                          )}
-                          {isAdmin && (
-                            <div className="relative">
-                              <select
-                                className="flex h-8 appearance-none rounded-lg border border-border bg-card px-3 pr-7 text-xs ring-offset-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                                value=""
-                                onChange={(e) => {
-                                  if (e.target.value) handleQuickStatusChange(room.id, e.target.value)
-                                }}
-                              >
-                                <option value="" disabled>Status...</option>
-                                {EDITABLE_STATUSES.filter((o) => o.value !== room.status).map((o) => (
-                                  <option key={o.value} value={o.value}>{o.label}</option>
-                                ))}
-                              </select>
-                              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted" />
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {paginationInfo && paginationInfo.lastPage > 1 && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <p className="text-sm text-muted">
-                      Page {paginationInfo.currentPage} of {paginationInfo.lastPage}
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={paginationInfo.currentPage <= 1}
-                        onClick={() => setCurrentPage(paginationInfo.currentPage - 1)}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={paginationInfo.currentPage >= paginationInfo.lastPage}
-                        onClick={() => setCurrentPage(paginationInfo.currentPage + 1)}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )
-          ) : (
-            <DataTable
-              columns={listColumns}
-              data={rooms}
-              loading={roomsLoading}
-              error={roomsError ? (roomsError as Error).message : null}
-              onSearch={undefined}
-              sortBy={sortBy}
-              onSort={handleSort}
-              onRetry={() => refetchRooms()}
-              keyExtractor={(r) => r.id}
-              pagination={paginationInfo ? {
-                currentPage: paginationInfo.currentPage,
-                lastPage: paginationInfo.lastPage,
-                total: paginationInfo.total,
-                from: paginationInfo.total ? (paginationInfo.currentPage - 1) * paginationInfo.per_page + 1 : 0,
-                to: paginationInfo.total ? Math.min(paginationInfo.currentPage * paginationInfo.per_page, paginationInfo.total) : 0,
-                onPageChange: setCurrentPage,
-              } : undefined}
-            />
-          )}
+          <DataTable
+            columns={listColumns}
+            data={rooms}
+            loading={roomsLoading}
+            error={roomsError ? (roomsError as Error).message : null}
+            onSearch={undefined}
+            sortBy={sortBy}
+            onSort={handleSort}
+            onRetry={() => refetchRooms()}
+            keyExtractor={(r) => r.id}
+            pagination={paginationInfo ? {
+              currentPage: paginationInfo.currentPage,
+              lastPage: paginationInfo.lastPage,
+              total: paginationInfo.total,
+              from: paginationInfo.total ? (paginationInfo.currentPage - 1) * paginationInfo.per_page + 1 : 0,
+              to: paginationInfo.total ? Math.min(paginationInfo.currentPage * paginationInfo.per_page, paginationInfo.total) : 0,
+              onPageChange: setCurrentPage,
+            } : undefined}
+          />
         </CardContent>
       </Card>
 

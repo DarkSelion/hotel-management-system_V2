@@ -96,7 +96,7 @@ class DashboardController extends Controller
         $dates = collect(range(29, 0))->map(fn ($daysAgo) => now()->subDays($daysAgo)->format('Y-m-d'));
 
         $reservations = Reservation::select('check_in', 'check_out', 'status')
-            ->where('status', 'in', ['checked_in', 'confirmed'])
+            ->whereIn('status', ['checked_in', 'confirmed'])
             ->where('check_in', '<=', $windowEnd->format('Y-m-d'))
             ->where(function ($q) use ($windowStart) {
                 $q->where('check_out', '>=', $windowStart->format('Y-m-d'))

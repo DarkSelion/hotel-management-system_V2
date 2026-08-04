@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePortalRoomTypes } from '@/hooks/usePortalApi'
 import { formatCurrency } from '@/lib/format'
-import { Users, Maximize, ArrowRight, Calendar, BedDouble, LayoutGrid, Building2, Sofa } from 'lucide-react'
+import { Users, Maximize, ArrowRight, Calendar, BedDouble, Building2, Sofa } from 'lucide-react'
 
 const ROOM_IMAGES: Record<string, string[]> = {
   rooms: [
@@ -23,7 +23,7 @@ const ROOM_IMAGES: Record<string, string[]> = {
 }
 
 const TABS = [
-  { value: 'all', label: 'All', heading: 'Our Rooms\n& Suites', icon: LayoutGrid },
+  { value: 'all', label: 'All', heading: 'Our Rooms\n& Suites' },
   { value: 'rooms', label: 'Rooms', heading: 'Cozy\nRooms', icon: BedDouble },
   { value: 'suites', label: 'Suites', heading: 'Spacious\nSuites', icon: Sofa },
   { value: 'villas', label: 'Villas', heading: 'Charming\nVillas', icon: Building2 },
@@ -103,7 +103,6 @@ export default function PortalRoomsPage() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-center gap-3">
             {TABS.map((tab) => {
-              const Icon = tab.icon
               return (
                 <button
                   key={tab.value}
@@ -114,7 +113,7 @@ export default function PortalRoomsPage() {
                       : 'bg-white/50 text-dark/50 hover:bg-white hover:text-dark border border-transparent'
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  {tab.icon && <tab.icon className="h-3.5 w-3.5" />}
                   {tab.label}
                 </button>
               )

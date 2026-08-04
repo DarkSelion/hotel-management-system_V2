@@ -52,7 +52,7 @@ class ReportController extends Controller
         $dates = collect(range(0, $days))->map(fn ($day) => $from->copy()->addDays($day)->format('Y-m-d'));
 
         $reservations = Reservation::select('check_in', 'check_out', 'status')
-            ->where('status', 'in', ['checked_in', 'confirmed'])
+            ->whereIn('status', ['checked_in', 'confirmed'])
             ->where('check_in', '<=', $to->format('Y-m-d'))
             ->where(function ($q) use ($from) {
                 $q->where('check_out', '>=', $from->format('Y-m-d'))
