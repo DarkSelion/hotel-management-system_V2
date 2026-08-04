@@ -191,6 +191,8 @@ export interface ActivityLog {
   user?: User;
   action: string;
   module: string;
+  model_id?: number;
+  model_type?: string;
   description?: string;
   created_at: string;
 }

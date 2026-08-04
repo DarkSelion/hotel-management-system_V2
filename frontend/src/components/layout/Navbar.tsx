@@ -19,6 +19,34 @@ import {
   X,
 } from 'lucide-react'
 
+import type { ActivityLog } from '../../types'
+
+function getActivityRoute(activity: ActivityLog): string {
+  const { module, action } = activity
+
+  if (module === 'reservations') {
+    if (action === 'checked_in') return '/check-in'
+    if (action === 'checked_out') return '/check-out'
+    return '/reservations'
+  }
+
+  const moduleRoutes: Record<string, string> = {
+    guests: '/guests',
+    payments: '/payments',
+    invoices: '/invoices',
+    housekeeping: '/housekeeping',
+    maintenance: '/maintenance',
+    expenses: '/expenses',
+    staff: '/staff',
+    room_types: '/room-types',
+    rooms: '/rooms',
+    auth: '/settings',
+    settings: '/settings',
+  }
+
+  return moduleRoutes[module] ?? '/dashboard'
+}
+
 const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
   admin: 'Admin',
@@ -267,9 +295,13 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
                   </div>
                 ) : (
                   activityList.map((activity) => (
-                    <div
+                    <button
                       key={activity.id}
-                      className="border-b border-border px-4 py-3 last:border-0 hover:bg-gray-50 transition-colors"
+                      onClick={() => {
+                        setShowNotifications(false)
+                        navigate(getActivityRoute(activity))
+                      }}
+                      className="w-full text-left border-b border-border px-4 py-3 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       <p className="text-sm text-gray-900">{activity.description ?? activity.action}</p>
                       <div className="mt-1 flex items-center gap-2">
@@ -278,7 +310,7 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
                         </span>
                         <span className="text-xs text-muted">{timeAgo(activity.created_at)}</span>
                       </div>
-                    </div>
+                    </button>
                   ))
                 )}
               </div>
