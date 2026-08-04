@@ -12,8 +12,10 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { ReservationDetailModal } from '@/components/shared/ReservationDetailModal'
 import { ReservationFormModal } from '@/components/shared/ReservationFormModal'
 import { ReservationCheckInOutModal } from '@/components/shared/ReservationCheckInOutModal'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { AlertTriangle } from 'lucide-react'
 import type { Reservation } from '@/types'
 
 export default function CheckInPage() {
@@ -136,7 +138,17 @@ export default function CheckInPage() {
       label: 'Check In',
       sortable: true,
       className: 'whitespace-nowrap',
-      render: (r) => <span>{formatDateDisplay(r.check_in)}</span>,
+      render: (r) => (
+        <div className="flex items-center gap-1.5">
+          <span>{formatDateDisplay(r.check_in)}</span>
+          {r.is_overdue && (
+            <Badge variant="warning">
+              <AlertTriangle className="h-3 w-3" />
+              Overdue
+            </Badge>
+          )}
+        </div>
+      ),
     },
     {
       key: 'adults',
