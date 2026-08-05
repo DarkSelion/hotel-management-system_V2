@@ -39,7 +39,7 @@ function getActivityRoute(activity: ActivityLog): string {
     maintenance: '/maintenance',
     expenses: '/expenses',
     staff: '/staff',
-    room_types: '/room-types',
+    room_list: '/room-list',
     rooms: '/rooms',
     auth: '/settings',
     settings: '/settings',

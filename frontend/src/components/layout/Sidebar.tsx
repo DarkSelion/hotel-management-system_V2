@@ -97,7 +97,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           icon: <Settings size={20} />,
           adminOnly: true,
           submenu: [
-            { label: 'Room List', icon: <Wrench size={16} />, path: '/room-types' },
+            { label: 'Room List', icon: <Wrench size={16} />, path: '/room-list' },
             { label: 'Amenities', icon: <Package size={16} />, path: '/amenities' },
             { label: 'Room Images', icon: <ImageIcon size={16} />, path: '/room-images' },
           ],

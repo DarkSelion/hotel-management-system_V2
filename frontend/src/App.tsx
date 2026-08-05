@@ -97,6 +97,7 @@ export default function App() {
           <Route path="check-out" element={<Suspense fallback={<PageLoader />}><CheckOutPage /></Suspense>} />
           <Route path="guests" element={<Suspense fallback={<PageLoader />}><GuestsPage /></Suspense>} />
           <Route path="rooms" element={<Suspense fallback={<PageLoader />}><RoomsPage /></Suspense>} />
+          <Route path="room-list" element={<Suspense fallback={<PageLoader />}><RoomsPage /></Suspense>} />
           <Route path="room-types" element={<RequireRole><Suspense fallback={<PageLoader />}><RoomTypesPage /></Suspense></RequireRole>} />
           <Route path="amenities" element={<RequireRole><Suspense fallback={<PageLoader />}><AmenitiesPage /></Suspense></RequireRole>} />
           <Route path="room-images" element={<RequireRole><Suspense fallback={<PageLoader />}><RoomImagesPage /></Suspense></RequireRole>} />
