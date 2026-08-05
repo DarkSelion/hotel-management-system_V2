@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useRooms, useRoomTypes, useCreateRoom, useUpdateRoom, useUpdateRoomStatus, useDeleteRoom } from '@/hooks/useApi'
 import type { Room } from '@/types'
 import { formatCurrency } from '@/lib/format'
@@ -59,6 +60,8 @@ const defaultFormData: RoomFormData = {
 }
 
 export default function RoomsPage() {
+  const location = useLocation()
+  const isRoomList = location.pathname === '/room-list'
   const [search, setSearch] = useState('')
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
@@ -234,17 +237,19 @@ export default function RoomsPage() {
         </div>
       ),
     },
-    {
-      key: 'status',
-      label: 'Status',
-      sortable: true,
-      render: (r) => <StatusBadge status={r.status} />,
-    },
-    {
-      key: 'cleaning_status',
-      label: 'Cleaning',
-      render: (r) => <StatusBadge status={r.cleaning_status ?? 'clean'} />,
-    },
+    ...(!isRoomList ? [
+      {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        render: (r: Room) => <StatusBadge status={r.status} />,
+      },
+      {
+        key: 'cleaning_status',
+        label: 'Cleaning',
+        render: (r: Room) => <StatusBadge status={r.cleaning_status ?? 'clean'} />,
+      },
+    ] : []),
     {
       key: 'price',
       label: 'Price',
@@ -316,16 +321,18 @@ export default function RoomsPage() {
                 onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }}
               />
             </div>
-            <Select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1) }}
-              className="w-[140px]"
-            >
-              <option value="">All Status</option>
-              {ROOM_STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </Select>
+            {!isRoomList && (
+              <Select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1) }}
+                className="w-[140px]"
+              >
+                <option value="">All Status</option>
+                {ROOM_STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </Select>
+            )}
             <Select
               value={floorFilter}
               onChange={(e) => { setFloorFilter(e.target.value); setCurrentPage(1) }}
