@@ -248,7 +248,6 @@ function EditRoomImagesModal({
 function RoomImageManager({ roomId }: { roomId: number }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [deleteTarget, setDeleteTarget] = useState<RoomImage | null>(null)
-  const [isPrimary, setIsPrimary] = useState(false)
 
   const { data: images = [], isLoading: imagesLoading } = useRoomImages(roomId)
   const uploadMutation = useUploadRoomImage()
@@ -262,16 +261,12 @@ function RoomImageManager({ roomId }: { roomId: number }) {
 
     const formData = new FormData()
     formData.append('image', file)
-    if (isPrimary) {
-      formData.append('is_primary', '1')
-    }
 
     try {
       await uploadMutation.mutateAsync({ roomId, formData })
-      addToast({ variant: 'success', message: 'Image uploaded successfully' })
-      setIsPrimary(false)
+      addToast('Image uploaded successfully', 'success')
     } catch {
-      addToast({ variant: 'error', message: 'Failed to upload image' })
+      addToast('Failed to upload image', 'error')
     }
 
     if (fileInputRef.current) {
@@ -286,9 +281,9 @@ function RoomImageManager({ roomId }: { roomId: number }) {
         id: image.id,
         data: { is_primary: true },
       })
-      addToast({ variant: 'success', message: 'Primary image updated' })
+      addToast('Primary image updated', 'success')
     } catch {
-      addToast({ variant: 'error', message: 'Failed to set primary image' })
+      addToast('Failed to set primary image', 'error')
     }
   }
 
@@ -320,15 +315,6 @@ function RoomImageManager({ roomId }: { roomId: number }) {
           )}
           Upload Image
         </Button>
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <input
-            type="checkbox"
-            checked={isPrimary}
-            onChange={(e) => setIsPrimary(e.target.checked)}
-            className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
-          />
-          Set as primary
-        </label>
         <p className="text-xs text-muted">JPEG, PNG, or WebP up to 4MB</p>
       </div>
 
