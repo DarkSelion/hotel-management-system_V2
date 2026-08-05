@@ -135,7 +135,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   ? 'justify-center px-3 py-3 hover:bg-[var(--color-sidebar-hover-bg)]'
                   : 'hover:translate-x-1 hover:bg-[var(--color-sidebar-hover-bg)]',
                 isChildActive
-                  ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
+                  ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--color-primary)] rounded-l-none [&_svg]:text-[var(--color-sidebar-active-text)]'
                   : !collapsed && isOpen
                     ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
                     : 'text-[var(--color-sidebar-text)] hover:text-[var(--color-sidebar-active-text)]',
@@ -172,7 +172,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150'
 
     const activeClasses =
-      'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] shadow-sm'
+      'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--color-primary)] rounded-l-none [&_svg]:text-[var(--color-sidebar-active-text)]'
     const inactiveClasses =
       'text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover-bg)] hover:translate-x-1 hover:text-[var(--color-sidebar-active-text)]'
 
@@ -262,7 +262,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                             cn(
                               'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150',
                               isActive
-                                ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
+                                ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--color-primary)] rounded-l-none [&_svg]:text-[var(--color-sidebar-active-text)]'
                                 : 'text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover-bg)] hover:text-[var(--color-sidebar-active-text)]',
                             )
                           }
