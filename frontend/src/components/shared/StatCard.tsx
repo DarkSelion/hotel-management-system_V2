@@ -12,7 +12,7 @@ interface StatCardProps {
 export function StatCard({ icon, label, value, trend, trendValue, variant = 'default' }: StatCardProps) {
   if (variant === 'compact') {
     return (
-      <div className="rounded-lg border border-gray-200 border-b-4 border-b-emerald-500 bg-white px-4 py-3">
+      <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-600">{label}</p>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-3xl font-bold tabular-nums text-gray-900">{value}</span>
@@ -33,7 +33,7 @@ export function StatCard({ icon, label, value, trend, trendValue, variant = 'def
 
   if (variant === 'hero') {
     return (
-      <div className="rounded-xl border border-gray-200 border-b-4 border-b-emerald-500 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="flex items-center gap-2">
           {icon && (
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
