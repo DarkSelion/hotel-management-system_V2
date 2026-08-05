@@ -88,7 +88,7 @@ describe('RevenueChart', () => {
     renderChart({ data: chartData })
 
     // TrendingUp should be rendered (via lucide mock or class check)
-    const trendText = screen.getByText(/vs prior period/)
+    const trendText = screen.getByText(/vs prior/)
     expect(trendText).toBeInTheDocument()
   })
 

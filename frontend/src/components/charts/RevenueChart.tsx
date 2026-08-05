@@ -87,12 +87,12 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
   }
 
   return (
-    <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="w-full rounded-xl border border-gray-200 bg-white p-5">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Revenue Overview</h3>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Revenue Overview</h3>
+          <p className="mt-0.5 text-xs text-gray-400">
             {activeTab === 'revenue'
               ? '30-day revenue trend and booking volume'
               : '30-day booking volume and revenue trend'}
@@ -135,7 +135,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
       {/* Summary bar */}
       {summary && (
         <div className="mb-4 flex items-baseline gap-2">
-          <span className="text-2xl font-bold text-gray-900">
+          <span className="text-2xl font-bold tabular-nums text-gray-900">
             {activeTab === 'revenue'
               ? formatCurrency(summary.recentTotal)
               : formatNumber(summary.recentTotal)}
@@ -143,7 +143,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
           {summary.change !== null && summary.change !== 0 && (
             <span
               className={cn(
-                'flex items-center gap-1 text-sm font-medium',
+                'flex items-center gap-1 text-xs font-medium',
                 summary.change > 0 ? 'text-emerald-600' : 'text-rose-500',
               )}
             >
@@ -154,7 +154,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
               )}
               {summary.change > 0 ? '+' : ''}
               {summary.change.toFixed(1)}%
-              <span className="text-xs text-gray-400">vs prior period</span>
+              <span className="text-gray-400">vs prior</span>
             </span>
           )}
         </div>

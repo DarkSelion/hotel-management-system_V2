@@ -138,7 +138,6 @@ describe('DashboardPage', () => {
 
     const { container } = render(<DashboardPage />)
 
-    // Skeleton components render with animate-pulse class
     const pulseElements = container.querySelectorAll('.animate-pulse')
     expect(pulseElements.length).toBeGreaterThan(0)
   })
@@ -161,18 +160,19 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Retry')).toBeInTheDocument()
   })
 
-  it('renders all 9 stat card labels', () => {
+  it('renders hero occupancy bar', () => {
+    renderDashboard()
+
+    expect(screen.getByText('Current Occupancy')).toBeInTheDocument()
+    expect(screen.getByText('67')).toBeInTheDocument()
+  })
+
+  it('renders hero stats row', () => {
     renderDashboard()
 
     expect(screen.getByText("Today's Revenue")).toBeInTheDocument()
-    expect(screen.getByText('Occupancy Rate')).toBeInTheDocument()
-    expect(screen.getByText('Available Rooms')).toBeInTheDocument()
-    expect(screen.getByText('Booked Rooms')).toBeInTheDocument()
     expect(screen.getByText('Check-ins Today')).toBeInTheDocument()
     expect(screen.getByText('Check-outs Today')).toBeInTheDocument()
-    expect(screen.getByText('Pending Reservations')).toBeInTheDocument()
-    expect(screen.getByText('Overstaying Guests')).toBeInTheDocument()
-    expect(screen.getByText('Housekeeping (Dirty)')).toBeInTheDocument()
   })
 
   it('stat card shows today_revenue formatted as currency', () => {
@@ -181,17 +181,20 @@ describe('DashboardPage', () => {
     expect(screen.getByText('₱15,000.00')).toBeInTheDocument()
   })
 
-  it('stat card shows occupancy_rate as rounded percentage', () => {
+  it('renders secondary metrics row', () => {
     renderDashboard()
 
-    const elements = screen.getAllByText('67%')
-    expect(elements.length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('Booked')).toBeInTheDocument()
+    expect(screen.getByText('Pending')).toBeInTheDocument()
+    expect(screen.getByText('Dirty Rooms')).toBeInTheDocument()
+    expect(screen.getByText('Overstaying')).toBeInTheDocument()
+    expect(screen.getByText('Available')).toBeInTheDocument()
   })
 
   it('stat card shows available_rooms as fraction', () => {
     renderDashboard()
 
-    expect(screen.getByText('5 / 15')).toBeInTheDocument()
+    expect(screen.getByText('5/15')).toBeInTheDocument()
   })
 
   it('stat card shows dirty rooms as total minus available', () => {
@@ -199,14 +202,6 @@ describe('DashboardPage', () => {
 
     const elements = screen.getAllByText('10')
     expect(elements.length).toBeGreaterThanOrEqual(1)
-  })
-
-  it('occupancy progress bar renders with correct percentage', () => {
-    renderDashboard()
-
-    expect(screen.getByText('Current Occupancy')).toBeInTheDocument()
-    const elements = screen.getAllByText('67%')
-    expect(elements.length).toBeGreaterThanOrEqual(2)
   })
 
   it('booking sources pie chart renders', () => {
@@ -228,7 +223,7 @@ describe('DashboardPage', () => {
 
     render(<DashboardPage />)
 
-    expect(screen.getByText('No booking data available')).toBeInTheDocument()
+    expect(screen.getByText('No booking data')).toBeInTheDocument()
   })
 
   it('recent activities section renders', () => {
@@ -284,7 +279,7 @@ describe('DashboardPage', () => {
 
     render(<DashboardPage />)
 
-    expect(screen.getByText('Overstaying')).toBeInTheDocument()
+    expect(screen.getByText('Overstay')).toBeInTheDocument()
   })
 
   it('latest reservations shows status badge when not overstay', () => {
@@ -298,12 +293,6 @@ describe('DashboardPage', () => {
 
     const viewAll = screen.getByText('View All')
     expect(viewAll.closest('a')).toHaveAttribute('href', '/reservations')
-  })
-
-  it('latest reservations shows total amount', () => {
-    renderDashboard()
-
-    expect(screen.getByText('₱3,300.00')).toBeInTheDocument()
   })
 
   it('revenue chart shows no data when empty', () => {
