@@ -22,6 +22,7 @@ class WipeData extends Command
         'room_types',
         'amenities',
         'room_amenity',
+        'room_images',
         'personal_access_tokens',
         'password_reset_tokens',
         'sessions',
