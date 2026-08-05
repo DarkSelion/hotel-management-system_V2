@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Storage;
 
 class RoomController extends Controller
 {
+    private function resolveImageUrl($image): ?string
+    {
+        if (!$image) return null;
+        return str_starts_with($image->image_path, 'http')
+            ? $image->image_path
+            : Storage::url($image->image_path);
+    }
+
     public function index(Request $request)
     {
         $query = RoomType::where('is_active', true);
@@ -37,7 +45,7 @@ class RoomController extends Controller
         $roomTypes->each(function ($roomType) {
             $firstRoom = $roomType->rooms->first();
             $image = $firstRoom?->images->firstWhere('is_primary', true) ?? $firstRoom?->images->first();
-            $roomType->setAttribute('image_url', $image ? Storage::url($image->image_path) : null);
+            $roomType->setAttribute('image_url', $this->resolveImageUrl($image));
             unset($roomType->rooms);
         });
 
@@ -58,7 +66,7 @@ class RoomController extends Controller
 
         $firstRoom = $roomType->rooms->first();
         $image = $firstRoom?->images->firstWhere('is_primary', true) ?? $firstRoom?->images->first();
-        $roomType->setAttribute('image_url', $image ? Storage::url($image->image_path) : null);
+        $roomType->setAttribute('image_url', $this->resolveImageUrl($image));
 
         return response()->json($roomType);
     }
@@ -85,7 +93,7 @@ class RoomController extends Controller
 
         $rooms->each(function ($room) {
             $image = $room->images->first();
-            $room->setAttribute('image_url', $image ? Storage::url($image->image_path) : null);
+            $room->setAttribute('image_url', $this->resolveImageUrl($image));
             unset($room->images);
         });
 
