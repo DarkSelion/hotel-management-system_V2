@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useHotelName } from '@/hooks/usePortalApi'
-import { X, ChevronLeft, ChevronRight, Camera, LayoutGrid, BedDouble, Waves, UtensilsCrossed, Sparkles, Calendar } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Camera, LayoutGrid, BedDouble, Waves } from 'lucide-react'
 
 interface GalleryPhoto {
   id: number
@@ -13,9 +13,6 @@ const CATEGORIES = [
   { value: 'All', label: 'All', icon: LayoutGrid },
   { value: 'Rooms & Suites', label: 'Rooms & Suites', icon: BedDouble },
   { value: 'Amenities', label: 'Amenities', icon: Waves },
-  { value: 'Dining', label: 'Dining', icon: UtensilsCrossed },
-  { value: 'Spa & Wellness', label: 'Spa & Wellness', icon: Sparkles },
-  { value: 'Events', label: 'Events', icon: Calendar },
 ] as const
 
 const PHOTOS: GalleryPhoto[] = [
@@ -30,17 +27,6 @@ const PHOTOS: GalleryPhoto[] = [
   { id: 9, src: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80', title: 'Swimming Pool', category: 'Amenities' },
   { id: 10, src: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80', title: 'Hotel Lobby', category: 'Amenities' },
   { id: 11, src: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80', title: 'Resort View', category: 'Amenities' },
-  { id: 12, src: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80', title: 'Fine Dining Restaurant', category: 'Dining' },
-  { id: 13, src: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80', title: 'Signature Cuisine', category: 'Dining' },
-  { id: 14, src: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80', title: 'Breakfast Spread', category: 'Dining' },
-  { id: 15, src: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80', title: 'Restaurant Interior', category: 'Dining' },
-  { id: 16, src: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&q=80', title: 'Cozy Lounge', category: 'Spa & Wellness' },
-  { id: 17, src: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&q=80', title: 'Relaxation Lounge', category: 'Spa & Wellness' },
-  { id: 18, src: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80', title: 'Spa Treatment', category: 'Spa & Wellness' },
-  { id: 19, src: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80', title: 'Grand Ballroom', category: 'Events' },
-  { id: 20, src: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80', title: 'Conference Hall', category: 'Events' },
-  { id: 21, src: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80', title: 'Garden Wedding Venue', category: 'Events' },
-  { id: 22, src: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=800&q=80', title: 'Sunset Terrace', category: 'Events' },
 ]
 
 export default function PortalGalleryPage() {

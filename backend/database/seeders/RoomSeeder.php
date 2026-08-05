@@ -37,17 +37,12 @@ class RoomSeeder extends Seeder
             ['room_number' => '209', 'room_type_slug' => 'junior-suite', 'floor' => 2, 'status' => 'occupied', 'cleaning_status' => 'clean', 'capacity' => 3, 'is_active' => true],
             ['room_number' => '210', 'room_type_slug' => 'junior-suite', 'floor' => 2, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 3, 'is_active' => true],
 
-            // Floor 3: Junior Suite (301-304), Executive Suite (305-308), Penthouse (309-310)
+            // Floor 3: Junior Suite (301-304), Executive Suite (305)
             ['room_number' => '301', 'room_type_slug' => 'junior-suite', 'floor' => 3, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 3, 'is_active' => true],
             ['room_number' => '302', 'room_type_slug' => 'junior-suite', 'floor' => 3, 'status' => 'dirty', 'cleaning_status' => 'in_progress', 'capacity' => 3, 'is_active' => true],
             ['room_number' => '303', 'room_type_slug' => 'junior-suite', 'floor' => 3, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 3, 'is_active' => true],
             ['room_number' => '304', 'room_type_slug' => 'junior-suite', 'floor' => 3, 'status' => 'occupied', 'cleaning_status' => 'clean', 'capacity' => 3, 'is_active' => true],
             ['room_number' => '305', 'room_type_slug' => 'executive-suite', 'floor' => 3, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 4, 'is_active' => true],
-            ['room_number' => '306', 'room_type_slug' => 'executive-suite', 'floor' => 3, 'status' => 'occupied', 'cleaning_status' => 'clean', 'capacity' => 4, 'is_active' => true],
-            ['room_number' => '307', 'room_type_slug' => 'executive-suite', 'floor' => 3, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 4, 'is_active' => true],
-            ['room_number' => '308', 'room_type_slug' => 'executive-suite', 'floor' => 3, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 4, 'is_active' => true],
-            ['room_number' => '309', 'room_type_slug' => 'penthouse', 'floor' => 3, 'status' => 'available', 'cleaning_status' => 'clean', 'capacity' => 6, 'is_active' => true],
-            ['room_number' => '310', 'room_type_slug' => 'penthouse', 'floor' => 3, 'status' => 'maintenance', 'cleaning_status' => 'dirty', 'capacity' => 6, 'is_active' => true],
         ];
 
         foreach ($rooms as $roomData) {
