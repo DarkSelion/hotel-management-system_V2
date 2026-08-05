@@ -6,7 +6,7 @@ const labelMap: Record<string, string> = {
   reservations: 'Reservations',
   guests: 'Guests',
   rooms: 'Rooms',
-  'room-types': 'Room Types',
+  'room-types': 'Room List',
   housekeeping: 'Housekeeping',
   maintenance: 'Maintenance',
   staff: 'Staff',
