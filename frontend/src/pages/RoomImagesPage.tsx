@@ -248,11 +248,13 @@ function EditRoomImagesModal({
 function RoomImageManager({ roomId }: { roomId: number }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [deleteTarget, setDeleteTarget] = useState<RoomImage | null>(null)
+  const [isPrimary, setIsPrimary] = useState(false)
 
   const { data: images = [], isLoading: imagesLoading } = useRoomImages(roomId)
   const uploadMutation = useUploadRoomImage()
   const updateMutation = useUpdateRoomImage()
   const deleteMutation = useDeleteRoomImage()
+  const { addToast } = useToast()
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -260,8 +262,17 @@ function RoomImageManager({ roomId }: { roomId: number }) {
 
     const formData = new FormData()
     formData.append('image', file)
+    if (isPrimary) {
+      formData.append('is_primary', '1')
+    }
 
-    await uploadMutation.mutateAsync({ roomId, formData })
+    try {
+      await uploadMutation.mutateAsync({ roomId, formData })
+      addToast({ variant: 'success', message: 'Image uploaded successfully' })
+      setIsPrimary(false)
+    } catch {
+      addToast({ variant: 'error', message: 'Failed to upload image' })
+    }
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -269,11 +280,16 @@ function RoomImageManager({ roomId }: { roomId: number }) {
   }
 
   const handleSetPrimary = async (image: RoomImage) => {
-    await updateMutation.mutateAsync({
-      roomId,
-      id: image.id,
-      data: { is_primary: true },
-    })
+    try {
+      await updateMutation.mutateAsync({
+        roomId,
+        id: image.id,
+        data: { is_primary: true },
+      })
+      addToast({ variant: 'success', message: 'Primary image updated' })
+    } catch {
+      addToast({ variant: 'error', message: 'Failed to set primary image' })
+    }
   }
 
   const handleDelete = async () => {
@@ -304,6 +320,15 @@ function RoomImageManager({ roomId }: { roomId: number }) {
           )}
           Upload Image
         </Button>
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={isPrimary}
+            onChange={(e) => setIsPrimary(e.target.checked)}
+            className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+          />
+          Set as primary
+        </label>
         <p className="text-xs text-muted">JPEG, PNG, or WebP up to 4MB</p>
       </div>
 

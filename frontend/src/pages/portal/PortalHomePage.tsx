@@ -242,7 +242,7 @@ export default function PortalHomePage() {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-dark/10">
               <img
                 src={featuredRoom
-                  ? getRoomImage(featuredRoom.name, 0)
+                  ? (featuredRoom.image_url || getRoomImage(featuredRoom.name, 0))
                   : ROOM_IMAGES[activeTab === 0 ? 'rooms' : activeTab === 1 ? 'suites' : 'villas'][0]
                 }
                 alt={currentTab.featured}

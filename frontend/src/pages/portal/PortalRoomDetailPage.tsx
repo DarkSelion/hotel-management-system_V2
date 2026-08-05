@@ -74,7 +74,7 @@ export default function PortalRoomDetailPage() {
       {/* Hero */}
       <section className="relative h-[60vh] min-h-[450px] flex items-end overflow-hidden">
         <div className="absolute inset-0">
-          <img src={getRoomImage(roomType.name)} alt={roomType.name} className="w-full h-full object-cover" />
+          <img src={roomType.image_url || getRoomImage(roomType.name)} alt={roomType.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/50 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-dark/60 to-transparent" />
         </div>

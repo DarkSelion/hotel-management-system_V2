@@ -180,7 +180,7 @@ export default function PortalRoomsPage() {
                     {/* Room Image */}
                     <div className="relative overflow-hidden aspect-[16/9]">
                       <img
-                        src={getRoomImage(rt.name, index)}
+                        src={rt.image_url || getRoomImage(rt.name, index)}
                         alt={rt.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
