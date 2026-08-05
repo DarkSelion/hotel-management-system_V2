@@ -18,7 +18,7 @@ export function OccupancyHero({ occupancyRate, occupiedRooms, totalRooms }: Occu
   }, [occupancyRate])
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-[#0f172a] p-6 text-white">
+    <div className="rounded-xl border border-gray-200 bg-primary p-6 text-white">
       <div className="mb-3 flex items-center gap-2">
         <Bed className="h-4 w-4 text-gray-400" />
         <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">

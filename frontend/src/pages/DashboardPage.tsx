@@ -110,7 +110,7 @@ export default function DashboardPage() {
       {/* Hero: Occupancy Bar */}
       <div className="mb-4">
         {initialLoading || !stats ? (
-          <div className="rounded-xl border border-gray-200 bg-[#0f172a] p-5">
+          <div className="rounded-xl border border-gray-200 bg-primary p-5">
             <Skeleton className="mb-3 h-4 w-32 bg-white/10" />
             <Skeleton className="mb-4 h-12 w-40 bg-white/10" />
             <Skeleton className="h-2 w-full rounded-full bg-white/10" />
