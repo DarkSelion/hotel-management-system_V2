@@ -93,7 +93,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       items: [
         { label: 'Staff', icon: <Users size={20} />, path: '/staff', adminOnly: true },
         {
-          label: 'Room Settings',
+          label: 'Hotel Settings',
           icon: <Settings size={20} />,
           adminOnly: true,
           submenu: [
