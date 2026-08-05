@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
 import { RowActions, RowActionButton } from '@/components/shared/RowActions'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -62,6 +63,7 @@ export default function RoomsPage() {
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
   const [currentPage, setCurrentPage] = useState(1)
+  const [statusFilter, setStatusFilter] = useState('')
   const [floorFilter, setFloorFilter] = useState('')
   const [roomTypeFilter, setRoomTypeFilter] = useState('')
   const [sortBy, setSortBy] = useState('')
@@ -78,6 +80,7 @@ export default function RoomsPage() {
     page: currentPage,
     per_page: 12,
     search: search || undefined,
+    status: statusFilter || undefined,
     floor: floorFilter || undefined,
     room_type_id: roomTypeFilter || undefined,
     sort: sortBy || undefined,
@@ -232,6 +235,17 @@ export default function RoomsPage() {
       ),
     },
     {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      render: (r) => <StatusBadge status={r.status} />,
+    },
+    {
+      key: 'cleaning_status',
+      label: 'Cleaning',
+      render: (r) => <StatusBadge status={r.cleaning_status ?? 'clean'} />,
+    },
+    {
       key: 'price',
       label: 'Price',
       sortable: true,
@@ -302,6 +316,16 @@ export default function RoomsPage() {
                 onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }}
               />
             </div>
+            <Select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1) }}
+              className="w-[140px]"
+            >
+              <option value="">All Status</option>
+              {ROOM_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </Select>
             <Select
               value={floorFilter}
               onChange={(e) => { setFloorFilter(e.target.value); setCurrentPage(1) }}
