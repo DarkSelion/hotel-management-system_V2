@@ -68,7 +68,7 @@ export default function PortalMyReservationsPage() {
             <CalendarX className="h-7 w-7 text-white/20" />
           </div>
           <p className="text-white/40 mb-6 text-lg font-light">Please sign in to view your reservations.</p>
-          <Link to="/portal/login" className="btn-gold inline-block">Sign In</Link>
+          <Link to="/public/login" className="btn-gold inline-block">Sign In</Link>
         </div>
       </div>
     )
@@ -98,7 +98,7 @@ export default function PortalMyReservationsPage() {
             </div>
             <p className="text-white/40 text-lg mb-2 font-light">No upcoming stays yet</p>
             <p className="text-white/20 text-sm mb-6">Browse our rooms and book your cozy escape in Pampanga.</p>
-            <Link to="/portal/rooms" className="btn-gold inline-block">Browse Rooms</Link>
+            <Link to="/public/rooms" className="btn-gold inline-block">Browse Rooms</Link>
           </div>
         ) : (
           <div className="space-y-4 sm:space-y-6">

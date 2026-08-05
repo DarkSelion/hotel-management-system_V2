@@ -179,7 +179,7 @@ class InvoicePaymentTest extends TestCase
         $guest = $reservation->guest;
         Sanctum::actingAs($guest);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 2000,
             'payment_method' => 'gcash',
@@ -193,7 +193,7 @@ class InvoicePaymentTest extends TestCase
         $guest = $reservation->guest;
         Sanctum::actingAs($guest);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 2000,
             'payment_method' => 'gcash',

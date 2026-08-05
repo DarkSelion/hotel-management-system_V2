@@ -27,7 +27,7 @@ export function PortalNavbar() {
   }, [location])
 
   const isActive = (path: string) => {
-    if (path === '/portal') return location.pathname === '/portal'
+    if (path === '/public') return location.pathname === '/public'
     return location.pathname === path || location.pathname.startsWith(path + '/')
   }
 
@@ -49,7 +49,7 @@ export function PortalNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/portal" className="flex flex-col items-start group">
+          <Link to="/public" className="flex flex-col items-start group">
             <div className="flex items-center gap-2.5">
               {logoUrl ? (
                 <img src={logoUrl} alt={hotelName} className="h-9 w-auto max-w-[140px] object-contain" />
@@ -66,12 +66,12 @@ export function PortalNavbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-10">
-            <Link to="/portal" className={linkClass('/portal')}>Home</Link>
-            <Link to="/portal/rooms" className={linkClass('/portal/rooms')}>Rooms</Link>
-            <Link to="/portal/gallery" className={linkClass('/portal/gallery')}>Gallery</Link>
-            <Link to="/portal/contact" className={linkClass('/portal/contact')}>Contact</Link>
+            <Link to="/public" className={linkClass('/public')}>Home</Link>
+            <Link to="/public/rooms" className={linkClass('/public/rooms')}>Rooms</Link>
+            <Link to="/public/gallery" className={linkClass('/public/gallery')}>Gallery</Link>
+            <Link to="/public/contact" className={linkClass('/public/contact')}>Contact</Link>
             {token && (
-              <Link to="/portal/my-reservations" className={linkClass('/portal/my-reservations')}>
+              <Link to="/public/my-reservations" className={linkClass('/public/my-reservations')}>
                 My Reservations
               </Link>
             )}
@@ -93,17 +93,17 @@ export function PortalNavbar() {
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-3 w-52 bg-dark border border-white/10 rounded-xl shadow-2xl py-2 animate-fade-in">
-                    <Link to="/portal/profile" className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
+                    <Link to="/public/profile" className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
                       <User className="h-3.5 w-3.5" />
                       My Profile
                     </Link>
-                    <Link to="/portal/my-reservations" className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
+                    <Link to="/public/my-reservations" className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
                       <Calendar className="h-3.5 w-3.5" />
                       My Reservations
                     </Link>
                     <div className="my-2 border-t border-white/5" />
                     <button
-                      onClick={() => { portalApi.post('/portal/logout').catch(() => {}); logout(); setDropdownOpen(false) }}
+                      onClick={() => { portalApi.post('/public/logout').catch(() => {}); logout(); setDropdownOpen(false) }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors"
                     >
                       <LogOut className="h-3.5 w-3.5" />
@@ -124,10 +124,10 @@ export function PortalNavbar() {
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-3 w-44 bg-dark border border-white/10 rounded-xl shadow-2xl py-2 animate-fade-in">
-                    <Link to="/portal/login" className="block px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
+                    <Link to="/public/login" className="block px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
                       Sign In
                     </Link>
-                    <Link to="/portal/register" className="block px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
+                    <Link to="/public/register" className="block px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors">
                       Register
                     </Link>
                   </div>
@@ -146,14 +146,14 @@ export function PortalNavbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-dark/98 backdrop-blur-xl border-t border-white/5 px-6 py-6 space-y-1 animate-fade-in">
-          <MobileLink to="/portal" active={isActive('/portal')}>Home</MobileLink>
-          <MobileLink to="/portal/rooms" active={isActive('/portal/rooms')}>Rooms</MobileLink>
-          <MobileLink to="/portal/gallery" active={isActive('/portal/gallery')}>Gallery</MobileLink>
-          <MobileLink to="/portal/contact" active={isActive('/portal/contact')}>Contact</MobileLink>
+          <MobileLink to="/public" active={isActive('/public')}>Home</MobileLink>
+          <MobileLink to="/public/rooms" active={isActive('/public/rooms')}>Rooms</MobileLink>
+          <MobileLink to="/public/gallery" active={isActive('/public/gallery')}>Gallery</MobileLink>
+          <MobileLink to="/public/contact" active={isActive('/public/contact')}>Contact</MobileLink>
           {token && (
             <>
-              <MobileLink to="/portal/my-reservations" active={isActive('/portal/my-reservations')}>My Reservations</MobileLink>
-              <MobileLink to="/portal/profile" active={isActive('/portal/profile')}>Profile</MobileLink>
+              <MobileLink to="/public/my-reservations" active={isActive('/public/my-reservations')}>My Reservations</MobileLink>
+              <MobileLink to="/public/profile" active={isActive('/public/profile')}>Profile</MobileLink>
               <button onClick={logout} className="block w-full text-left text-white/40 hover:text-gold py-3.5 uppercase text-[12px] tracking-[0.15em] border-b border-white/5 transition-colors">
                 Sign Out
               </button>
@@ -161,10 +161,10 @@ export function PortalNavbar() {
           )}
           {!token && (
             <div className="pt-4 pb-2 space-y-1">
-              <Link to="/portal/login" className="block text-white/50 hover:text-gold py-3 uppercase text-[12px] tracking-[0.15em] border-b border-white/5 transition-colors">
+              <Link to="/public/login" className="block text-white/50 hover:text-gold py-3 uppercase text-[12px] tracking-[0.15em] border-b border-white/5 transition-colors">
                 Sign In
               </Link>
-              <Link to="/portal/register" className="block text-white/50 hover:text-gold py-3 uppercase text-[12px] tracking-[0.15em] border-b border-white/5 transition-colors">
+              <Link to="/public/register" className="block text-white/50 hover:text-gold py-3 uppercase text-[12px] tracking-[0.15em] border-b border-white/5 transition-colors">
                 Register
               </Link>
             </div>

@@ -149,7 +149,7 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
 });
 
 // Guest Portal Routes
-Route::prefix('portal')->group(function () {
+Route::prefix('public')->group(function () {
     Route::post('/register', [PortalAuthController::class, 'register'])->middleware('throttle:6,1');
     Route::post('/login', [PortalAuthController::class, 'login'])->middleware('throttle:6,1');
     Route::get('/rooms', [PortalRoomController::class, 'index']);

@@ -81,8 +81,8 @@ export function PortalFooter() {
             &copy; {new Date().getFullYear()} {hotelName}. All rights reserved.
           </p>
           <div className="flex gap-6 text-[11px] text-white/20">
-            <Link to="/portal" className="hover:text-gold transition-colors">Privacy Policy</Link>
-            <Link to="/portal" className="hover:text-gold transition-colors">Terms of Use</Link>
+            <Link to="/public" className="hover:text-gold transition-colors">Privacy Policy</Link>
+            <Link to="/public" className="hover:text-gold transition-colors">Terms of Use</Link>
           </div>
         </div>
       </div>

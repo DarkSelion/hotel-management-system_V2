@@ -12,7 +12,7 @@ export default function PortalLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  const redirect = searchParams.get('redirect') || '/portal'
+  const redirect = searchParams.get('redirect') || '/public'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,7 +36,7 @@ export default function PortalLoginPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-dark/90 via-dark/15 to-dark" />
         <div className="relative z-10 px-10 max-w-lg">
-          <Link to="/portal" className="font-serif text-gold text-3xl font-light tracking-wider">{hotelName}</Link>
+          <Link to="/public" className="font-serif text-gold text-3xl font-light tracking-wider">{hotelName}</Link>
           <h2 className="font-serif text-white text-4xl font-light mt-6 leading-tight">
             Where Every Stay Feels Like <span className="text-gold">Home</span>
           </h2>
@@ -50,7 +50,7 @@ export default function PortalLoginPage() {
           <div className="w-full max-w-md animate-fade-in px-8">
             {/* Mobile logo */}
             <div className="text-center mb-10 lg:hidden">
-              <Link to="/portal" className="font-serif text-gold text-2xl font-light tracking-wider">{hotelName}</Link>
+              <Link to="/public" className="font-serif text-gold text-2xl font-light tracking-wider">{hotelName}</Link>
             </div>
 
             <div>
@@ -83,11 +83,11 @@ export default function PortalLoginPage() {
 
             <div className="mt-8 text-center text-sm text-white/30">
               Don&apos;t have an account?{' '}
-              <Link to="/portal/register" className="text-gold font-medium hover:underline">Create one</Link>
+              <Link to="/public/register" className="text-gold font-medium hover:underline">Create one</Link>
             </div>
 
             <p className="text-center text-[11px] text-white/15 mt-8">
-              <Link to="/portal" className="hover:text-gold transition-colors">&larr; Back to hotel website</Link>
+              <Link to="/public" className="hover:text-gold transition-colors">&larr; Back to hotel website</Link>
             </p>
           </div>
         </div>

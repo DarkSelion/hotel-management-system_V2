@@ -56,8 +56,8 @@ export default function PortalRoomDetailPage() {
 
   function handleBook() {
     if (!token) {
-      const redirectUrl = `/portal/rooms/${slug}` + (checkIn || checkOut ? `?${new URLSearchParams({ ...(checkIn && { check_in: checkIn }), ...(checkOut && { check_out: checkOut }) }).toString()}` : '')
-      navigate(`/portal/login?redirect=${encodeURIComponent(redirectUrl)}`)
+      const redirectUrl = `/public/rooms/${slug}` + (checkIn || checkOut ? `?${new URLSearchParams({ ...(checkIn && { check_in: checkIn }), ...(checkOut && { check_out: checkOut }) }).toString()}` : '')
+      navigate(`/public/login?redirect=${encodeURIComponent(redirectUrl)}`)
       return
     }
     const params = new URLSearchParams()
@@ -66,7 +66,7 @@ export default function PortalRoomDetailPage() {
     if (adults) params.set('adults', adults)
     if (children) params.set('children', children)
     params.set('room_type', String(roomType!.id))
-    navigate(`/portal/book?${params.toString()}`)
+    navigate(`/public/book?${params.toString()}`)
   }
 
   return (

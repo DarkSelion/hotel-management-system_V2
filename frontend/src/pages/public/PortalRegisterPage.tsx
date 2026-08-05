@@ -26,7 +26,7 @@ export default function PortalRegisterPage() {
     }
     try {
       await register.mutateAsync(form as any)
-      navigate('/portal', { replace: true })
+      navigate('/public', { replace: true })
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     }
@@ -43,7 +43,7 @@ export default function PortalRegisterPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-dark/90 via-dark/15 to-dark" />
         <div className="relative z-10 px-10 max-w-lg">
-          <Link to="/portal" className="font-serif text-gold text-3xl font-light tracking-wider">{hotelName}</Link>
+          <Link to="/public" className="font-serif text-gold text-3xl font-light tracking-wider">{hotelName}</Link>
           <h2 className="font-serif text-white text-4xl font-light mt-6 leading-tight">
             Your Comfortable Stay Starts <span className="text-gold">Here</span>
           </h2>
@@ -57,7 +57,7 @@ export default function PortalRegisterPage() {
           <div className="w-full max-w-md animate-fade-in px-8">
             {/* Mobile logo */}
             <div className="text-center mb-10 lg:hidden">
-              <Link to="/portal" className="font-serif text-gold text-2xl font-light tracking-wider">{hotelName}</Link>
+              <Link to="/public" className="font-serif text-gold text-2xl font-light tracking-wider">{hotelName}</Link>
             </div>
 
             <div>
@@ -119,11 +119,11 @@ export default function PortalRegisterPage() {
 
             <div className="mt-8 text-center text-sm text-white/30">
               Already have an account?{' '}
-              <Link to="/portal/login" className="text-gold font-medium hover:underline">Sign in</Link>
+              <Link to="/public/login" className="text-gold font-medium hover:underline">Sign in</Link>
             </div>
 
             <p className="text-center text-[11px] text-white/15 mt-8">
-              <Link to="/portal" className="hover:text-gold transition-colors">&larr; Back to hotel website</Link>
+              <Link to="/public" className="hover:text-gold transition-colors">&larr; Back to hotel website</Link>
             </p>
           </div>
         </div>

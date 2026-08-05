@@ -188,7 +188,7 @@ export function LoginPage() {
             <div className="mt-6 flex flex-col items-center gap-3">
             <div className="flex items-center gap-1 text-xs text-muted">
               <span>Are you a guest?</span>
-              <a href="/portal" className="text-gold font-medium hover:underline">Visit Guest Portal &rarr;</a>
+              <a href="/public" className="text-gold font-medium hover:underline">Visit Guest Portal &rarr;</a>
             </div>
             </div>
           </div>

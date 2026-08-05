@@ -15,7 +15,7 @@ export function usePortalLogin() {
   const { setAuth } = usePortalAuthStore()
   return useMutation({
     mutationFn: (data: { email: string; password: string }) =>
-      portalApi.post<PortalAuthResponse>('/portal/login', data),
+      portalApi.post<PortalAuthResponse>('/public/login', data),
     onSuccess: (res) => {
       setAuth(res.token, res.user)
     },
@@ -28,7 +28,7 @@ export function usePortalRegister() {
     mutationFn: (data: {
       first_name: string; last_name: string; email: string;
       phone: string; password: string; password_confirmation: string;
-    }) => portalApi.post<PortalAuthResponse>('/portal/register', data),
+    }) => portalApi.post<PortalAuthResponse>('/public/register', data),
     onSuccess: (res) => {
       setAuth(res.token, res.user)
     },
@@ -39,7 +39,7 @@ export function usePortalMe() {
   const token = usePortalAuthStore((s) => s.token)
   return useQuery({
     queryKey: ['portal-me'],
-    queryFn: () => portalApi.get<PortalUser>('/portal/me'),
+    queryFn: () => portalApi.get<PortalUser>('/public/me'),
     enabled: !!token,
   })
 }
@@ -53,14 +53,14 @@ export function usePortalRoomTypes(params?: Record<string, string | undefined>) 
   const qs = query.toString()
   return useQuery({
     queryKey: ['portal-room-types', params],
-    queryFn: () => portalApi.get<PortalRoomType[]>('/portal/rooms' + (qs ? '?' + qs : '')),
+    queryFn: () => portalApi.get<PortalRoomType[]>('/public/rooms' + (qs ? '?' + qs : '')),
   })
 }
 
 export function usePortalRoomType(slug: string | undefined) {
   return useQuery({
     queryKey: ['portal-room-type', slug],
-    queryFn: () => portalApi.get<PortalRoomType>('/portal/rooms/' + slug),
+    queryFn: () => portalApi.get<PortalRoomType>('/public/rooms/' + slug),
     enabled: !!slug,
   })
 }
@@ -73,7 +73,7 @@ export function usePortalAvailableRooms(params?: Record<string, string | undefin
   const qs = query.toString()
   return useQuery({
     queryKey: ['portal-available-rooms', params],
-    queryFn: () => portalApi.get<PortalRoom[]>('/portal/rooms/available' + (qs ? '?' + qs : '')),
+    queryFn: () => portalApi.get<PortalRoom[]>('/public/rooms/available' + (qs ? '?' + qs : '')),
     enabled: !!params?.check_in && !!params?.check_out,
   })
 }
@@ -83,7 +83,7 @@ export function usePortalReservations() {
   const token = usePortalAuthStore((s) => s.token)
   return useQuery({
     queryKey: ['portal-reservations'],
-    queryFn: () => portalApi.get<PortalReservationsResponse>('/portal/reservations'),
+    queryFn: () => portalApi.get<PortalReservationsResponse>('/public/reservations'),
     enabled: !!token,
   })
 }
@@ -92,7 +92,7 @@ export function usePortalReservation(id: number | undefined) {
   const token = usePortalAuthStore((s) => s.token)
   return useQuery({
     queryKey: ['portal-reservation', id],
-    queryFn: () => portalApi.get<PortalReservation>('/portal/reservations/' + id),
+    queryFn: () => portalApi.get<PortalReservation>('/public/reservations/' + id),
     enabled: !!token && !!id,
   })
 }
@@ -103,7 +103,7 @@ export function usePortalCreateReservation() {
     mutationFn: (data: {
       room_type_id: number; check_in: string; check_out: string;
       adults: number; children?: number; special_requests?: string;
-    }) => portalApi.post<PortalReservation>('/portal/reservations', data),
+    }) => portalApi.post<PortalReservation>('/public/reservations', data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['portal-reservations'] })
     },
@@ -113,7 +113,7 @@ export function usePortalCreateReservation() {
 export function usePortalCancelReservation() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) => portalApi.post<{ message: string }>('/portal/reservations/' + id + '/cancel'),
+    mutationFn: (id: number) => portalApi.post<{ message: string }>('/public/reservations/' + id + '/cancel'),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['portal-reservations'] })
     },
@@ -124,7 +124,7 @@ export function usePortalCancelReservation() {
 export function usePortalSettings(group: string) {
   return useQuery({
     queryKey: ['portal-settings', group],
-    queryFn: () => portalApi.get<Record<string, unknown>>('/portal/settings/' + group),
+    queryFn: () => portalApi.get<Record<string, unknown>>('/public/settings/' + group),
   })
 }
 
@@ -148,7 +148,7 @@ export function usePortalCreatePayment() {
     mutationFn: (data: {
       reservation_id: number; amount: number;
       payment_method: string; payment_type: string;
-    }) => portalApi.post('/portal/payments', data),
+    }) => portalApi.post('/public/payments', data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['portal-reservations'] })
     },
@@ -159,7 +159,7 @@ export function usePortalCreatePayment() {
 export function usePortalSendContactMessage() {
   return useMutation({
     mutationFn: (data: { name: string; email: string; subject: string; message: string }) =>
-      portalApi.post<{ message: string }>('/portal/contact', data),
+      portalApi.post<{ message: string }>('/public/contact', data),
   })
 }
 
@@ -167,7 +167,7 @@ export function usePortalSendContactMessage() {
 export function usePortalUpdateProfile() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => portalApi.put<PortalUser>('/portal/profile', data),
+    mutationFn: (data: Record<string, unknown>) => portalApi.put<PortalUser>('/public/profile', data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['portal-me'] })
     },
@@ -177,7 +177,7 @@ export function usePortalUpdateProfile() {
 export function usePortalDeleteAccount() {
   const { logout } = usePortalAuthStore()
   return useMutation({
-    mutationFn: () => portalApi.delete<{ message: string }>('/portal/profile'),
+    mutationFn: () => portalApi.delete<{ message: string }>('/public/profile'),
     onSuccess: () => {
       logout()
     },

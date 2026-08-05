@@ -67,7 +67,7 @@ export default function PortalRoomsPage() {
     const q = new URLSearchParams()
     if (checkIn) q.set('check_in', checkIn)
     if (checkOut) q.set('check_out', checkOut)
-    navigate(`/portal/rooms/${slug}?${q.toString()}`)
+    navigate(`/public/rooms/${slug}?${q.toString()}`)
   }
 
   return (
@@ -142,7 +142,7 @@ export default function PortalRoomsPage() {
                 </div>
               </div>
               <button
-                onClick={() => navigate('/portal')}
+                onClick={() => navigate('/public')}
                 className="text-xs text-gold uppercase tracking-[0.1em] hover:underline font-medium"
               >
                 Change Dates

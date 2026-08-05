@@ -44,7 +44,7 @@ export default function PortalProfilePage() {
       <div className="min-h-screen bg-dark flex items-center justify-center">
         <div className="text-center">
           <p className="text-white/30 mb-6 text-lg font-light">Please sign in to view your profile.</p>
-          <Link to="/portal/login" className="btn-gold inline-block">Sign In</Link>
+          <Link to="/public/login" className="btn-gold inline-block">Sign In</Link>
         </div>
       </div>
     )
@@ -53,7 +53,7 @@ export default function PortalProfilePage() {
   async function handleDelete() {
     try {
       await deleteAccount.mutateAsync()
-      navigate('/portal')
+      navigate('/public')
     } catch {
       // handled by react-query
     }
@@ -76,9 +76,9 @@ export default function PortalProfilePage() {
   }
 
   function handleLogout() {
-    portalApi.post('/portal/logout').catch(() => {})
+    portalApi.post('/public/logout').catch(() => {})
     logout()
-    navigate('/portal')
+    navigate('/public')
   }
 
   return (

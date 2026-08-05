@@ -103,7 +103,7 @@ class GuestDeletionTest extends TestCase
         $guest = $this->makeGuestWithHistory();
         Sanctum::actingAs($guest);
 
-        $this->deleteJson('/api/portal/profile')->assertStatus(422);
+        $this->deleteJson('/api/public/profile')->assertStatus(422);
 
         $this->assertDatabaseHas('guests', ['id' => $guest->id]);
     }

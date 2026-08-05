@@ -107,7 +107,7 @@ class PortalTest extends TestCase
 
     public function test_portal_registration_success(): void
     {
-        $response = $this->postJson('/api/portal/register', [
+        $response = $this->postJson('/api/public/register', [
             'first_name' => 'Alice',
             'last_name' => 'Wonder',
             'email' => 'alice@example.com',
@@ -125,7 +125,7 @@ class PortalTest extends TestCase
 
     public function test_portal_registration_validation_errors(): void
     {
-        $response = $this->postJson('/api/portal/register', [
+        $response = $this->postJson('/api/public/register', [
             'first_name' => 'A',
             'email' => 'not-an-email',
             'password' => 'short',
@@ -139,7 +139,7 @@ class PortalTest extends TestCase
     {
         $this->guest(['email' => 'taken@example.com']);
 
-        $response = $this->postJson('/api/portal/register', [
+        $response = $this->postJson('/api/public/register', [
             'first_name' => 'Bob',
             'last_name' => 'Builder',
             'email' => 'taken@example.com',
@@ -160,7 +160,7 @@ class PortalTest extends TestCase
     {
         $guest = $this->guest(['password' => Hash::make('secret123')]);
 
-        $response = $this->postJson('/api/portal/login', [
+        $response = $this->postJson('/api/public/login', [
             'email' => $guest->email,
             'password' => 'secret123',
         ]);
@@ -172,7 +172,7 @@ class PortalTest extends TestCase
 
     public function test_portal_login_wrong_email(): void
     {
-        $response = $this->postJson('/api/portal/login', [
+        $response = $this->postJson('/api/public/login', [
             'email' => 'nobody@example.com',
             'password' => 'secret123',
         ]);
@@ -185,7 +185,7 @@ class PortalTest extends TestCase
     {
         $guest = $this->guest(['password' => Hash::make('correct123')]);
 
-        $response = $this->postJson('/api/portal/login', [
+        $response = $this->postJson('/api/public/login', [
             'email' => $guest->email,
             'password' => 'wrong',
         ]);
@@ -198,7 +198,7 @@ class PortalTest extends TestCase
     {
         $guest = $this->guest(['password' => Hash::make('secret123'), 'is_blacklisted' => true]);
 
-        $response = $this->postJson('/api/portal/login', [
+        $response = $this->postJson('/api/public/login', [
             'email' => $guest->email,
             'password' => 'secret123',
         ]);
@@ -209,7 +209,7 @@ class PortalTest extends TestCase
 
     public function test_portal_login_validation_errors(): void
     {
-        $response = $this->postJson('/api/portal/login', []);
+        $response = $this->postJson('/api/public/login', []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email', 'password']);
@@ -221,7 +221,7 @@ class PortalTest extends TestCase
 
     public function test_portal_me_requires_auth(): void
     {
-        $this->getJson('/api/portal/me')->assertStatus(401);
+        $this->getJson('/api/public/me')->assertStatus(401);
     }
 
     public function test_portal_me_returns_guest(): void
@@ -229,7 +229,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $this->getJson('/api/portal/me')
+        $this->getJson('/api/public/me')
             ->assertStatus(200)
             ->assertJsonPath('email', $guest->email)
             ->assertJsonPath('first_name', 'John');
@@ -240,7 +240,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $this->postJson('/api/portal/logout')
+        $this->postJson('/api/public/logout')
             ->assertStatus(200)
             ->assertJsonPath('message', 'Logged out successfully.');
 
@@ -256,7 +256,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $response = $this->putJson('/api/portal/profile', [
+        $response = $this->putJson('/api/public/profile', [
             'first_name' => 'Updated',
             'last_name' => 'Name',
             'phone' => '09187654321',
@@ -280,7 +280,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['city' => 'Manila', 'address' => '123 St']);
         Sanctum::actingAs($guest);
 
-        $this->putJson('/api/portal/profile', [
+        $this->putJson('/api/public/profile', [
             'city' => '',
             'address' => '',
         ])->assertStatus(200);
@@ -295,7 +295,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['email' => 'myname@example.com']);
         Sanctum::actingAs($guest);
 
-        $response = $this->putJson('/api/portal/profile', [
+        $response = $this->putJson('/api/public/profile', [
             'email' => 'taken@example.com',
         ]);
 
@@ -305,7 +305,7 @@ class PortalTest extends TestCase
 
     public function test_portal_profile_update_requires_auth(): void
     {
-        $this->putJson('/api/portal/profile', ['first_name' => 'Test'])
+        $this->putJson('/api/public/profile', ['first_name' => 'Test'])
             ->assertStatus(401);
     }
 
@@ -318,7 +318,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['password' => Hash::make('oldpass123')]);
         Sanctum::actingAs($guest);
 
-        $this->putJson('/api/portal/password', [
+        $this->putJson('/api/public/password', [
             'current_password' => 'oldpass123',
             'password' => 'newpass123',
             'password_confirmation' => 'newpass123',
@@ -333,7 +333,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['password' => Hash::make('correct123')]);
         Sanctum::actingAs($guest);
 
-        $response = $this->putJson('/api/portal/password', [
+        $response = $this->putJson('/api/public/password', [
             'current_password' => 'wrongpass',
             'password' => 'newpass123',
             'password_confirmation' => 'newpass123',
@@ -348,7 +348,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $response = $this->putJson('/api/portal/password', [
+        $response = $this->putJson('/api/public/password', [
             'current_password' => 'password',
         ]);
 
@@ -365,7 +365,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $this->deleteJson('/api/portal/profile')
+        $this->deleteJson('/api/public/profile')
             ->assertStatus(200)
             ->assertJsonPath('message', 'Account deleted successfully.');
 
@@ -397,7 +397,7 @@ class PortalTest extends TestCase
 
         Sanctum::actingAs($guest);
 
-        $response = $this->deleteJson('/api/portal/profile');
+        $response = $this->deleteJson('/api/public/profile');
 
         $response->assertStatus(422)
             ->assertJsonPath('message', 'Cannot delete account with reservation history. Please contact support.');
@@ -424,7 +424,7 @@ class PortalTest extends TestCase
         ]);
         $this->room($inactiveType);
 
-        $response = $this->getJson('/api/portal/rooms');
+        $response = $this->getJson('/api/public/rooms');
 
         $response->assertStatus(200);
         $data = $response->json();
@@ -455,7 +455,7 @@ class PortalTest extends TestCase
             'source' => 'booking_engine',
         ]);
 
-        $response = $this->getJson('/api/portal/rooms?check_in=2026-10-09&check_out=2026-10-11');
+        $response = $this->getJson('/api/public/rooms?check_in=2026-10-09&check_out=2026-10-11');
 
         $response->assertStatus(200);
         $this->assertCount(0, $response->json());
@@ -484,7 +484,7 @@ class PortalTest extends TestCase
             'source' => 'booking_engine',
         ]);
 
-        $response = $this->getJson('/api/portal/rooms?check_in=2026-10-30&check_out=2026-11-03');
+        $response = $this->getJson('/api/public/rooms?check_in=2026-10-30&check_out=2026-11-03');
 
         $response->assertStatus(200);
         $this->assertCount(0, $response->json());
@@ -513,7 +513,7 @@ class PortalTest extends TestCase
             'source' => 'booking_engine',
         ]);
 
-        $response = $this->getJson('/api/portal/rooms?check_in=2026-10-09&check_out=2026-10-11');
+        $response = $this->getJson('/api/public/rooms?check_in=2026-10-09&check_out=2026-10-11');
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json());
@@ -533,7 +533,7 @@ class PortalTest extends TestCase
             'is_primary' => true,
         ]);
 
-        $response = $this->getJson('/api/portal/rooms/' . $type->slug);
+        $response = $this->getJson('/api/public/rooms/' . $type->slug);
 
         $response->assertStatus(200)
             ->assertJsonPath('slug', $type->slug)
@@ -543,7 +543,7 @@ class PortalTest extends TestCase
 
     public function test_portal_room_detail_not_found(): void
     {
-        $this->getJson('/api/portal/rooms/nonexistent')->assertStatus(404);
+        $this->getJson('/api/public/rooms/nonexistent')->assertStatus(404);
     }
 
     public function test_portal_room_detail_inactive_hidden(): void
@@ -555,7 +555,7 @@ class PortalTest extends TestCase
             'is_active' => false,
         ]);
 
-        $this->getJson('/api/portal/rooms/' . $type->slug)->assertStatus(404);
+        $this->getJson('/api/public/rooms/' . $type->slug)->assertStatus(404);
     }
 
     // =========================================================================
@@ -567,7 +567,7 @@ class PortalTest extends TestCase
         $type = $this->roomType('deluxe', 150);
         $room = $this->room($type);
 
-        $response = $this->getJson('/api/portal/rooms/available?check_in=2026-10-10&check_out=2026-10-12');
+        $response = $this->getJson('/api/public/rooms/available?check_in=2026-10-10&check_out=2026-10-12');
 
         $response->assertStatus(200);
         $data = $response->json();
@@ -599,7 +599,7 @@ class PortalTest extends TestCase
             'source' => 'booking_engine',
         ]);
 
-        $response = $this->getJson('/api/portal/rooms/available?check_in=2026-10-09&check_out=2026-10-13');
+        $response = $this->getJson('/api/public/rooms/available?check_in=2026-10-09&check_out=2026-10-13');
 
         $response->assertStatus(200);
         $this->assertCount(0, $response->json());
@@ -628,7 +628,7 @@ class PortalTest extends TestCase
             'source' => 'booking_engine',
         ]);
 
-        $response = $this->getJson('/api/portal/rooms/available?check_in=2026-10-09&check_out=2026-10-13');
+        $response = $this->getJson('/api/public/rooms/available?check_in=2026-10-09&check_out=2026-10-13');
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json());
@@ -642,7 +642,7 @@ class PortalTest extends TestCase
         $this->room($deluxe);
         $this->room($suite);
 
-        $response = $this->getJson("/api/portal/rooms/available?check_in=2026-10-10&check_out=2026-10-12&room_type_id={$deluxe->id}");
+        $response = $this->getJson("/api/public/rooms/available?check_in=2026-10-10&check_out=2026-10-12&room_type_id={$deluxe->id}");
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json());
@@ -651,7 +651,7 @@ class PortalTest extends TestCase
 
     public function test_portal_available_rooms_validation(): void
     {
-        $response = $this->getJson('/api/portal/rooms/available?check_in=2026-10-10');
+        $response = $this->getJson('/api/public/rooms/available?check_in=2026-10-10');
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['check_out']);
@@ -672,7 +672,7 @@ class PortalTest extends TestCase
         $checkIn = now()->addDays(10)->format('Y-m-d');
         $checkOut = now()->addDays(12)->format('Y-m-d');
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
@@ -705,7 +705,7 @@ class PortalTest extends TestCase
         $type = $this->roomType('deluxe', 150);
         $this->room($type);
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => '2026-10-10',
             'check_out' => '2026-10-12',
@@ -723,7 +723,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => '2026-10-12',
             'check_out' => '2026-10-10',
@@ -740,7 +740,7 @@ class PortalTest extends TestCase
         $guest = $this->guest();
         Sanctum::actingAs($guest);
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => 9999,
             'check_in' => '2026-10-10',
             'check_out' => '2026-10-12',
@@ -778,7 +778,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['email' => 'booker@example.com']);
         Sanctum::actingAs($guest);
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => '2026-10-10',
             'check_out' => '2026-10-12',
@@ -797,7 +797,7 @@ class PortalTest extends TestCase
         Sanctum::actingAs($guest);
 
         $farFuture = now()->addDays(35)->format('Y-m-d');
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $farFuture,
             'check_out' => now()->addDays(37)->format('Y-m-d'),
@@ -819,7 +819,7 @@ class PortalTest extends TestCase
         Sanctum::actingAs($guest);
 
         $farFuture = now()->addDays(365)->format('Y-m-d');
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $farFuture,
             'check_out' => now()->addDays(366)->format('Y-m-d'),
@@ -860,7 +860,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['email' => 'assigner@example.com']);
         Sanctum::actingAs($guest);
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
@@ -882,7 +882,7 @@ class PortalTest extends TestCase
         $checkIn = now()->addDays(10)->format('Y-m-d');
         $checkOut = now()->addDays(12)->format('Y-m-d');
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
@@ -905,7 +905,7 @@ class PortalTest extends TestCase
         $checkIn = now()->addDays(10)->format('Y-m-d');
         $checkOut = now()->addDays(12)->format('Y-m-d');
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
@@ -928,7 +928,7 @@ class PortalTest extends TestCase
         $checkIn = now()->addDays(10)->format('Y-m-d');
         $checkOut = now()->addDays(12)->format('Y-m-d');
 
-        $this->postJson('/api/portal/reservations', [
+        $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
@@ -990,7 +990,7 @@ class PortalTest extends TestCase
 
         Sanctum::actingAs($guest1);
 
-        $response = $this->getJson('/api/portal/reservations');
+        $response = $this->getJson('/api/public/reservations');
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json('data'));
@@ -1025,7 +1025,7 @@ class PortalTest extends TestCase
 
         Sanctum::actingAs($guest);
 
-        $response = $this->getJson('/api/portal/reservations?per_page=10');
+        $response = $this->getJson('/api/public/reservations?per_page=10');
 
         $response->assertStatus(200)
             ->assertJsonPath('total', 15)
@@ -1035,7 +1035,7 @@ class PortalTest extends TestCase
 
     public function test_portal_reservations_list_requires_auth(): void
     {
-        $this->getJson('/api/portal/reservations')->assertStatus(401);
+        $this->getJson('/api/public/reservations')->assertStatus(401);
     }
 
     // =========================================================================
@@ -1047,7 +1047,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->getJson("/api/portal/reservations/{$reservation->id}");
+        $response = $this->getJson("/api/public/reservations/{$reservation->id}");
 
         $response->assertStatus(200)
             ->assertJsonPath('id', $reservation->id)
@@ -1064,7 +1064,7 @@ class PortalTest extends TestCase
         $otherGuest = $this->guest(['email' => 'other@example.com']);
         Sanctum::actingAs($otherGuest);
 
-        $this->getJson("/api/portal/reservations/{$reservation->id}")
+        $this->getJson("/api/public/reservations/{$reservation->id}")
             ->assertStatus(404)
             ->assertJsonPath('message', 'Not found.');
     }
@@ -1079,7 +1079,7 @@ class PortalTest extends TestCase
         $room = $reservation->room;
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson("/api/portal/reservations/{$reservation->id}/cancel");
+        $response = $this->postJson("/api/public/reservations/{$reservation->id}/cancel");
 
         $response->assertStatus(200)
             ->assertJsonPath('status', 'cancelled');
@@ -1093,7 +1093,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation(['status' => 'cancelled']);
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson("/api/portal/reservations/{$reservation->id}/cancel");
+        $response = $this->postJson("/api/public/reservations/{$reservation->id}/cancel");
 
         $response->assertStatus(422)
             ->assertJsonPath('message', 'Reservation cannot be cancelled.');
@@ -1104,7 +1104,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation(['status' => 'checked_out']);
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson("/api/portal/reservations/{$reservation->id}/cancel");
+        $response = $this->postJson("/api/public/reservations/{$reservation->id}/cancel");
 
         $response->assertStatus(422)
             ->assertJsonPath('message', 'Reservation cannot be cancelled.');
@@ -1116,7 +1116,7 @@ class PortalTest extends TestCase
         $otherGuest = $this->guest(['email' => 'other@example.com']);
         Sanctum::actingAs($otherGuest);
 
-        $this->postJson("/api/portal/reservations/{$reservation->id}/cancel")
+        $this->postJson("/api/public/reservations/{$reservation->id}/cancel")
             ->assertStatus(404);
     }
 
@@ -1125,7 +1125,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $this->postJson("/api/portal/reservations/{$reservation->id}/cancel");
+        $this->postJson("/api/public/reservations/{$reservation->id}/cancel");
 
         $this->assertDatabaseHas('activity_logs', [
             'action' => 'cancelled',
@@ -1143,7 +1143,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'gcash',
@@ -1174,7 +1174,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 440,
             'payment_method' => 'cash',
@@ -1195,7 +1195,7 @@ class PortalTest extends TestCase
         $otherGuest = $this->guest(['email' => 'other@example.com']);
         Sanctum::actingAs($otherGuest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'cash',
@@ -1211,7 +1211,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation(['status' => 'cancelled']);
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'cash',
@@ -1227,7 +1227,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation(['status' => 'checked_out']);
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'cash',
@@ -1244,7 +1244,7 @@ class PortalTest extends TestCase
         $reservation->update(['payment_status' => 'paid', 'paid_amount' => 440, 'due_amount' => 0]);
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 100,
             'payment_method' => 'cash',
@@ -1260,7 +1260,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'gcash',
@@ -1276,7 +1276,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => -10,
             'payment_method' => 'bitcoin',
@@ -1292,7 +1292,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 440,
             'payment_method' => 'cash',
@@ -1310,7 +1310,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation(['status' => 'no_show']);
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'cash',
@@ -1326,7 +1326,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 0,
             'payment_method' => 'cash',
@@ -1342,7 +1342,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $response = $this->postJson('/api/portal/payments', [
+        $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 500,
             'payment_method' => 'cash',
@@ -1360,7 +1360,7 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 440,
             'payment_method' => 'cash',
@@ -1380,7 +1380,7 @@ class PortalTest extends TestCase
 
     public function test_portal_contact_submit_success(): void
     {
-        $response = $this->postJson('/api/portal/contact', [
+        $response = $this->postJson('/api/public/contact', [
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
             'subject' => 'Booking inquiry',
@@ -1400,7 +1400,7 @@ class PortalTest extends TestCase
 
     public function test_portal_contact_honeypot_drops_message(): void
     {
-        $response = $this->postJson('/api/portal/contact', [
+        $response = $this->postJson('/api/public/contact', [
             'name' => 'Bot',
             'email' => 'bot@example.com',
             'subject' => 'spam',
@@ -1418,7 +1418,7 @@ class PortalTest extends TestCase
 
     public function test_portal_contact_validation_errors(): void
     {
-        $response = $this->postJson('/api/portal/contact', [
+        $response = $this->postJson('/api/public/contact', [
             'name' => '',
             'email' => 'not-email',
             'subject' => '',
@@ -1431,7 +1431,7 @@ class PortalTest extends TestCase
 
     public function test_portal_contact_records_ip(): void
     {
-        $this->postJson('/api/portal/contact', [
+        $this->postJson('/api/public/contact', [
             'name' => 'IP Tester',
             'email' => 'ip@example.com',
             'subject' => 'Test',
@@ -1448,7 +1448,7 @@ class PortalTest extends TestCase
     public function test_portal_contact_rate_limiting(): void
     {
         for ($i = 0; $i < 3; $i++) {
-            $this->postJson('/api/portal/contact', [
+            $this->postJson('/api/public/contact', [
                 'name' => "User {$i}",
                 'email' => "user{$i}@example.com",
                 'subject' => 'Message',
@@ -1457,7 +1457,7 @@ class PortalTest extends TestCase
             ])->assertStatus(201);
         }
 
-        $response = $this->postJson('/api/portal/contact', [
+        $response = $this->postJson('/api/public/contact', [
             'name' => 'Fourth',
             'email' => 'fourth@example.com',
             'subject' => 'Spam',
@@ -1478,7 +1478,7 @@ class PortalTest extends TestCase
         Setting::create(['key' => 'hotel_address', 'value' => '123 Main St', 'group' => 'hotel']);
         Setting::create(['key' => 'tax_rate', 'value' => '12', 'group' => 'tax']);
 
-        $response = $this->getJson('/api/portal/settings/hotel');
+        $response = $this->getJson('/api/public/settings/hotel');
 
         $response->assertStatus(200)
             ->assertJsonPath('hotel_name', 'My Hotel')
@@ -1487,7 +1487,7 @@ class PortalTest extends TestCase
 
     public function test_portal_settings_empty_group(): void
     {
-        $response = $this->getJson('/api/portal/settings/tax');
+        $response = $this->getJson('/api/public/settings/tax');
 
         $response->assertStatus(200)
             ->assertJsonCount(0);
@@ -1497,7 +1497,7 @@ class PortalTest extends TestCase
     {
         Setting::create(['key' => 'hotel_name', 'value' => 'Public Hotel', 'group' => 'hotel']);
 
-        $this->getJson('/api/portal/settings/hotel')
+        $this->getJson('/api/public/settings/hotel')
             ->assertStatus(200)
             ->assertJsonPath('hotel_name', 'Public Hotel');
     }
@@ -1518,8 +1518,8 @@ class PortalTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $this->getJson('/api/portal/me')->assertStatus(403);
-        $this->getJson('/api/portal/reservations')->assertStatus(403);
+        $this->getJson('/api/public/me')->assertStatus(403);
+        $this->getJson('/api/public/reservations')->assertStatus(403);
     }
 
     public function test_guest_password_update_logs_activity(): void
@@ -1527,7 +1527,7 @@ class PortalTest extends TestCase
         $guest = $this->guest(['password' => Hash::make('oldpass123')]);
         Sanctum::actingAs($guest);
 
-        $this->putJson('/api/portal/password', [
+        $this->putJson('/api/public/password', [
             'current_password' => 'oldpass123',
             'password' => 'newpass123',
             'password_confirmation' => 'newpass123',
@@ -1544,19 +1544,19 @@ class PortalTest extends TestCase
     {
         $guest = $this->guest(['password' => Hash::make('oldpass123')]);
 
-        $this->postJson('/api/portal/login', [
+        $this->postJson('/api/public/login', [
             'email' => $guest->email,
             'password' => 'oldpass123',
         ])->assertStatus(200);
 
         Sanctum::actingAs($guest);
-        $this->putJson('/api/portal/password', [
+        $this->putJson('/api/public/password', [
             'current_password' => 'oldpass123',
             'password' => 'newpass456',
             'password_confirmation' => 'newpass456',
         ])->assertStatus(200);
 
-        $this->postJson('/api/portal/login', [
+        $this->postJson('/api/public/login', [
             'email' => $guest->email,
             'password' => 'newpass456',
         ])->assertStatus(200);
@@ -1579,7 +1579,7 @@ class PortalTest extends TestCase
         $checkIn = now()->addDays(10)->format('Y-m-d');
         $checkOut = now()->addDays(12)->format('Y-m-d');
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $inactiveType->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
@@ -1594,14 +1594,14 @@ class PortalTest extends TestCase
         $reservation = $this->makeReservation();
         Sanctum::actingAs($reservation->guest);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
             'payment_method' => 'cash',
             'payment_type' => 'partial',
         ])->assertStatus(201);
 
-        $this->postJson('/api/portal/payments', [
+        $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 240,
             'payment_method' => 'gcash',
@@ -1622,14 +1622,14 @@ class PortalTest extends TestCase
         $room = $reservation->room;
         Sanctum::actingAs($reservation->guest);
 
-        $this->postJson("/api/portal/reservations/{$reservation->id}/cancel")->assertStatus(200);
+        $this->postJson("/api/public/reservations/{$reservation->id}/cancel")->assertStatus(200);
 
         $this->assertEquals('available', $room->fresh()->status);
 
         $type = $room->roomType;
         $this->setupSettings();
 
-        $response = $this->postJson('/api/portal/reservations', [
+        $response = $this->postJson('/api/public/reservations', [
             'room_type_id' => $type->id,
             'check_in' => $reservation->check_in->toDateString(),
             'check_out' => $reservation->check_out->toDateString(),

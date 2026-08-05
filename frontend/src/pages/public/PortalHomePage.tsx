@@ -141,7 +141,7 @@ export default function PortalHomePage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-reveal-up" style={{ animationDelay: '0.9s' }}>
               <button
-                onClick={() => navigate('/portal/rooms')}
+                onClick={() => navigate('/public/rooms')}
                 className="btn-gold inline-flex items-center gap-2"
               >
                 Explore Stays <ArrowRight className="h-4 w-4" />
@@ -191,7 +191,7 @@ export default function PortalHomePage() {
                    params.set('rooms', String(guests.rooms))
                    params.set('adults', String(guests.adults))
                    params.set('children', String(guests.children))
-                   window.location.href = `/portal/rooms?${params.toString()}`
+                   window.location.href = `/public/rooms?${params.toString()}`
                  }}
                  className="btn-gold w-full md:w-auto flex items-center justify-center gap-2 shrink-0 h-10"
                  type="button"
@@ -284,7 +284,7 @@ export default function PortalHomePage() {
                 </div>
               )}
               <button
-                onClick={() => navigate('/portal/rooms')}
+                onClick={() => navigate('/public/rooms')}
                 className="btn-gold-outline inline-flex items-center gap-2"
               >
                 View All {currentTab.label} <ArrowRight className="h-4 w-4" />
@@ -341,7 +341,7 @@ export default function PortalHomePage() {
               <h2 className="section-heading">A Glimpse of {hotelName}</h2>
             </div>
             <button
-              onClick={() => navigate('/portal/gallery')}
+              onClick={() => navigate('/public/gallery')}
               className="btn-gold-outline mt-6 md:mt-0 inline-flex items-center gap-2 shrink-0"
             >
               View Full Gallery <ArrowRight className="h-4 w-4" />
@@ -356,7 +356,7 @@ export default function PortalHomePage() {
               { src: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop', label: 'Family Room' },
               { src: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&h=400&fit=crop', label: 'Event Hall' },
             ].map((photo, i) => (
-              <div key={i} className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-white/5 cursor-pointer" onClick={() => navigate('/portal/gallery')}>
+              <div key={i} className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-white/5 cursor-pointer" onClick={() => navigate('/public/gallery')}>
                 <img
                   src={photo.src}
                   alt={photo.label}

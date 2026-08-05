@@ -162,7 +162,7 @@ export default function PortalBookingPage() {
         children: childrenCount,
         special_requests: specialRequests || undefined,
       })
-      navigate('/portal/my-reservations')
+      navigate('/public/my-reservations')
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unable to confirm booking. Please try again.'
       addToast(message, 'error')
@@ -172,7 +172,7 @@ export default function PortalBookingPage() {
   const totalRooms = roomGroups.reduce((n, g) => n + g.count, 0)
   const heroImage = selectedGroup ? groupImage(selectedGroup) : getHeroImage(roomGroups[0]?.roomType.name ?? 'rooms')
 
-  if (!token) return <Navigate to="/portal/login" replace />
+  if (!token) return <Navigate to="/public/login" replace />
 
   return (
     <div className="min-h-screen bg-dark">

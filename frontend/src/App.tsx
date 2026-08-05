@@ -54,7 +54,7 @@ function RequireRole({ children }: { children: React.ReactNode }) {
 
 function ProtectedPortalRoute({ children }: { children: React.ReactNode }) {
   const { token } = usePortalAuthStore()
-  if (!token) return <Navigate to="/portal/login" replace />
+  if (!token) return <Navigate to="/public/login" replace />
   return <>{children}</>
 }
 
@@ -114,7 +114,7 @@ export default function App() {
         </Route>
 
         {/* Guest Portal routes */}
-        <Route path="/portal" element={
+        <Route path="/public" element={
           <Suspense fallback={<PageLoader />}><PortalLayout /></Suspense>
         }>
           <Route index element={<Suspense fallback={<PageLoader />}><PortalHomePage /></Suspense>} />
@@ -132,8 +132,8 @@ export default function App() {
           <Route path="gallery" element={<Suspense fallback={<PageLoader />}><PortalGalleryPage /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<PageLoader />}><PortalContactPage /></Suspense>} />
         </Route>
-        <Route path="/portal/login" element={<Suspense fallback={<PageLoader />}><PortalLoginPage /></Suspense>} />
-        <Route path="/portal/register" element={<Suspense fallback={<PageLoader />}><PortalRegisterPage /></Suspense>} />
+        <Route path="/public/login" element={<Suspense fallback={<PageLoader />}><PortalLoginPage /></Suspense>} />
+        <Route path="/public/register" element={<Suspense fallback={<PageLoader />}><PortalRegisterPage /></Suspense>} />
       </Routes>
     </ToastProvider>
   )
