@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { usePortalRoomTypes } from '@/hooks/usePortalApi'
+import { usePublicRoomTypes } from '@/hooks/usePublicApi'
 import { formatCurrency } from '@/lib/format'
 import { Users, Maximize, ArrowRight, Calendar, BedDouble, Building2, Sofa } from 'lucide-react'
 
@@ -36,7 +36,7 @@ function getRoomImage(name: string, index: number): string {
   return ROOM_IMAGES.rooms[index % ROOM_IMAGES.rooms.length]
 }
 
-export default function PortalRoomsPage() {
+export default function PublicRoomsPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [filter, setFilter] = useState(searchParams.get('type') || 'all')
@@ -44,7 +44,7 @@ export default function PortalRoomsPage() {
   const checkIn = searchParams.get('check_in') || ''
   const checkOut = searchParams.get('check_out') || ''
 
-  const { data: roomTypes, isLoading } = usePortalRoomTypes({
+  const { data: roomTypes, isLoading } = usePublicRoomTypes({
     check_in: checkIn || undefined,
     check_out: checkOut || undefined,
   })

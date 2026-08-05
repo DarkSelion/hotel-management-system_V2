@@ -1,10 +1,10 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { DashboardLayout } from './components/layout/DashboardLayout'
-import { PortalLayout } from './components/portal/PortalLayout'
+import { PublicLayout } from './components/public/PublicLayout'
 import { LoginPage } from './pages/admin/LoginPage'
 import { useAuthStore } from './stores/authStore'
-import { usePortalAuthStore } from './stores/portalAuthStore'
+import { usePublicAuthStore } from './stores/publicAuthStore'
 import { isAdminRole } from './lib/permissions'
 import { ToastProvider } from './components/ui/toast'
 
@@ -28,16 +28,16 @@ const RoomTypesPage = lazy(() => import('./pages/admin/RoomTypesPage'))
 const AmenitiesPage = lazy(() => import('./pages/admin/AmenitiesPage'))
 const RoomImagesPage = lazy(() => import('./pages/admin/RoomImagesPage'))
 
-const PortalHomePage = lazy(() => import('./pages/public/PortalHomePage'))
-const PortalRoomsPage = lazy(() => import('./pages/public/PortalRoomsPage'))
-const PortalRoomDetailPage = lazy(() => import('./pages/public/PortalRoomDetailPage'))
-const PortalBookingPage = lazy(() => import('./pages/public/PortalBookingPage'))
-const PortalLoginPage = lazy(() => import('./pages/public/PortalLoginPage'))
-const PortalRegisterPage = lazy(() => import('./pages/public/PortalRegisterPage'))
-const PortalMyReservationsPage = lazy(() => import('./pages/public/PortalMyReservationsPage'))
-const PortalProfilePage = lazy(() => import('./pages/public/PortalProfilePage'))
-const PortalGalleryPage = lazy(() => import('./pages/public/PortalGalleryPage'))
-const PortalContactPage = lazy(() => import('./pages/public/PortalContactPage'))
+const PublicHomePage = lazy(() => import('./pages/public/PublicHomePage'))
+const PublicRoomsPage = lazy(() => import('./pages/public/PublicRoomsPage'))
+const PublicRoomDetailPage = lazy(() => import('./pages/public/PublicRoomDetailPage'))
+const PublicBookingPage = lazy(() => import('./pages/public/PublicBookingPage'))
+const PublicLoginPage = lazy(() => import('./pages/public/PublicLoginPage'))
+const PublicRegisterPage = lazy(() => import('./pages/public/PublicRegisterPage'))
+const PublicMyReservationsPage = lazy(() => import('./pages/public/PublicMyReservationsPage'))
+const PublicProfilePage = lazy(() => import('./pages/public/PublicProfilePage'))
+const PublicGalleryPage = lazy(() => import('./pages/public/PublicGalleryPage'))
+const PublicContactPage = lazy(() => import('./pages/public/PublicContactPage'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuthStore()
@@ -52,8 +52,8 @@ function RequireRole({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function ProtectedPortalRoute({ children }: { children: React.ReactNode }) {
-  const { token } = usePortalAuthStore()
+function ProtectedPublicRoute({ children }: { children: React.ReactNode }) {
+  const { token } = usePublicAuthStore()
   if (!token) return <Navigate to="/public/login" replace />
   return <>{children}</>
 }
@@ -113,27 +113,27 @@ export default function App() {
           <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
         </Route>
 
-        {/* Guest Portal routes */}
+        {/* Guest Public routes */}
         <Route path="/public" element={
-          <Suspense fallback={<PageLoader />}><PortalLayout /></Suspense>
+          <Suspense fallback={<PageLoader />}><PublicLayout /></Suspense>
         }>
-          <Route index element={<Suspense fallback={<PageLoader />}><PortalHomePage /></Suspense>} />
-          <Route path="rooms" element={<Suspense fallback={<PageLoader />}><PortalRoomsPage /></Suspense>} />
-          <Route path="rooms/:slug" element={<Suspense fallback={<PageLoader />}><PortalRoomDetailPage /></Suspense>} />
+          <Route index element={<Suspense fallback={<PageLoader />}><PublicHomePage /></Suspense>} />
+          <Route path="rooms" element={<Suspense fallback={<PageLoader />}><PublicRoomsPage /></Suspense>} />
+          <Route path="rooms/:slug" element={<Suspense fallback={<PageLoader />}><PublicRoomDetailPage /></Suspense>} />
           <Route path="book" element={
-            <ProtectedPortalRoute><Suspense fallback={<PageLoader />}><PortalBookingPage /></Suspense></ProtectedPortalRoute>
+            <ProtectedPublicRoute><Suspense fallback={<PageLoader />}><PublicBookingPage /></Suspense></ProtectedPublicRoute>
           } />
           <Route path="my-reservations" element={
-            <ProtectedPortalRoute><Suspense fallback={<PageLoader />}><PortalMyReservationsPage /></Suspense></ProtectedPortalRoute>
+            <ProtectedPublicRoute><Suspense fallback={<PageLoader />}><PublicMyReservationsPage /></Suspense></ProtectedPublicRoute>
           } />
           <Route path="profile" element={
-            <ProtectedPortalRoute><Suspense fallback={<PageLoader />}><PortalProfilePage /></Suspense></ProtectedPortalRoute>
+            <ProtectedPublicRoute><Suspense fallback={<PageLoader />}><PublicProfilePage /></Suspense></ProtectedPublicRoute>
           } />
-          <Route path="gallery" element={<Suspense fallback={<PageLoader />}><PortalGalleryPage /></Suspense>} />
-          <Route path="contact" element={<Suspense fallback={<PageLoader />}><PortalContactPage /></Suspense>} />
+          <Route path="gallery" element={<Suspense fallback={<PageLoader />}><PublicGalleryPage /></Suspense>} />
+          <Route path="contact" element={<Suspense fallback={<PageLoader />}><PublicContactPage /></Suspense>} />
         </Route>
-        <Route path="/public/login" element={<Suspense fallback={<PageLoader />}><PortalLoginPage /></Suspense>} />
-        <Route path="/public/register" element={<Suspense fallback={<PageLoader />}><PortalRegisterPage /></Suspense>} />
+        <Route path="/public/login" element={<Suspense fallback={<PageLoader />}><PublicLoginPage /></Suspense>} />
+        <Route path="/public/register" element={<Suspense fallback={<PageLoader />}><PublicRegisterPage /></Suspense>} />
       </Routes>
     </ToastProvider>
   )

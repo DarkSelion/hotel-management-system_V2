@@ -5,7 +5,7 @@ import {
 } from '@/hooks/useApi'
 import type { Invoice, Reservation } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
-import { useHotelName, useHotelSettings } from '@/hooks/usePortalApi'
+import { useHotelName, useHotelSettings } from '@/hooks/usePublicApi'
 import { useToast } from '@/components/ui/toast'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'

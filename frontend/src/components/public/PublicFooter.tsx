@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Phone, Mail, MapPin } from 'lucide-react'
-import { useHotelName, useHotelSettings } from '@/hooks/usePortalApi'
+import { useHotelName, useHotelSettings } from '@/hooks/usePublicApi'
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -34,7 +34,7 @@ const SOCIALS = [
   { icon: TikTokIcon, href: '#', label: 'TikTok' },
 ]
 
-export function PortalFooter() {
+export function PublicFooter() {
   const hotelName = useHotelName()
   const hotel = useHotelSettings()
   const address = (hotel['hotel_address'] as string) || 'Pampanga, Philippines'

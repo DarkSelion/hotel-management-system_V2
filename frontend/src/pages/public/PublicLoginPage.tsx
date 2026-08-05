@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { usePortalLogin, useHotelName } from '@/hooks/usePortalApi'
+import { usePublicLogin, useHotelName } from '@/hooks/usePublicApi'
 import { Loader2 } from 'lucide-react'
 
-export default function PortalLoginPage() {
+export default function PublicLoginPage() {
   const navigate = useNavigate()
   const hotelName = useHotelName()
   const [searchParams] = useSearchParams()
-  const login = usePortalLogin()
+  const login = usePublicLogin()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -65,11 +65,11 @@ export default function PortalLoginPage() {
               )}
               <div>
                 <label htmlFor="login_email" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Email</label>
-                <input id="login_email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-portal" placeholder="you@email.com" />
+                <input id="login_email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="input-public" placeholder="you@email.com" />
               </div>
               <div>
                 <label htmlFor="login_password" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Password</label>
-                <input id="login_password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-portal" placeholder="Enter your password" />
+                <input id="login_password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-public" placeholder="Enter your password" />
               </div>
               <button
                 type="submit"

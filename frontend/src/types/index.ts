@@ -283,8 +283,8 @@ export interface Amenity {
   icon?: string
   description?: string
 }
-// === Portal / Guest Types ===
-export interface PortalUser {
+// === Public / Guest Types ===
+export interface PublicUser {
   id: number
   first_name: string
   last_name: string
@@ -302,7 +302,7 @@ export interface PortalUser {
   created_at?: string
 }
 
-export interface PortalRoomType {
+export interface PublicRoomType {
   id: number
   name: string
   slug: string
@@ -319,10 +319,10 @@ export interface PortalRoomType {
   image_url?: string
 }
 
-export interface PortalRoom {
+export interface PublicRoom {
   id: number
   room_number: string
-  room_type: PortalRoomType
+  room_type: PublicRoomType
   floor: number
   status: string
   price_override?: number
@@ -332,10 +332,10 @@ export interface PortalRoom {
   image_url?: string
 }
 
-export interface PortalReservation {
+export interface PublicReservation {
   id: number
   reservation_number: string
-  room: PortalRoom
+  room: PublicRoom
   status: string
   check_in: string
   check_out: string
@@ -349,15 +349,15 @@ export interface PortalReservation {
   created_at: string
 }
 
-export interface PortalReservationsResponse {
-  data: PortalReservation[]
+export interface PublicReservationsResponse {
+  data: PublicReservation[]
   current_page: number
   last_page: number
   per_page: number
   total: number
 }
 
-export interface PortalAuthResponse {
+export interface PublicAuthResponse {
   token: string
-  user: PortalUser
+  user: PublicUser
 }

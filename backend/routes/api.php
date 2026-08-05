@@ -10,11 +10,11 @@ use App\Http\Controllers\Api\HousekeepingController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\MaintenanceController;
 use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\Portal\AuthController as PortalAuthController;
-use App\Http\Controllers\Api\Portal\ContactController as PortalContactController;
-use App\Http\Controllers\Api\Portal\PaymentController as PortalPaymentController;
-use App\Http\Controllers\Api\Portal\ReservationController as PortalReservationController;
-use App\Http\Controllers\Api\Portal\RoomController as PortalRoomController;
+use App\Http\Controllers\Api\Public\AuthController as PublicAuthController;
+use App\Http\Controllers\Api\Public\ContactController as PublicContactController;
+use App\Http\Controllers\Api\Public\PaymentController as PublicPaymentController;
+use App\Http\Controllers\Api\Public\ReservationController as PublicReservationController;
+use App\Http\Controllers\Api\Public\RoomController as PublicRoomController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\RoomController;
@@ -141,33 +141,33 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
         // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index']);
 
-        // Contact Messages (from portal contact form)
+        // Contact Messages (from public contact form)
         Route::get('/contact-messages', [ContactMessageController::class, 'index']);
         Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show']);
         Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy']);
     });
 });
 
-// Guest Portal Routes
+// Guest Public Routes
 Route::prefix('public')->group(function () {
-    Route::post('/register', [PortalAuthController::class, 'register'])->middleware('throttle:6,1');
-    Route::post('/login', [PortalAuthController::class, 'login'])->middleware('throttle:6,1');
-    Route::get('/rooms', [PortalRoomController::class, 'index']);
-    Route::get('/rooms/available', [PortalRoomController::class, 'available']);
-    Route::get('/rooms/{slug}', [PortalRoomController::class, 'show']);
+    Route::post('/register', [PublicAuthController::class, 'register'])->middleware('throttle:6,1');
+    Route::post('/login', [PublicAuthController::class, 'login'])->middleware('throttle:6,1');
+    Route::get('/rooms', [PublicRoomController::class, 'index']);
+    Route::get('/rooms/available', [PublicRoomController::class, 'available']);
+    Route::get('/rooms/{slug}', [PublicRoomController::class, 'show']);
     Route::get('/settings/{group}', [SettingController::class, 'byGroup']);
-    Route::post('/contact', [PortalContactController::class, 'store'])->middleware('throttle:contact');
+    Route::post('/contact', [PublicContactController::class, 'store'])->middleware('throttle:contact');
 
     Route::middleware(['auth:sanctum', 'role:guest'])->group(function () {
-        Route::get('/me', [PortalAuthController::class, 'me']);
-        Route::post('/logout', [PortalAuthController::class, 'logout']);
-        Route::put('/profile', [PortalAuthController::class, 'updateProfile']);
-        Route::put('/password', [PortalAuthController::class, 'updatePassword']);
-        Route::delete('/profile', [PortalAuthController::class, 'destroyAccount']);
-        Route::post('/reservations', [PortalReservationController::class, 'store']);
-        Route::get('/reservations', [PortalReservationController::class, 'index']);
-        Route::get('/reservations/{reservation}', [PortalReservationController::class, 'show']);
-        Route::post('/reservations/{reservation}/cancel', [PortalReservationController::class, 'cancel']);
-        Route::post('/payments', [PortalPaymentController::class, 'store']);
+        Route::get('/me', [PublicAuthController::class, 'me']);
+        Route::post('/logout', [PublicAuthController::class, 'logout']);
+        Route::put('/profile', [PublicAuthController::class, 'updateProfile']);
+        Route::put('/password', [PublicAuthController::class, 'updatePassword']);
+        Route::delete('/profile', [PublicAuthController::class, 'destroyAccount']);
+        Route::post('/reservations', [PublicReservationController::class, 'store']);
+        Route::get('/reservations', [PublicReservationController::class, 'index']);
+        Route::get('/reservations/{reservation}', [PublicReservationController::class, 'show']);
+        Route::post('/reservations/{reservation}/cancel', [PublicReservationController::class, 'cancel']);
+        Route::post('/payments', [PublicPaymentController::class, 'store']);
     });
 });

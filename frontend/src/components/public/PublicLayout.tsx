@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
-import { PortalNavbar } from './PortalNavbar'
-import { PortalFooter } from './PortalFooter'
+import { PublicNavbar } from './PublicNavbar'
+import { PublicFooter } from './PublicFooter'
 
-export function PortalLayout() {
+export function PublicLayout() {
   useEffect(() => {
     const root = document.documentElement
     root.classList.add('home-theme-root')
@@ -12,11 +12,11 @@ export function PortalLayout() {
 
   return (
     <div className="home-theme min-h-screen bg-dark">
-      <PortalNavbar />
+      <PublicNavbar />
       <main className="pt-20">
         <Outlet />
       </main>
-      <PortalFooter />
+      <PublicFooter />
     </div>
   )
 }

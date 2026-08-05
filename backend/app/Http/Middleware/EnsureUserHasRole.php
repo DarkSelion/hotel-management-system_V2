@@ -16,7 +16,7 @@ class EnsureUserHasRole
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // Portal guests are authenticated via Guest model
+        // Public guests are authenticated via Guest model
         if ($user instanceof Guest) {
             $userRole = 'guest';
         } else {

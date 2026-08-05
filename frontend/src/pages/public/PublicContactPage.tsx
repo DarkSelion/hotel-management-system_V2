@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { usePortalSettings, useHotelName, useHotelSettings, usePortalSendContactMessage } from '@/hooks/usePortalApi'
+import { usePublicSettings, useHotelName, useHotelSettings, usePublicSendContactMessage } from '@/hooks/usePublicApi'
 import { Mail, Phone, MapPin, Clock, Send, ChevronDown, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 
 const SUBJECTS = [
@@ -30,8 +30,8 @@ const DEFAULT_FAQ = [
   },
 ]
 
-export default function PortalContactPage() {
-  const { data: s } = usePortalSettings('contact')
+export default function PublicContactPage() {
+  const { data: s } = usePublicSettings('contact')
   const hotelName = useHotelName()
   const hotel = useHotelSettings()
   const settings = (s ?? {}) as Record<string, any>
@@ -40,7 +40,7 @@ export default function PortalContactPage() {
   const [submitted, setSubmitted] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [cooldown, setCooldown] = useState(0)
-  const sendMessage = usePortalSendContactMessage()
+  const sendMessage = usePublicSendContactMessage()
 
   const COOLDOWN_SECONDS = 120
 

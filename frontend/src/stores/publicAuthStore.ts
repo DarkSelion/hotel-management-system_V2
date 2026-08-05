@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface PortalUser {
+interface PublicUser {
   id: number
   first_name: string
   last_name: string
@@ -17,16 +17,16 @@ interface PortalUser {
   is_blacklisted?: boolean
 }
 
-interface PortalAuthState {
+interface PublicAuthState {
   token: string | null
-  user: PortalUser | null
-  setAuth: (token: string, user: PortalUser) => void
+  user: PublicUser | null
+  setAuth: (token: string, user: PublicUser) => void
   logout: () => void
 }
 
 // SECURITY: Token is stored in localStorage via zustand/persist middleware.
 // For production, consider encrypting the token or using httpOnly cookies.
-export const usePortalAuthStore = create<PortalAuthState>()(
+export const usePublicAuthStore = create<PublicAuthState>()(
   persist(
     (set) => ({
       token: null,
@@ -34,6 +34,6 @@ export const usePortalAuthStore = create<PortalAuthState>()(
       setAuth: (token, user) => set({ token, user }),
       logout: () => set({ token: null, user: null }),
     }),
-    { name: 'portal-auth-storage' },
+    { name: 'public-auth-storage' },
   ),
 )

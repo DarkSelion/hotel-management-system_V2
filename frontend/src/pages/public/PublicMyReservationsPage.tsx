@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { usePortalReservations, usePortalCancelReservation, usePortalCreatePayment, useHotelName } from '@/hooks/usePortalApi'
-import { usePortalAuthStore } from '@/stores/portalAuthStore'
+import { usePublicReservations, usePublicCancelReservation, usePublicCreatePayment, useHotelName } from '@/hooks/usePublicApi'
+import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import type { PortalReservation } from '@/types'
 import {
@@ -38,12 +38,12 @@ function getThumbUrl(name: string): string {
   return THUMB_SRC.rooms
 }
 
-export default function PortalMyReservationsPage() {
-  const { token } = usePortalAuthStore()
+export default function PublicMyReservationsPage() {
+  const { token } = usePublicAuthStore()
   const hotelName = useHotelName()
-  const { data, isLoading } = usePortalReservations()
-  const cancelReservation = usePortalCancelReservation()
-  const createPayment = usePortalCreatePayment()
+  const { data, isLoading } = usePublicReservations()
+  const cancelReservation = usePublicCancelReservation()
+  const createPayment = usePublicCreatePayment()
   const [cancelId, setCancelId] = useState<number | null>(null)
   const [paymentModal, setPaymentModal] = useState<PortalReservation | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<string>('gcash')

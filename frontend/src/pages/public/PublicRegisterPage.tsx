@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { usePortalRegister, useHotelName } from '@/hooks/usePortalApi'
+import { usePublicRegister, useHotelName } from '@/hooks/usePublicApi'
 import { Loader2 } from 'lucide-react'
 
-export default function PortalRegisterPage() {
+export default function PublicRegisterPage() {
   const navigate = useNavigate()
   const hotelName = useHotelName()
-  const register = usePortalRegister()
+  const register = usePublicRegister()
   const [form, setForm] = useState({
     first_name: '', last_name: '', email: '', phone: '',
     gender: '', password: '', password_confirmation: '',
@@ -73,25 +73,25 @@ export default function PortalRegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="reg_first_name" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">First Name</label>
-                  <input id="reg_first_name" type="text" value={form.first_name} onChange={(e) => update('first_name', e.target.value)} required className="input-portal" />
+                  <input id="reg_first_name" type="text" value={form.first_name} onChange={(e) => update('first_name', e.target.value)} required className="input-public" />
                 </div>
                 <div>
                   <label htmlFor="reg_last_name" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Last Name</label>
-                  <input id="reg_last_name" type="text" value={form.last_name} onChange={(e) => update('last_name', e.target.value)} required className="input-portal" />
+                  <input id="reg_last_name" type="text" value={form.last_name} onChange={(e) => update('last_name', e.target.value)} required className="input-public" />
                 </div>
               </div>
               <div>
                 <label htmlFor="reg_email" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Email</label>
-                <input id="reg_email" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required className="input-portal" placeholder="you@email.com" />
+                <input id="reg_email" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required className="input-public" placeholder="you@email.com" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="reg_phone" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Phone</label>
-                  <input id="reg_phone" type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} required className="input-portal" placeholder="09171234567" />
+                  <input id="reg_phone" type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} required className="input-public" placeholder="09171234567" />
                 </div>
                 <div>
                   <label htmlFor="reg_gender" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Gender <span className="text-white/15">(optional)</span></label>
-                  <select id="reg_gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="select-portal">
+                  <select id="reg_gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="select-public">
                     <option value="">Prefer not to say</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -101,11 +101,11 @@ export default function PortalRegisterPage() {
               </div>
               <div>
                 <label htmlFor="reg_password" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Password</label>
-                <input id="reg_password" type="password" value={form.password} onChange={(e) => update('password', e.target.value)} required minLength={8} className="input-portal" />
+                <input id="reg_password" type="password" value={form.password} onChange={(e) => update('password', e.target.value)} required minLength={8} className="input-public" />
               </div>
               <div>
                 <label htmlFor="reg_password_confirm" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Confirm Password</label>
-                <input id="reg_password_confirm" type="password" value={form.password_confirmation} onChange={(e) => update('password_confirmation', e.target.value)} required className="input-portal" />
+                <input id="reg_password_confirm" type="password" value={form.password_confirmation} onChange={(e) => update('password_confirmation', e.target.value)} required className="input-public" />
               </div>
               <button
                 type="submit"

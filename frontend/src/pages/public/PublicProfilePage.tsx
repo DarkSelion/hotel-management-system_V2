@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { usePortalMe, usePortalUpdateProfile, usePortalDeleteAccount } from '@/hooks/usePortalApi'
-import { usePortalAuthStore } from '@/stores/portalAuthStore'
-import { portalApi } from '@/lib/portalApi'
+import { usePublicMe, usePublicUpdateProfile, usePublicDeleteAccount } from '@/hooks/usePublicApi'
+import { usePublicAuthStore } from '@/stores/publicAuthStore'
+import { publicApi } from '@/lib/publicApi'
 import { Loader2, User, Trash2, CheckCircle, X, Calendar } from 'lucide-react'
 
-export default function PortalProfilePage() {
+export default function PublicProfilePage() {
   const navigate = useNavigate()
-  const { token, logout } = usePortalAuthStore()
-  const { data: user, isLoading } = usePortalMe()
-  const updateProfile = usePortalUpdateProfile()
-  const deleteAccount = usePortalDeleteAccount()
+  const { token, logout } = usePublicAuthStore()
+  const { data: user, isLoading } = usePublicMe()
+  const updateProfile = usePublicUpdateProfile()
+  const deleteAccount = usePublicDeleteAccount()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [success, setSuccess] = useState('')
@@ -76,7 +76,7 @@ export default function PortalProfilePage() {
   }
 
   function handleLogout() {
-    portalApi.post('/public/logout').catch(() => {})
+    publicApi.post('/public/logout').catch(() => {})
     logout()
     navigate('/public')
   }
@@ -113,39 +113,39 @@ export default function PortalProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="profile_first_name" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">First Name</label>
-                  <input id="profile_first_name" type="text" value={form.first_name} onChange={(e) => update('first_name', e.target.value)} className="input-portal" />
+                  <input id="profile_first_name" type="text" value={form.first_name} onChange={(e) => update('first_name', e.target.value)} className="input-public" />
                 </div>
                 <div>
                   <label htmlFor="profile_last_name" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Last Name</label>
-                  <input id="profile_last_name" type="text" value={form.last_name} onChange={(e) => update('last_name', e.target.value)} className="input-portal" />
+                  <input id="profile_last_name" type="text" value={form.last_name} onChange={(e) => update('last_name', e.target.value)} className="input-public" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="profile_email" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Email</label>
-                  <input id="profile_email" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="input-portal" />
+                  <input id="profile_email" type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="input-public" />
                 </div>
                 <div>
                   <label htmlFor="profile_phone" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Phone</label>
-                  <input id="profile_phone" type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} className="input-portal" />
+                  <input id="profile_phone" type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} className="input-public" />
                 </div>
               </div>
               <div>
                 <label htmlFor="profile_address" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Address</label>
-                <input id="profile_address" type="text" value={form.address} onChange={(e) => update('address', e.target.value)} className="input-portal" />
+                <input id="profile_address" type="text" value={form.address} onChange={(e) => update('address', e.target.value)} className="input-public" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="profile_city" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">City</label>
-                  <input id="profile_city" type="text" value={form.city} onChange={(e) => update('city', e.target.value)} className="input-portal" />
+                  <input id="profile_city" type="text" value={form.city} onChange={(e) => update('city', e.target.value)} className="input-public" />
                 </div>
                 <div>
                   <label htmlFor="profile_country" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Country</label>
-                  <input id="profile_country" type="text" value={form.country} onChange={(e) => update('country', e.target.value)} className="input-portal" />
+                  <input id="profile_country" type="text" value={form.country} onChange={(e) => update('country', e.target.value)} className="input-public" />
                 </div>
                 <div>
                   <label htmlFor="profile_nationality" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Nationality</label>
-                  <input id="profile_nationality" type="text" value={form.nationality} onChange={(e) => update('nationality', e.target.value)} className="input-portal" />
+                  <input id="profile_nationality" type="text" value={form.nationality} onChange={(e) => update('nationality', e.target.value)} className="input-public" />
                 </div>
               </div>
 
@@ -156,12 +156,12 @@ export default function PortalProfilePage() {
                     <label htmlFor="profile_dob" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Date of Birth</label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none" />
-                      <input id="profile_dob" type="date" value={form.date_of_birth} onChange={(e) => update('date_of_birth', e.target.value)} className="input-portal pl-10 [color-scheme:dark]" />
+                      <input id="profile_dob" type="date" value={form.date_of_birth} onChange={(e) => update('date_of_birth', e.target.value)} className="input-public pl-10 [color-scheme:dark]" />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="profile_gender" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Gender</label>
-                    <select id="profile_gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="input-portal">
+                    <select id="profile_gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="input-public">
                       <option value="">Select</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
@@ -170,7 +170,7 @@ export default function PortalProfilePage() {
                   </div>
                   <div>
                     <label htmlFor="profile_postal" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Postal Code</label>
-                    <input id="profile_postal" type="text" value={form.postal_code} onChange={(e) => update('postal_code', e.target.value)} className="input-portal" />
+                    <input id="profile_postal" type="text" value={form.postal_code} onChange={(e) => update('postal_code', e.target.value)} className="input-public" />
                   </div>
                 </div>
               </div>

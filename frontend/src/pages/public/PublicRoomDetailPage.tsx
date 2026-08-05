@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { usePortalRoomType } from '@/hooks/usePortalApi'
-import { usePortalAuthStore } from '@/stores/portalAuthStore'
+import { usePublicRoomType } from '@/hooks/usePublicApi'
+import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { formatCurrency } from '@/lib/format'
 import { Users, Maximize, BedDouble, Home, Check, ArrowRight } from 'lucide-react'
 
@@ -24,12 +24,12 @@ const DEFAULT_AMENITIES = [
   'Hot and cold shower', 'Complimentary breakfast', 'Air conditioning',
 ]
 
-export default function PortalRoomDetailPage() {
+export default function PublicRoomDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { token } = usePortalAuthStore()
-  const { data: roomType, isLoading } = usePortalRoomType(slug)
+  const { token } = usePublicAuthStore()
+  const { data: roomType, isLoading } = usePublicRoomType(slug)
 
   const checkIn = searchParams.get('check_in') ?? ''
   const checkOut = searchParams.get('check_out') ?? ''

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useHotelName } from '@/hooks/usePortalApi'
+import { useHotelName } from '@/hooks/usePublicApi'
 import { X, ChevronLeft, ChevronRight, Camera, LayoutGrid, BedDouble, Waves } from 'lucide-react'
 
 interface GalleryPhoto {
@@ -29,7 +29,7 @@ const PHOTOS: GalleryPhoto[] = [
   { id: 11, src: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80', title: 'Resort View', category: 'Amenities' },
 ]
 
-export default function PortalGalleryPage() {
+export default function PublicGalleryPage() {
   const hotelName = useHotelName()
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)

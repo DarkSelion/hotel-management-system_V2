@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom'
-import { usePortalAvailableRooms, usePortalCreateReservation, usePortalSettings } from '@/hooks/usePortalApi'
-import { usePortalAuthStore } from '@/stores/portalAuthStore'
+import { usePublicAvailableRooms, usePublicCreateReservation, usePublicSettings } from '@/hooks/usePublicApi'
+import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { useToast } from '@/components/ui/toast'
 import { formatCurrency } from '@/lib/format'
 import { DatePicker } from '@/components/ui/date-picker'
-import type { PortalRoom, PortalRoomType } from '@/types'
+import type { PortalRoom, PublicRoomType } from '@/types'
 import { Loader2, Check, Users, Maximize, BedDouble, ArrowLeft, CreditCard, Calendar, ChevronRight } from 'lucide-react'
 
 const HERO_IMAGES: Record<string, string> = {
@@ -36,7 +36,7 @@ function toLocalDateStr(d: Date): string {
 }
 
 interface RoomGroup {
-  roomType: PortalRoomType
+  roomType: PublicRoomType
   count: number
   sampleRoom: PortalRoom
 }
@@ -47,10 +47,10 @@ function groupImage(group: RoomGroup): string {
 
 const steps = ['Dates', 'Room', 'Confirm']
 
-export default function PortalBookingPage() {
+export default function PublicBookingPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { user, token } = usePortalAuthStore()
+  const { user, token } = usePublicAuthStore()
 
   const [step, setStep] = useState(() => {
     if (searchParams.get('check_in') && searchParams.get('check_out') && searchParams.get('room_type')) return 2
@@ -70,7 +70,7 @@ export default function PortalBookingPage() {
     return undefined
   }, [checkIn, checkOut])
 
-  const { data: rooms, isLoading: roomsLoading } = usePortalAvailableRooms(dateParams)
+  const { data: rooms, isLoading: roomsLoading } = usePublicAvailableRooms(dateParams)
 
   const filteredRooms = useMemo(() => {
     if (!rooms) return rooms
@@ -94,9 +94,9 @@ export default function PortalBookingPage() {
     return Array.from(map.values())
   }, [filteredRooms])
 
-  const createReservation = usePortalCreateReservation()
-  const { data: taxSettings } = usePortalSettings('tax')
-  const { data: bookingSettings } = usePortalSettings('booking')
+  const createReservation = usePublicCreateReservation()
+  const { data: taxSettings } = usePublicSettings('tax')
+  const { data: bookingSettings } = usePublicSettings('booking')
   const { addToast } = useToast()
 
   useEffect(() => {
@@ -232,13 +232,13 @@ export default function PortalBookingPage() {
                   </div>
                   <div>
                     <label htmlFor="booking_adults" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Adults</label>
-                    <select id="booking_adults" value={adults} onChange={(e) => setAdults(Number(e.target.value))} className="input-portal">
+                    <select id="booking_adults" value={adults} onChange={(e) => setAdults(Number(e.target.value))} className="input-public">
                       {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label htmlFor="booking_children" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Children</label>
-                    <select id="booking_children" value={childrenCount} onChange={(e) => setChildrenCount(Number(e.target.value))} className="input-portal">
+                    <select id="booking_children" value={childrenCount} onChange={(e) => setChildrenCount(Number(e.target.value))} className="input-public">
                       {[0, 1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
@@ -474,7 +474,7 @@ export default function PortalBookingPage() {
                     onChange={(e) => setSpecialRequests(e.target.value)}
                     rows={3}
                     placeholder="Any special requests or requirements..."
-                    className="input-portal resize-none"
+                    className="input-public resize-none"
                   />
                 </div>
               </div>

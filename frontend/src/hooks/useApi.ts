@@ -772,7 +772,7 @@ export function useUpdateSettings() {
     mutationFn: (data: unknown) => api.put('/settings', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] })
-      queryClient.invalidateQueries({ queryKey: ['portal-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['public-settings'] })
     },
   })
 }
@@ -787,7 +787,7 @@ export function useUpdateLogo() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] })
-      queryClient.invalidateQueries({ queryKey: ['portal-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['public-settings'] })
     },
   })
 }
@@ -798,7 +798,7 @@ export function useDeleteLogo() {
     mutationFn: () => api.delete('/settings/logo'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] })
-      queryClient.invalidateQueries({ queryKey: ['portal-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['public-settings'] })
     },
   })
 }

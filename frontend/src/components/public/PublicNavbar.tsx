@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { usePortalAuthStore } from '@/stores/portalAuthStore'
-import { useHotelName, useHotelSettings } from '@/hooks/usePortalApi'
-import { portalApi } from '@/lib/portalApi'
+import { usePublicAuthStore } from '@/stores/publicAuthStore'
+import { useHotelName, useHotelSettings } from '@/hooks/usePublicApi'
+import { publicApi } from '@/lib/publicApi'
 import { Menu, X, User, LogOut, ChevronDown, Calendar } from 'lucide-react'
 
-export function PortalNavbar() {
-  const { token, user, logout } = usePortalAuthStore()
+export function PublicNavbar() {
+  const { token, user, logout } = usePublicAuthStore()
   const hotelName = useHotelName()
   const hotel = useHotelSettings()
   const logoUrl = (hotel['hotel_logo'] as string | undefined) || ''
@@ -103,7 +103,7 @@ export function PortalNavbar() {
                     </Link>
                     <div className="my-2 border-t border-white/5" />
                     <button
-                      onClick={() => { portalApi.post('/public/logout').catch(() => {}); logout(); setDropdownOpen(false) }}
+                      onClick={() => { publicApi.post('/public/logout').catch(() => {}); logout(); setDropdownOpen(false) }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/60 hover:text-gold hover:bg-white/5 transition-colors"
                     >
                       <LogOut className="h-3.5 w-3.5" />

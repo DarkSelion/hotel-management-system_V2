@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { usePortalRoomTypes, useHotelName, usePortalSettings } from '@/hooks/usePortalApi'
+import { usePublicRoomTypes, useHotelName, usePublicSettings } from '@/hooks/usePublicApi'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { GuestsPicker } from '@/components/ui/guests-picker'
 import { ArrowRight, Users, Maximize, Search, Waves, UtensilsCrossed, Camera, Wifi, Car, Star, Building2 } from 'lucide-react'
@@ -63,15 +63,15 @@ function getRoomImage(name: string, index: number): string {
   return ROOM_IMAGES.rooms[index % ROOM_IMAGES.rooms.length]
 }
 
-export default function PortalHomePage() {
+export default function PublicHomePage() {
   const navigate = useNavigate()
   const hotelName = useHotelName()
   const [activeTab, setActiveTab] = useState(0)
   const [dateRange, setDateRange] = useState({ from: '', to: '' })
   const [guests, setGuests] = useState({ rooms: 1, adults: 1, children: 0 })
   const [heroSlide, setHeroSlide] = useState(0)
-  const { data: roomTypes } = usePortalRoomTypes()
-  const { data: bookingSettings } = usePortalSettings('booking')
+  const { data: roomTypes } = usePublicRoomTypes()
+  const { data: bookingSettings } = usePublicSettings('booking')
 
   const maxAdvanceDays = useMemo(() => {
     const raw = (bookingSettings as Record<string, string> | undefined)?.max_advance_days
