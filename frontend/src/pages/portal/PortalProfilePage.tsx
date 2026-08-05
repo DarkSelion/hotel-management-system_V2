@@ -176,7 +176,7 @@ export default function PortalProfilePage() {
 
               <div className="flex justify-between items-center pt-4 border-t border-white/5">
                 <button type="button" onClick={handleLogout}
-                  className="px-4 py-2 border border-danger/20 text-danger/70 rounded-lg text-xs uppercase tracking-wider hover:bg-danger/5 hover:border-danger/40 hover:text-danger transition-all">
+                  className="px-8 py-3 border border-danger/20 text-danger/70 rounded text-sm font-semibold uppercase tracking-wider hover:bg-danger/5 hover:border-danger/40 hover:text-danger transition-all">
                   Sign Out
                 </button>
                 <button type="submit" disabled={updateProfile.isPending}
