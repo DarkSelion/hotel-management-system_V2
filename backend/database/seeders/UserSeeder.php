@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
         $roles = Role::whereIn('slug', ['super_admin', 'admin', 'hotel_manager', 'receptionist', 'housekeeping', 'cashier', 'staff'])->get()->keyBy('slug');
 
         $users = [
-            ['name' => 'Super Admin', 'email' => 'superadmin@hotel.com', 'role_slug' => 'super_admin'],
+            ['name' => 'Super Admin', 'email' => 'palayjohncarlo@gmail.com', 'role_slug' => 'super_admin'],
             ['name' => 'Admin', 'email' => 'admin@hotel.com', 'role_slug' => 'admin'],
             ['name' => 'Hotel Manager', 'email' => 'manager@hotel.com', 'role_slug' => 'hotel_manager'],
             ['name' => 'Receptionist', 'email' => 'reception@hotel.com', 'role_slug' => 'receptionist'],
