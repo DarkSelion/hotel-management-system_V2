@@ -102,7 +102,7 @@ export default function PortalProfilePage() {
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-gold border-t-transparent" />
           </div>
         ) : (
-          <div className="bg-dark border border-zinc-800 rounded-2xl p-8">
+          <div className="bg-neutral-600 border border-gold/10 rounded-2xl p-8">
             {success && (
               <div className="mb-6 flex items-center gap-2 bg-success/10 border border-success/20 text-success text-sm px-4 py-3 rounded-lg">
                 <CheckCircle className="h-4 w-4" />
@@ -176,7 +176,7 @@ export default function PortalProfilePage() {
 
               <div className="flex justify-between items-center pt-4 border-t border-white/5">
                 <button type="button" onClick={handleLogout}
-                  className="text-danger/50 text-[11px] uppercase tracking-wider hover:text-danger transition-colors">
+                  className="px-4 py-2 border border-danger/20 text-danger/70 rounded-lg text-xs uppercase tracking-wider hover:bg-danger/5 hover:border-danger/40 hover:text-danger transition-all">
                   Sign Out
                 </button>
                 <button type="submit" disabled={updateProfile.isPending}
@@ -190,7 +190,7 @@ export default function PortalProfilePage() {
         )}
 
         {/* Delete Account */}
-        <div className="mt-8 bg-danger/5 border border-danger/20 rounded-2xl p-6">
+        <div className="mt-8 bg-danger/5 border border-danger/10 rounded-2xl p-6">
           <h3 className="text-white font-semibold mb-1">Delete Account</h3>
           <p className="text-white/40 text-sm mb-4">
             Permanently delete your account and all associated data. This action cannot be undone.
