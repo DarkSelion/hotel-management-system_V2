@@ -18,6 +18,7 @@ import {
   Package,
   Mail,
   ImageIcon,
+  CreditCard,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/utils'
@@ -100,6 +101,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             { label: 'Room List', icon: <Wrench size={16} />, path: '/admin/room-list' },
             { label: 'Amenities', icon: <Package size={16} />, path: '/admin/amenities' },
             { label: 'Room Images', icon: <ImageIcon size={16} />, path: '/admin/room-images' },
+            { label: 'Online Payments', icon: <CreditCard size={16} />, path: '/admin/settings?tab=Payments' },
           ],
         },
       ],

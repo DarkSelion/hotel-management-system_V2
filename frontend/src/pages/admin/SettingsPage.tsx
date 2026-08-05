@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useSettings, useUpdateSettings, useUpdateLogo, useDeleteLogo, useUploadQrCode, useDeleteQrCode } from '@/hooks/useApi'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent } from '@/components/ui/card'
@@ -44,7 +45,11 @@ const TIMEZONES = [
 ]
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<string>('Hotel')
+  const [searchParams] = useSearchParams()
+  const initialTab = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<string>(
+    initialTab && SETTINGS_TABS.includes(initialTab as any) ? initialTab : 'Hotel'
+  )
   const { addToast } = useToast()
 
   const { data: settings, isLoading, error, refetch } = useSettings()
