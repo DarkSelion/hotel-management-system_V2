@@ -17,7 +17,7 @@ class PaymentController extends Controller
         $data = $request->validate([
             'reservation_id' => 'required|exists:reservations,id',
             'amount' => 'required|numeric|min:0.01',
-            'payment_method' => 'required|in:cash,gcash',
+            'payment_method' => 'required|in:gcash',
             'payment_type' => 'required|in:full,partial,deposit',
             'reference_number' => 'nullable|string|max:100',
         ]);

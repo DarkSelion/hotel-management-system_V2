@@ -7,7 +7,7 @@ import type { PortalReservation } from '@/types'
 import {
   Calendar, MapPin, XCircle, Loader2, AlertTriangle, X,
   Clock, CheckCircle, RotateCcw, BedDouble, Users,
-  LogIn, LogOut, CalendarX, Wallet, Smartphone, QrCode, Copy,
+  LogIn, LogOut, CalendarX, Wallet, QrCode, Copy,
 } from 'lucide-react'
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: any }> = {
@@ -46,7 +46,6 @@ export default function PublicMyReservationsPage() {
   const createPayment = usePublicCreatePayment()
   const [cancelId, setCancelId] = useState<number | null>(null)
   const [paymentModal, setPaymentModal] = useState<PortalReservation | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<string>('gcash')
   const [gcashRefNumber, setGcashRefNumber] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -181,12 +180,11 @@ export default function PublicMyReservationsPage() {
                     <div className="flex items-center gap-2">
                       {(r.payment_status === 'unpaid' || r.payment_status === 'partial') && (
                         <button
-                          onClick={() => {
-                            setPaymentMethod('gcash')
-                            setGcashRefNumber('')
-                            setCopied(false)
-                            setPaymentModal(r)
-                          }}
+    onClick={() => {
+      setGcashRefNumber('')
+      setCopied(false)
+      setPaymentModal(r)
+    }}
                           className="btn-gold-sm flex items-center gap-1.5"
                         >
                           Pay Now
@@ -276,82 +274,42 @@ export default function PublicMyReservationsPage() {
               </div>
 
               <div className="border-t border-white/5 pt-4">
-                <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Payment Method</p>
-                <div className="space-y-2">
-                  <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'gcash' ? 'border-gold/50 bg-gold/5' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}>
+                <div className="space-y-4">
+                  <div className="bg-white/[0.03] border border-dashed border-white/10 rounded-xl p-6 text-center">
+                    <div className="w-20 h-20 mx-auto mb-3 bg-white/5 rounded-xl flex items-center justify-center border border-white/5">
+                      <QrCode className="h-10 w-10 text-gold/40" />
+                    </div>
+                    <p className="text-sm text-white/60">Scan the QR code below to pay via GCash</p>
+                    <p className="text-[11px] text-white/30 mt-1">Send the exact amount and enter the reference number</p>
+                  </div>
+                  <div className="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-lg px-4 py-3">
+                    <div>
+                      <p className="text-[11px] text-white/30 uppercase tracking-wider">GCash Account</p>
+                      <p className="text-sm text-white">{hotelName}</p>
+                      <p className="text-sm text-gold font-mono tracking-wider mt-0.5">0917-123-4567</p>
+                    </div>
+                    <button
+                      onClick={handleCopyAccount}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white hover:border-white/20 hover:bg-white/[0.03] transition-all shrink-0"
+                    >
+                      {copied ? (
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-xs text-white/30 uppercase tracking-wider block mb-2">GCash Reference Number</label>
+                    <p className="text-[11px] text-white/20 mb-2">Check your GCash SMS receipt for the reference number</p>
                     <input
-                      type="radio"
-                      name="payment_method"
-                      value="gcash"
-                      checked={paymentMethod === 'gcash'}
-                      onChange={() => setPaymentMethod('gcash')}
-                      className="accent-gold m-0 w-4 h-4 shrink-0"
+                      type="text"
+                      value={gcashRefNumber}
+                      onChange={(e) => setGcashRefNumber(e.target.value)}
+                      placeholder="e.g. 1234 5678 9012 3456"
+                      className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
                     />
-                    <Smartphone className="h-4 w-4 text-gold/60" />
-                    <div>
-                      <p className="text-sm text-white">GCash</p>
-                      <p className="text-[11px] text-white/30">Pay via GCash mobile wallet</p>
-                    </div>
-                  </label>
-                  <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'cash' ? 'border-gold/50 bg-gold/5' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}>
-                    <input
-                      type="radio"
-                      name="payment_method"
-                      value="cash"
-                      checked={paymentMethod === 'cash'}
-                      onChange={() => setPaymentMethod('cash')}
-                      className="accent-gold m-0 w-4 h-4 shrink-0"
-                    />
-                    <Wallet className="h-4 w-4 text-gold/60" />
-                    <div>
-                      <p className="text-sm text-white">Cash</p>
-                      <p className="text-[11px] text-white/30">Pay at the property</p>
-                    </div>
-                  </label>
-                </div>
-
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    paymentMethod === 'gcash' ? 'max-h-[500px] opacity-100 pt-2' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="space-y-4">
-                    <div className="bg-white/[0.03] border border-dashed border-white/10 rounded-xl p-6 text-center">
-                      <div className="w-20 h-20 mx-auto mb-3 bg-white/5 rounded-xl flex items-center justify-center border border-white/5">
-                        <QrCode className="h-10 w-10 text-gold/40" />
-                      </div>
-                      <p className="text-sm text-white/60">Scan the QR code below to pay via GCash</p>
-                      <p className="text-[11px] text-white/30 mt-1">Send the exact amount and enter the reference number</p>
-                    </div>
-                    <div className="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-lg px-4 py-3">
-                      <div>
-                        <p className="text-[11px] text-white/30 uppercase tracking-wider">GCash Account</p>
-                        <p className="text-sm text-white">{hotelName}</p>
-                        <p className="text-sm text-gold font-mono tracking-wider mt-0.5">0917-123-4567</p>
-                      </div>
-                      <button
-                        onClick={handleCopyAccount}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white hover:border-white/20 hover:bg-white/[0.03] transition-all shrink-0"
-                      >
-                        {copied ? (
-                          <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )}
-                        {copied ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                    <div>
-                      <label className="text-xs text-white/30 uppercase tracking-wider block mb-2">GCash Reference Number</label>
-                      <p className="text-[11px] text-white/20 mb-2">Check your GCash SMS receipt for the reference number</p>
-                      <input
-                        type="text"
-                        value={gcashRefNumber}
-                        onChange={(e) => setGcashRefNumber(e.target.value)}
-                        placeholder="e.g. 1234 5678 9012 3456"
-                        className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -370,9 +328,9 @@ export default function PublicMyReservationsPage() {
                     {
                       reservation_id: paymentModal.id,
                       amount: paymentModal.total_amount,
-                      payment_method: paymentMethod,
+                      payment_method: 'gcash',
                       payment_type: 'full',
-                      ...(paymentMethod === 'gcash' && gcashRefNumber.trim() ? { reference_number: gcashRefNumber.trim() } : {}),
+                      ...(gcashRefNumber.trim() ? { reference_number: gcashRefNumber.trim() } : {}),
                     },
                     { onSuccess: () => setPaymentModal(null) },
                   )

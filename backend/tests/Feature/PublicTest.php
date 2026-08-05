@@ -1177,7 +1177,7 @@ class PublicTest extends TestCase
         $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 440,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ])->assertStatus(201);
 
@@ -1198,7 +1198,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ]);
 
@@ -1214,7 +1214,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ]);
 
@@ -1230,7 +1230,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ]);
 
@@ -1247,7 +1247,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 100,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'partial',
         ]);
 
@@ -1295,7 +1295,7 @@ class PublicTest extends TestCase
         $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 440,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ])->assertStatus(201);
 
@@ -1313,7 +1313,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ]);
 
@@ -1329,7 +1329,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 0,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'partial',
         ]);
 
@@ -1345,7 +1345,7 @@ class PublicTest extends TestCase
         $response = $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 500,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ]);
 
@@ -1363,7 +1363,7 @@ class PublicTest extends TestCase
         $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 440,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'full',
         ])->assertStatus(201);
 
@@ -1597,7 +1597,7 @@ class PublicTest extends TestCase
         $this->postJson('/api/public/payments', [
             'reservation_id' => $reservation->id,
             'amount' => 200,
-            'payment_method' => 'cash',
+            'payment_method' => 'gcash',
             'payment_type' => 'partial',
         ])->assertStatus(201);
 
