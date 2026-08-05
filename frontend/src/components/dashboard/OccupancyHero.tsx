@@ -18,19 +18,21 @@ export function OccupancyHero({ occupancyRate, occupiedRooms, totalRooms }: Occu
   }, [occupancyRate])
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-[#0f172a] p-5 text-white">
+    <div className="rounded-xl border border-gray-200 bg-[#0f172a] p-6 text-white">
       <div className="mb-3 flex items-center gap-2">
         <Bed className="h-4 w-4 text-gray-400" />
-        <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+        <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
           Current Occupancy
         </span>
       </div>
 
-      <div className="flex items-end gap-4">
-        <span className="text-5xl font-bold tabular-nums leading-none">
-          {Math.round(occupancyRate)}
-          <span className="text-2xl text-gray-400">%</span>
-        </span>
+      <div className="flex items-end gap-2">
+        <div>
+          <span className="text-7xl font-bold tabular-nums leading-none">
+            {Math.round(occupancyRate)}
+            <span className="text-3xl text-gray-400">%</span>
+          </span>
+        </div>
         <div className="mb-1 text-sm text-gray-400">
           <span className="font-semibold text-white">{occupiedRooms}</span> of{' '}
           <span className="font-semibold text-white">{totalRooms}</span> rooms occupied
@@ -39,7 +41,7 @@ export function OccupancyHero({ occupancyRate, occupiedRooms, totalRooms }: Occu
 
       <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full rounded-full bg-[#10b981] transition-all duration-1000 ease-out"
+          className="h-full rounded-full bg-[#10b981] transition-all duration-700 ease-out"
           style={{ width: `${animatedWidth}%` }}
         />
       </div>

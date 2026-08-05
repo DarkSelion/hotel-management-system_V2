@@ -125,7 +125,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Hero Stats: Revenue, Check-ins, Check-outs */}
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {initialLoading || !stats ? (
           <>
             <StatCardSkeleton />
@@ -157,7 +157,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Secondary Metrics: Compact Row */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-5">
         {initialLoading || !stats ? (
           <>
             {Array.from({ length: 5 }).map((_, i) => (
@@ -174,6 +174,9 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      {/* Divider: subtle line signals section boundary */}
+      <div className="mb-8 border-t border-gray-200" />
 
       {/* Charts Section */}
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
