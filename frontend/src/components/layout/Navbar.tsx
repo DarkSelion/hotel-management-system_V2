@@ -45,7 +45,7 @@ function getActivityRoute(activity: ActivityLog): string {
     settings: '/settings',
   }
 
-  return moduleRoutes[module] ?? '/dashboard'
+  return moduleRoutes[module] ?? '/admin/dashboard'
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -381,12 +381,12 @@ export function Navbar({ onToggleSidebar, title }: NavbarProps) {
                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                 <p className="text-xs text-muted">{user?.email}</p>
               </div>
-              <button onClick={() => { setShowUserMenu(false); navigate("/profile") }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <button onClick={() => { setShowUserMenu(false); navigate("/admin/profile") }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                 <UserCircle className="h-4 w-4" />
                 Profile
               </button>
               {isAdminRole(user?.role) && (
-                <button onClick={() => { setShowUserMenu(false); navigate("/settings") }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                <button onClick={() => { setShowUserMenu(false); navigate("/admin/settings") }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                   <Settings className="h-4 w-4" />
                   Settings
                 </button>

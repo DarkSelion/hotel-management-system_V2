@@ -170,7 +170,7 @@ export function PublicNavbar() {
             </div>
           )}
           <div className="pt-4 mt-2 border-t border-white/5">
-            <a href="/login" className="block text-white/20 hover:text-gold py-2 text-[10px] uppercase tracking-[0.15em] transition-colors">
+            <a href="/admin/login" className="block text-white/20 hover:text-gold py-2 text-[10px] uppercase tracking-[0.15em] transition-colors">
               Staff Portal
             </a>
           </div>

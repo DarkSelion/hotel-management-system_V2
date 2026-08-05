@@ -53,53 +53,53 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     {
       label: 'Overview',
       items: [
-        { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
+        { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/admin/dashboard' },
       ],
     },
     {
       label: 'Hotel',
       items: [
-        { label: 'All Rooms', icon: <Bed size={20} />, path: '/rooms' },
-        { label: 'Reservations', icon: <CalendarDays size={20} />, path: '/reservations' },
-        { label: 'Guests', icon: <Users size={20} />, path: '/guests' },
+        { label: 'All Rooms', icon: <Bed size={20} />, path: '/admin/rooms' },
+        { label: 'Reservations', icon: <CalendarDays size={20} />, path: '/admin/reservations' },
+        { label: 'Guests', icon: <Users size={20} />, path: '/admin/guests' },
       ],
     },
     {
       label: 'Operations',
       items: [
-        { label: 'Check In', icon: <LogIn size={20} />, path: '/check-in' },
-        { label: 'Check Out', icon: <LogOut size={20} />, path: '/check-out' },
-        { label: 'Housekeeping', icon: <ClipboardList size={20} />, path: '/housekeeping' },
-        { label: 'Maintenance', icon: <Wrench size={20} />, path: '/maintenance' },
+        { label: 'Check In', icon: <LogIn size={20} />, path: '/admin/check-in' },
+        { label: 'Check Out', icon: <LogOut size={20} />, path: '/admin/check-out' },
+        { label: 'Housekeeping', icon: <ClipboardList size={20} />, path: '/admin/housekeeping' },
+        { label: 'Maintenance', icon: <Wrench size={20} />, path: '/admin/maintenance' },
       ],
     },
     {
       label: 'Finance',
       items: [
-        { label: 'Invoices', icon: <FileText size={20} />, path: '/invoices' },
-        { label: 'Payments', icon: <ReceiptText size={20} />, path: '/payments' },
-        { label: 'Expenses', icon: <ShoppingCart size={20} />, path: '/expenses', adminOnly: true },
+        { label: 'Invoices', icon: <FileText size={20} />, path: '/admin/invoices' },
+        { label: 'Payments', icon: <ReceiptText size={20} />, path: '/admin/payments' },
+        { label: 'Expenses', icon: <ShoppingCart size={20} />, path: '/admin/expenses', adminOnly: true },
       ],
     },
     {
       label: 'Reports',
       items: [
-        { label: 'Reports', icon: <BarChart3 size={20} />, path: '/reports', adminOnly: true },
-        { label: 'Inquiries', icon: <Mail size={20} />, path: '/inquiries', adminOnly: true },
+        { label: 'Reports', icon: <BarChart3 size={20} />, path: '/admin/reports', adminOnly: true },
+        { label: 'Inquiries', icon: <Mail size={20} />, path: '/admin/inquiries', adminOnly: true },
       ],
     },
     {
       label: 'Settings',
       items: [
-        { label: 'Staff', icon: <Users size={20} />, path: '/staff', adminOnly: true },
+        { label: 'Staff', icon: <Users size={20} />, path: '/admin/staff', adminOnly: true },
         {
           label: 'Hotel Settings',
           icon: <Settings size={20} />,
           adminOnly: true,
           submenu: [
-            { label: 'Room List', icon: <Wrench size={16} />, path: '/room-list' },
-            { label: 'Amenities', icon: <Package size={16} />, path: '/amenities' },
-            { label: 'Room Images', icon: <ImageIcon size={16} />, path: '/room-images' },
+            { label: 'Room List', icon: <Wrench size={16} />, path: '/admin/room-list' },
+            { label: 'Amenities', icon: <Package size={16} />, path: '/admin/amenities' },
+            { label: 'Room Images', icon: <ImageIcon size={16} />, path: '/admin/room-images' },
           ],
         },
       ],

@@ -36,7 +36,7 @@ class SearchController extends Controller
                 'title' => $guest->first_name . ' ' . $guest->last_name,
                 'subtitle' => $guest->email . ($guest->phone ? ' · ' . $guest->phone : ''),
                 'badge' => $guest->is_vip ? 'VIP' : null,
-                'route' => '/guests',
+                'route' => '/admin/guests',
             ];
         }
 
@@ -57,7 +57,7 @@ class SearchController extends Controller
                 'title' => $reservation->reservation_number,
                 'subtitle' => $reservation->guest ? $reservation->guest->first_name . ' ' . $reservation->guest->last_name : 'Guest #' . $reservation->guest_id,
                 'badge' => str_replace('_', ' ', $reservation->status),
-                'route' => '/reservations',
+                'route' => '/admin/reservations',
             ];
         }
 
@@ -77,7 +77,7 @@ class SearchController extends Controller
                 'title' => 'Room ' . $room->room_number,
                 'subtitle' => $room->roomType ? $room->roomType->name : '',
                 'badge' => $room->status,
-                'route' => '/rooms',
+                'route' => '/admin/rooms',
             ];
         }
 
@@ -92,7 +92,7 @@ class SearchController extends Controller
                 'title' => $rt->name,
                 'subtitle' => '₱' . number_format($rt->base_price, 2) . '/night',
                 'badge' => null,
-                'route' => '/rooms',
+                'route' => '/admin/rooms',
             ];
         }
 

@@ -42,7 +42,7 @@ export function LoginPage() {
             ? (rawRole as { slug?: string }).slug ?? ''
             : typeof rawRole === 'string' ? rawRole : ''
           setAuth(token, { ...user, role: roleSlug } as any)
-          navigate('/dashboard')
+          navigate('/admin/dashboard')
         },
       },
     )

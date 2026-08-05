@@ -41,14 +41,14 @@ const PublicContactPage = lazy(() => import('./pages/public/PublicContactPage'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuthStore()
-  if (!token) return <Navigate to="/login" replace />
+  if (!token) return <Navigate to="/admin/login" replace />
   return <>{children}</>
 }
 
 function RequireRole({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuthStore()
-  if (!token) return <Navigate to="/login" replace />
-  if (!isAdminRole(user?.role)) return <Navigate to="/dashboard" replace />
+  if (!token) return <Navigate to="/admin/login" replace />
+  if (!isAdminRole(user?.role)) return <Navigate to="/admin/dashboard" replace />
   return <>{children}</>
 }
 
@@ -71,7 +71,7 @@ export default function App() {
 
   useEffect(() => {
     function handleUnauthorized() {
-      navigate('/login', { replace: true })
+      navigate('/admin/login', { replace: true })
     }
     window.addEventListener('auth:unauthorized', handleUnauthorized)
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized)
@@ -81,16 +81,16 @@ export default function App() {
     <ToastProvider>
       <Routes>
         {/* Admin routes */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/login" element={<LoginPage />} />
         <Route
-          path="/"
+          path="/admin"
           element={
             <ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Suspense fallback={<PageLoader />}><DashboardPage /></Suspense>} />
           <Route path="reservations" element={<Suspense fallback={<PageLoader />}><ReservationsPage /></Suspense>} />
           <Route path="check-in" element={<Suspense fallback={<PageLoader />}><CheckInPage /></Suspense>} />

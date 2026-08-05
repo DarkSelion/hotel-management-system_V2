@@ -292,7 +292,7 @@ describe('DashboardPage', () => {
     renderDashboard()
 
     const viewAll = screen.getByText('View All')
-    expect(viewAll.closest('a')).toHaveAttribute('href', '/reservations')
+    expect(viewAll.closest('a')).toHaveAttribute('href', '/admin/reservations')
   })
 
   it('revenue chart shows no data when empty', () => {

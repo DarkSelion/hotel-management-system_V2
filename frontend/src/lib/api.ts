@@ -34,7 +34,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (!response.ok) {
     if (response.status === 401) {
       useAuthStore.getState().logout()
-      dispatchAuthEvent(AUTH_EVENTS.UNAUTHORIZED, '/login')
+      dispatchAuthEvent(AUTH_EVENTS.UNAUTHORIZED, '/admin/login')
     }
     const error = await response.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || error.error || 'Request failed')
@@ -56,7 +56,7 @@ export async function downloadFile(url: string): Promise<{ blob: Blob; filename:
   if (!response.ok) {
     if (response.status === 401) {
       useAuthStore.getState().logout()
-      dispatchAuthEvent(AUTH_EVENTS.UNAUTHORIZED, '/login')
+      dispatchAuthEvent(AUTH_EVENTS.UNAUTHORIZED, '/admin/login')
     }
     const error = await response.json().catch(() => ({ message: 'Request failed' }))
     throw new Error(error.message || error.error || 'Request failed')

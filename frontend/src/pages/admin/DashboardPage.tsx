@@ -309,7 +309,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Latest Reservations</h3>
             <Link
-              to="/reservations"
+              to="/admin/reservations"
               className="group flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-light"
             >
               View All
