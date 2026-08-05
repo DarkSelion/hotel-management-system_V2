@@ -135,7 +135,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   ? 'justify-center px-3 py-3 hover:bg-[var(--color-sidebar-hover-bg)]'
                   : 'hover:translate-x-1 hover:bg-[var(--color-sidebar-hover-bg)]',
                 isChildActive
-                  ? 'bg-blue-50 text-blue-600 font-semibold border-l-3 border-blue-600 rounded-l-none'
+                                ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-primary)] font-semibold border-l-3 border-[var(--color-primary)] rounded-l-none'
                   : !collapsed && isOpen
                     ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
                     : 'text-[var(--color-sidebar-text)] hover:text-[var(--color-sidebar-active-text)]',
@@ -172,7 +172,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150'
 
     const activeClasses =
-      'bg-blue-50 text-blue-600 font-semibold border-l-3 border-blue-600 rounded-l-none'
+      'bg-[var(--color-sidebar-active-bg)] text-[var(--color-primary)] font-semibold border-l-3 border-[var(--color-primary)] rounded-l-none'
     const inactiveClasses =
       'text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover-bg)] hover:translate-x-1 hover:text-[var(--color-sidebar-active-text)]'
 
@@ -262,7 +262,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                             cn(
                               'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150',
                               isActive
-                                ? 'bg-blue-50 text-blue-600 font-semibold border-l-3 border-blue-600 rounded-l-none'
+                  ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-primary)] font-semibold border-l-3 border-[var(--color-primary)] rounded-l-none'
                                 : 'text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover-bg)] hover:text-[var(--color-sidebar-active-text)]',
                             )
                           }
