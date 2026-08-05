@@ -111,7 +111,7 @@ export default function PortalMyReservationsPage() {
               return (
                 <div
                   key={r.id}
-                  className="bg-neutral-700 border border-gold/30 rounded-2xl overflow-hidden shadow-sm shadow-black/30 group hover:border-gold/40 hover:shadow-lg hover:shadow-gold/15 transition-all duration-300"
+                  className="bg-neutral-600 border border-gold/30 rounded-2xl overflow-hidden shadow-sm shadow-black/30 group hover:border-gold/40 hover:shadow-lg hover:shadow-gold/15 transition-all duration-300"
                 >
                   {/* Gold accent bar */}
                   <div className="h-0.5 w-full bg-gradient-to-r from-gold/60 via-gold/20 to-transparent" />
