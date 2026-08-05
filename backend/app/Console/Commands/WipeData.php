@@ -66,6 +66,11 @@ class WipeData extends Command
             $count++;
         }
 
+        DB::table('rooms')->update([
+            'status' => 'available',
+            'cleaning_status' => 'clean',
+        ]);
+
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
 
         $this->info("Done. Wiped {$count} tables. Users, roles, settings, rooms, and room types preserved.");
