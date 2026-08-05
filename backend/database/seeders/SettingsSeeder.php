@@ -34,6 +34,9 @@ class SettingsSeeder extends Seeder
                 ['q' => 'Is breakfast included in the room rate?', 'a' => 'Breakfast is included with select room types. Please check your booking details or contact us for more information.'],
                 ['q' => 'What is your cancellation policy?', 'a' => 'Free cancellation is available up to 24 hours before your scheduled check-in. Cancellations within 24 hours may be subject to a one-night charge.'],
             ]), 'group' => 'contact'],
+            ['key' => 'online_payment_enabled', 'value' => '1', 'group' => 'payment'],
+            ['key' => 'gcash_account', 'value' => '', 'group' => 'payment'],
+            ['key' => 'gcash_qr_image', 'value' => '', 'group' => 'payment'],
         ];
 
         foreach ($settings as $setting) {

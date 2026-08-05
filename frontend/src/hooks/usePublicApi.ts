@@ -141,6 +141,11 @@ export function useHotelName(): string {
   return typeof name === 'string' && name.trim() ? name.trim() : DEFAULT_HOTEL_NAME
 }
 
+export function usePaymentSettings(): Record<string, unknown> {
+  const { data } = usePublicSettings('payment')
+  return (data ?? {}) as Record<string, unknown>
+}
+
 // Payments
 export function usePublicCreatePayment() {
   const qc = useQueryClient()

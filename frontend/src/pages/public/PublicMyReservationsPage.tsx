@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { usePublicReservations, usePublicCancelReservation, usePublicCreatePayment, useHotelName } from '@/hooks/usePublicApi'
+import { usePublicReservations, usePublicCancelReservation, usePublicCreatePayment, useHotelName, usePaymentSettings } from '@/hooks/usePublicApi'
 import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import type { PortalReservation } from '@/types'
@@ -44,6 +44,10 @@ export default function PublicMyReservationsPage() {
   const { data, isLoading } = usePublicReservations()
   const cancelReservation = usePublicCancelReservation()
   const createPayment = usePublicCreatePayment()
+  const paymentSettings = usePaymentSettings()
+  const onlineEnabled = paymentSettings['online_payment_enabled'] === '1' || paymentSettings['online_payment_enabled'] === true
+  const gcashAccount = (paymentSettings['gcash_account'] as string) || ''
+  const gcashQrImage = (paymentSettings['gcash_qr_image'] as string) || ''
   const [cancelId, setCancelId] = useState<number | null>(null)
   const [paymentModal, setPaymentModal] = useState<PortalReservation | null>(null)
   const [gcashRefNumber, setGcashRefNumber] = useState('')
@@ -51,7 +55,7 @@ export default function PublicMyReservationsPage() {
 
   const handleCopyAccount = async () => {
     try {
-      await navigator.clipboard.writeText('09171234567')
+      await navigator.clipboard.writeText(gcashAccount.replace(/-/g, ''))
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
@@ -179,16 +183,22 @@ export default function PublicMyReservationsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {(r.payment_status === 'unpaid' || r.payment_status === 'partial') && (
-                        <button
-    onClick={() => {
-      setGcashRefNumber('')
-      setCopied(false)
-      setPaymentModal(r)
-    }}
-                          className="btn-gold-sm flex items-center gap-1.5"
-                        >
-                          Pay Now
-                        </button>
+                        onlineEnabled ? (
+                          <button
+                            onClick={() => {
+                              setGcashRefNumber('')
+                              setCopied(false)
+                              setPaymentModal(r)
+                            }}
+                            className="btn-gold-sm flex items-center gap-1.5"
+                          >
+                            Pay Now
+                          </button>
+                        ) : (
+                          <span className="px-4 py-2 rounded-lg text-xs text-white/30 border border-white/10 cursor-not-allowed">
+                            Online Payment Unavailable
+                          </span>
+                        )
                       )}
                       {(r.status === 'pending' || r.status === 'confirmed') && (
                         <button
@@ -276,8 +286,12 @@ export default function PublicMyReservationsPage() {
               <div className="border-t border-white/5 pt-4">
                 <div className="space-y-4">
                   <div className="bg-white/[0.03] border border-dashed border-white/10 rounded-xl p-6 text-center">
-                    <div className="w-20 h-20 mx-auto mb-3 bg-white/5 rounded-xl flex items-center justify-center border border-white/5">
-                      <QrCode className="h-10 w-10 text-gold/40" />
+                    <div className="w-20 h-20 mx-auto mb-3 bg-white/5 rounded-xl flex items-center justify-center border border-white/5 overflow-hidden">
+                      {gcashQrImage ? (
+                        <img src={gcashQrImage} alt="GCash QR Code" className="w-full h-full object-contain p-1" />
+                      ) : (
+                        <QrCode className="h-10 w-10 text-gold/40" />
+                      )}
                     </div>
                     <p className="text-sm text-white/60">Scan the QR code below to pay via GCash</p>
                     <p className="text-[11px] text-white/30 mt-1">Send the exact amount and enter the reference number</p>
@@ -286,19 +300,21 @@ export default function PublicMyReservationsPage() {
                     <div>
                       <p className="text-[11px] text-white/30 uppercase tracking-wider">GCash Account</p>
                       <p className="text-sm text-white">{hotelName}</p>
-                      <p className="text-sm text-gold font-mono tracking-wider mt-0.5">0917-123-4567</p>
+                      <p className="text-sm text-gold font-mono tracking-wider mt-0.5">{gcashAccount || 'Not configured'}</p>
                     </div>
-                    <button
-                      onClick={handleCopyAccount}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white hover:border-white/20 hover:bg-white/[0.03] transition-all shrink-0"
-                    >
-                      {copied ? (
-                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" />
-                      )}
-                      {copied ? 'Copied!' : 'Copy'}
-                    </button>
+                    {gcashAccount && (
+                      <button
+                        onClick={handleCopyAccount}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white hover:border-white/20 hover:bg-white/[0.03] transition-all shrink-0"
+                      >
+                        {copied ? (
+                          <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                        {copied ? 'Copied!' : 'Copy'}
+                      </button>
+                    )}
                   </div>
                   <div>
                     <label className="text-xs text-white/30 uppercase tracking-wider block mb-2">GCash Reference Number</label>

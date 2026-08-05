@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSettings, useUpdateSettings, useUpdateLogo, useDeleteLogo } from '@/hooks/useApi'
+import { useSettings, useUpdateSettings, useUpdateLogo, useDeleteLogo, useUploadQrCode, useDeleteQrCode } from '@/hooks/useApi'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/toast'
 import { Save, Loader2, AlertCircle, RotateCcw, Plus, Trash2, Upload } from 'lucide-react'
 
-const SETTINGS_TABS = ['Hotel', 'Booking', 'Taxes', 'Security', 'Contact'] as const
+const SETTINGS_TABS = ['Hotel', 'Booking', 'Taxes', 'Security', 'Contact', 'Payments'] as const
 
 const TAB_GROUP: Record<string, string> = {
   Hotel: 'hotel',
@@ -17,6 +17,7 @@ const TAB_GROUP: Record<string, string> = {
   Taxes: 'tax',
   Security: 'security',
   Contact: 'contact',
+  Payments: 'payment',
 }
 
 const CURRENCIES = [
@@ -50,7 +51,10 @@ export default function SettingsPage() {
   const updateSettings = useUpdateSettings()
   const updateLogo = useUpdateLogo()
   const deleteLogo = useDeleteLogo()
+  const uploadQrCode = useUploadQrCode()
+  const deleteQrCode = useDeleteQrCode()
   const logoFileRef = useRef<HTMLInputElement>(null)
+  const qrFileRef = useRef<HTMLInputElement>(null)
 
   const [logoPreview, setLogoPreview] = useState('')
   const logoUrl = (settings as any)?.hotel_logo || ''
@@ -72,6 +76,12 @@ export default function SettingsPage() {
     contact_facebook: '', contact_instagram: '', contact_tiktok: '', contact_map_embed_url: '',
   })
   const [faqItems, setFaqItems] = useState<Array<{ q: string; a: string }>>([])
+  const [paymentForm, setPaymentForm] = useState({
+    online_payment_enabled: true,
+    gcash_account: '',
+  })
+  const [qrPreview, setQrPreview] = useState('')
+  const qrUrl = (settings as any)?.gcash_qr_image || ''
 
   useEffect(() => {
     if (settings) {
@@ -114,6 +124,10 @@ export default function SettingsPage() {
         const parsed = typeof s.contact_faq === 'string' ? JSON.parse(s.contact_faq) : s.contact_faq
         if (Array.isArray(parsed)) setFaqItems(parsed)
       } catch { /* keep default */ }
+      setPaymentForm({
+        online_payment_enabled: s.online_payment_enabled === '1' || s.online_payment_enabled === true,
+        gcash_account: s.gcash_account ?? '',
+      })
     }
   }, [settings])
 
@@ -129,6 +143,11 @@ export default function SettingsPage() {
       Object.assign(payload, securityForm)
     } else if (activeTab === 'Contact') {
       Object.assign(payload, contactForm, { contact_faq: JSON.stringify(faqItems) })
+    } else if (activeTab === 'Payments') {
+      Object.assign(payload, {
+        online_payment_enabled: paymentForm.online_payment_enabled ? '1' : '0',
+        gcash_account: paymentForm.gcash_account,
+      })
     }
     updateSettings.mutate(
       {
@@ -550,6 +569,109 @@ export default function SettingsPage() {
                       <p className="text-xs text-muted italic">No FAQ items. Click "Add Question" to create one.</p>
                     )}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Payments' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Enable Online Payments</p>
+                    <p className="text-xs text-muted mt-0.5">Allow guests to pay via GCash through the portal</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentForm((p) => ({ ...p, online_payment_enabled: !p.online_payment_enabled }))}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 ${
+                      paymentForm.online_payment_enabled ? 'bg-primary' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        paymentForm.online_payment_enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <Input
+                  label="GCash Account Number"
+                  value={paymentForm.gcash_account}
+                  onChange={(e) => setPaymentForm((p) => ({ ...p, gcash_account: e.target.value }))}
+                  placeholder="0917-123-4567"
+                />
+                <p className="text-xs text-muted -mt-2">This number is displayed to guests when they make a GCash payment.</p>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">GCash QR Code</h3>
+                  <div className="flex items-center gap-4">
+                    {(qrPreview || qrUrl) ? (
+                      <img
+                        src={qrPreview || qrUrl}
+                        alt="GCash QR code"
+                        className="h-24 w-24 rounded-lg border border-border bg-white object-contain p-1"
+                      />
+                    ) : (
+                      <div className="h-24 w-24 rounded-lg border border-dashed border-border bg-gray-50 flex items-center justify-center text-muted">
+                        <Upload className="h-5 w-5" />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <input
+                        ref={qrFileRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) setQrPreview(URL.createObjectURL(file))
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => qrFileRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4" /> Choose File
+                      </Button>
+                      {(qrPreview || qrUrl) && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="primary"
+                            disabled={!qrPreview || uploadQrCode.isPending}
+                            onClick={() => {
+                              const file = qrFileRef.current?.files?.[0]
+                              if (!file) return
+                              uploadQrCode.mutate(file, {
+                                onSuccess: () => {
+                                  addToast('QR code uploaded successfully', 'success')
+                                  setQrPreview('')
+                                  if (qrFileRef.current) qrFileRef.current.value = ''
+                                },
+                                onError: () => addToast('Failed to upload QR code', 'error'),
+                              })
+                            }}
+                          >
+                            {uploadQrCode.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                            {qrPreview ? 'Upload' : 'Re-upload'}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            disabled={deleteQrCode.isPending}
+                            onClick={() => {
+                              deleteQrCode.mutate(undefined, {
+                                onSuccess: () => addToast('QR code removed', 'success'),
+                                onError: () => addToast('Failed to remove QR code', 'error'),
+                              })
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" /> Remove
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted">JPEG, PNG or WebP, up to 2MB. Shown to guests in the payment modal.</p>
                 </div>
               </div>
             )}

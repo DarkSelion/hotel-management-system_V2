@@ -56,6 +56,9 @@ class SettingController extends Controller
         if (in_array($key, ['default_discount', 'cancellation_policy', 'max_advance_days', 'early_checkin_fee', 'late_checkout_fee'])) {
             return 'booking';
         }
+        if (str_starts_with($key, 'gcash_') || $key === 'online_payment_enabled') {
+            return 'payment';
+        }
 
         return 'general';
     }
@@ -103,10 +106,50 @@ class SettingController extends Controller
         return response()->json(['message' => 'Logo removed successfully.']);
     }
 
+    public function uploadQrCode(Request $request)
+    {
+        $request->validate([
+            'qr_code' => 'required|image|mimes:jpeg,png,webp|max:2048',
+        ]);
+
+        $current = Setting::where('key', 'gcash_qr_image')->first();
+        if ($current && $current->value) {
+            Storage::disk('public')->delete($current->value);
+        }
+
+        $path = $request->file('qr_code')->store('branding', 'public');
+
+        Setting::updateOrCreate(
+            ['key' => 'gcash_qr_image'],
+            ['value' => $path, 'group' => 'payment']
+        );
+
+        return response()->json([
+            'message' => 'QR code uploaded successfully.',
+            'qr_code_url' => url('storage/' . ltrim($path, '/')),
+        ]);
+    }
+
+    public function deleteQrCode()
+    {
+        $current = Setting::where('key', 'gcash_qr_image')->first();
+        if ($current && $current->value) {
+            Storage::disk('public')->delete($current->value);
+        }
+
+        Setting::where('key', 'gcash_qr_image')->delete();
+
+        return response()->json(['message' => 'QR code removed successfully.']);
+    }
+
     protected static function decorate($settings)
     {
         if (!empty($settings['hotel_logo'])) {
             $settings['hotel_logo'] = url('storage/' . ltrim($settings['hotel_logo'], '/'));
+        }
+
+        if (!empty($settings['gcash_qr_image'])) {
+            $settings['gcash_qr_image'] = url('storage/' . ltrim($settings['gcash_qr_image'], '/'));
         }
 
         return $settings;
