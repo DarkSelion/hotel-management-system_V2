@@ -107,7 +107,7 @@ export default function StaffPage() {
       key: 'name',
       label: 'Name',
       sortable: true,
-      render: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
+      render: (s) => <span className="font-medium text-foreground">{s.name}</span>,
     },
     {
       key: 'email',
@@ -266,7 +266,7 @@ export default function StaffPage() {
     {
       key: 'staff_name',
       label: 'Staff Name',
-      render: (l) => <span className="font-medium text-gray-900">{l.staff?.name ?? l.staff_name ?? '-'}</span>,
+      render: (l) => <span className="font-medium text-foreground">{l.staff?.name ?? l.staff_name ?? '-'}</span>,
     },
     {
       key: 'type',
@@ -329,7 +329,7 @@ export default function StaffPage() {
     {
       key: 'staff_name',
       label: 'Staff Name',
-      render: (s) => <span className="font-medium text-gray-900">{s.staff?.name ?? s.staff_name ?? '-'}</span>,
+      render: (s) => <span className="font-medium text-foreground">{s.staff?.name ?? s.staff_name ?? '-'}</span>,
     },
     {
       key: 'date',
@@ -364,7 +364,7 @@ export default function StaffPage() {
     <div>
       <PageHeader title="Staff Management" />
 
-      <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-0.5 w-fit">
+      <div className="mb-6 flex gap-1 rounded-lg bg-border/50 p-0.5 w-fit">
         {STAFF_TABS.map((tab) => (
           <button
             key={tab}
@@ -372,7 +372,7 @@ export default function StaffPage() {
             className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? 'bg-card text-primary shadow-sm'
-                : 'text-muted hover:text-gray-700'
+                : 'text-muted hover:text-foreground'
             }`}
           >
             {tab}
@@ -461,7 +461,7 @@ export default function StaffPage() {
             ) : schedulesError ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
                 <AlertCircle className="mb-3 h-10 w-10 text-danger" />
-                <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
+                <p className="mb-2 text-sm font-medium text-foreground">Something went wrong</p>
                 <p className="mb-4 text-sm text-muted">{(schedulesError as Error).message}</p>
                 <Button variant="outline" onClick={() => refetchSchedules()}>
                   Retry
@@ -470,7 +470,7 @@ export default function StaffPage() {
             ) : scheduleList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Calendar className="mb-3 h-10 w-10 text-muted/50" />
-                <p className="text-sm font-medium text-gray-900">No schedules for this period</p>
+                <p className="text-sm font-medium text-foreground">No schedules for this period</p>
               </div>
             ) : (
               <DataTable
@@ -495,7 +495,7 @@ export default function StaffPage() {
             ) : leaveError ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
                 <AlertCircle className="mb-3 h-10 w-10 text-danger" />
-                <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
+                <p className="mb-2 text-sm font-medium text-foreground">Something went wrong</p>
                 <p className="mb-4 text-sm text-muted">{(leaveError as Error).message}</p>
                 <Button variant="outline" onClick={() => refetchLeaves()}>
                   Retry
@@ -504,7 +504,7 @@ export default function StaffPage() {
             ) : leaveList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Inbox className="mb-3 h-10 w-10 text-muted/50" />
-                <p className="text-sm font-medium text-gray-900">No leave requests found</p>
+                <p className="text-sm font-medium text-foreground">No leave requests found</p>
               </div>
             ) : (
               <DataTable
@@ -530,7 +530,7 @@ export default function StaffPage() {
                 {viewStaff.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">{viewStaff.name}</h3>
+                <h3 className="text-lg font-semibold text-foreground">{viewStaff.name}</h3>
                 <p className="text-sm text-muted">{viewStaff.email}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <Badge variant="info">{viewStaff.role?.name ?? '-'}</Badge>
@@ -541,19 +541,19 @@ export default function StaffPage() {
             <div className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4">
               <div>
                 <span className="text-xs font-medium text-muted">Phone</span>
-                <p className="text-sm text-gray-900">{viewStaff.phone || '-'}</p>
+                <p className="text-sm text-foreground">{viewStaff.phone || '-'}</p>
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Email</span>
-                <p className="text-sm text-gray-900">{viewStaff.email}</p>
+                <p className="text-sm text-foreground">{viewStaff.email}</p>
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Role</span>
-                <p className="text-sm text-gray-900">{viewStaff.role?.name ?? '-'}</p>
+                <p className="text-sm text-foreground">{viewStaff.role?.name ?? '-'}</p>
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Department</span>
-                <p className="text-sm text-gray-900">{viewStaff.department || '-'}</p>
+                <p className="text-sm text-foreground">{viewStaff.department || '-'}</p>
               </div>
             </div>
           </div>
@@ -625,7 +625,7 @@ export default function StaffPage() {
               onChange={(e) => setAddForm((p) => ({ ...p, phone: e.target.value }))}
             />
           </div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
@@ -687,7 +687,7 @@ export default function StaffPage() {
               onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))}
             />
           </div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
@@ -749,7 +749,7 @@ export default function StaffPage() {
             onChange={(e) => setScheduleForm((p) => ({ ...p, department: e.target.value }))}
           />
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Notes..."

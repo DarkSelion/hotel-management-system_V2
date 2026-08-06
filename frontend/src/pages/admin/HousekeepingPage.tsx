@@ -335,7 +335,7 @@ export default function HousekeepingPage() {
       return (
         <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
           <AlertCircle className="mb-3 h-10 w-10 text-danger" />
-          <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
+          <p className="mb-2 text-sm font-medium text-foreground">Something went wrong</p>
           <p className="mb-4 text-sm text-muted">{(error as Error).message}</p>
           <Button variant="outline" onClick={() => refetch()}>
             <RotateCcw className="h-4 w-4" /> Retry
@@ -348,7 +348,7 @@ export default function HousekeepingPage() {
       return (
         <div className="flex flex-col items-center justify-center rounded-xl border border-border py-12">
           <SprayCan className="mb-3 h-10 w-10 text-muted/50" />
-          <p className="mb-1 text-sm font-medium text-gray-900">No tasks found for this date</p>
+          <p className="mb-1 text-sm font-medium text-foreground">No tasks found for this date</p>
           <p className="text-sm text-muted">Try adjusting your search or filters.</p>
         </div>
       )
@@ -358,7 +358,7 @@ export default function HousekeepingPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {STATUS_BOARD_COLUMNS.map(col => (
           <div key={col.key}>
-            <h3 className={`mb-3 border-t-4 pt-2 text-sm font-semibold text-gray-700 ${col.color}`}>
+            <h3 className={`mb-3 border-t-4 pt-2 text-sm font-semibold text-foreground ${col.color}`}>
               {col.label}
               <span className="ml-2 text-muted">({tasksByStatus[col.key]?.length ?? 0})</span>
             </h3>
@@ -368,7 +368,7 @@ export default function HousekeepingPage() {
                   <CardContent className="p-4">
                     <div className="mb-2 flex items-start justify-between">
                       <div>
-                        <p className="text-lg font-bold text-gray-900">{task.room.room_number}</p>
+                        <p className="text-lg font-bold text-foreground">{task.room.room_number}</p>
                         <Badge variant="default" size="sm">{task.task_type}</Badge>
                       </div>
                       <StatusBadge status={task.priority} />
@@ -567,7 +567,7 @@ export default function HousekeepingPage() {
             ))}
           </Select>
           <div>
-            <label htmlFor="task-notes" className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+            <label htmlFor="task-notes" className="mb-1 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               id="task-notes"
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"

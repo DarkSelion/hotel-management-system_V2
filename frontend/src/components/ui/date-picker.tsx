@@ -124,7 +124,7 @@ export function DatePicker({ value, onChange, min, max, placeholder = 'Select da
         <button type="button" onClick={prevMonth} className="rounded-md p-1.5 text-muted hover:bg-cream hover:text-primary transition-colors">
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="text-sm font-semibold text-gray-900">
+        <span className="text-sm font-semibold text-foreground">
           {MONTHS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
         </span>
         <button type="button" onClick={nextMonth} className="rounded-md p-1.5 text-muted hover:bg-cream hover:text-primary transition-colors">
@@ -159,8 +159,8 @@ export function DatePicker({ value, onChange, min, max, placeholder = 'Select da
                   : isToday
                     ? 'bg-gold/15 text-gold-dark font-semibold ring-1 ring-gold/30'
                     : isDisabled
-                      ? 'text-gray-300 cursor-not-allowed'
-                      : 'text-gray-700 hover:bg-cream hover:text-primary',
+                      ? 'text-border cursor-not-allowed'
+                      : 'text-foreground hover:bg-cream hover:text-primary',
               )}
             >
               {day}
@@ -173,7 +173,7 @@ export function DatePicker({ value, onChange, min, max, placeholder = 'Select da
 
   return (
     <div className={cn('', className)} ref={wrapperRef}>
-      {label && <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>}
+      {label && <label className="mb-1 block text-sm font-medium text-foreground">{label}</label>}
       <div className="relative">
         <button
           ref={buttonRef}
@@ -200,7 +200,7 @@ export function DatePicker({ value, onChange, min, max, placeholder = 'Select da
               onChange('')
               setOpen(false)
             }}
-            className="absolute right-2 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:bg-gray-100 hover:text-gray-700"
+            className="absolute right-2 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:bg-bg hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" />
           </button>

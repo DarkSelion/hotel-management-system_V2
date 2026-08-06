@@ -344,7 +344,7 @@ export default function MaintenancePage() {
             onChange={(e) => setFormData(f => ({ ...f, title: e.target.value }))}
           />
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Description</label>
             <textarea
               className="flex min-h-[100px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Detailed description of the issue..."
@@ -374,7 +374,7 @@ export default function MaintenancePage() {
             </Select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Internal notes..."
@@ -485,7 +485,7 @@ export default function MaintenancePage() {
               {selectedRequest.description && (
                 <div className="col-span-2">
                   <label className="text-xs font-medium text-muted">Description</label>
-                  <p className="text-sm text-gray-700">{selectedRequest.description}</p>
+                  <p className="text-sm text-foreground">{selectedRequest.description}</p>
                 </div>
               )}
               <div>
@@ -503,7 +503,7 @@ export default function MaintenancePage() {
             </div>
 
             <div className="rounded-lg border border-border p-4">
-              <h4 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+              <h4 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 <Image className="h-4 w-4 text-muted" />
                 Images
               </h4>
@@ -513,36 +513,36 @@ export default function MaintenancePage() {
             </div>
 
             <div className="rounded-lg border border-border p-4">
-              <h4 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+              <h4 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 <Clock className="h-4 w-4 text-muted" />
                 Activity Timeline
               </h4>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
+                  <div className="mt-1 h-2 w-2 rounded-full bg-info" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Reported</p>
+                    <p className="text-sm font-medium text-foreground">Reported</p>
                     <p className="text-xs text-muted">{selectedRequest.created_at ? formatDateDisplay(selectedRequest.created_at) : 'Unknown'}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className={`mt-1 h-2 w-2 rounded-full ${selectedRequest.status === 'assigned' || selectedRequest.status === 'in_progress' || selectedRequest.status === 'completed' ? 'bg-blue-500' : 'bg-gray-300'}`} />
+                  <div className={`mt-1 h-2 w-2 rounded-full ${selectedRequest.status === 'assigned' || selectedRequest.status === 'in_progress' || selectedRequest.status === 'completed' ? 'bg-info' : 'bg-border'}`} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Assigned</p>
+                    <p className="text-sm font-medium text-foreground">Assigned</p>
                     <p className="text-xs text-muted">{selectedRequest.assigned_to ? `Assigned to ${selectedRequest.assigned_to.name}` : 'Pending assignment'}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className={`mt-1 h-2 w-2 rounded-full ${selectedRequest.status === 'in_progress' || selectedRequest.status === 'completed' ? 'bg-yellow-500' : 'bg-gray-300'}`} />
+                  <div className={`mt-1 h-2 w-2 rounded-full ${selectedRequest.status === 'in_progress' || selectedRequest.status === 'completed' ? 'bg-warning' : 'bg-border'}`} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">In Progress</p>
+                    <p className="text-sm font-medium text-foreground">In Progress</p>
                     <p className="text-xs text-muted">{selectedRequest.status === 'in_progress' || selectedRequest.status === 'completed' ? 'Work started' : 'Not started'}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className={`mt-1 h-2 w-2 rounded-full ${selectedRequest.status === 'completed' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <div className={`mt-1 h-2 w-2 rounded-full ${selectedRequest.status === 'completed' ? 'bg-success' : 'bg-border'}`} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Completed</p>
+                    <p className="text-sm font-medium text-foreground">Completed</p>
                     <p className="text-xs text-muted">{selectedRequest.status === 'completed' ? 'Work finished' : 'Pending'}</p>
                   </div>
                 </div>
@@ -550,18 +550,18 @@ export default function MaintenancePage() {
             </div>
 
             <div className="rounded-lg border border-border p-4">
-              <h4 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+              <h4 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 <DollarSign className="h-4 w-4 text-muted" />
                 Cost Tracking
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-medium text-muted">Estimated Cost</label>
-                  <p className="text-sm font-semibold text-gray-900">{formatCurrencyOrNull(selectedRequest.estimated_cost)}</p>
+                  <p className="text-sm font-semibold text-foreground">{formatCurrencyOrNull(selectedRequest.estimated_cost)}</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted">Actual Cost</label>
-                  <p className="text-sm font-semibold text-gray-900">{formatCurrencyOrNull(selectedRequest.actual_cost)}</p>
+                  <p className="text-sm font-semibold text-foreground">{formatCurrencyOrNull(selectedRequest.actual_cost)}</p>
                 </div>
               </div>
             </div>

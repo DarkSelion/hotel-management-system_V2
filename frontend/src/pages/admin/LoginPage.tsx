@@ -89,7 +89,7 @@ export function LoginPage() {
 
           <div className="rounded-2xl border border-border bg-card p-8 shadow-lg">
             <div className="mb-6 animate-[fadeIn_0.5s_ease-out_0.05s_forwards] opacity-0">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-foreground">
                 Welcome back
               </h2>
               <p className="mt-1 text-sm text-muted">
@@ -98,7 +98,7 @@ export function LoginPage() {
             </div>
 
             {loginMutation.error && (
-              <div className="mb-4 animate-[fadeIn_0.3s_ease-out] rounded-lg bg-red-50 p-3 text-sm text-danger">
+              <div className="mb-4 animate-[fadeIn_0.3s_ease-out] rounded-lg bg-danger/10 p-3 text-sm text-danger">
                 {loginMutation.error.message || 'Invalid credentials. Please try again.'}
               </div>
             )}
@@ -117,7 +117,7 @@ export function LoginPage() {
 
               <div className="animate-[fadeIn_0.5s_ease-out_0.2s_forwards] opacity-0">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-foreground">
                     Password
                   </label>
                   <div className="relative">
@@ -137,7 +137,7 @@ export function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-foreground"
                       tabIndex={-1}
                     >
                       {showPassword ? (

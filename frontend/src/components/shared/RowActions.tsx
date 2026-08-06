@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const TONES = {
-  neutral: 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-  danger: 'bg-red-100 text-red-700 hover:bg-red-200',
-  success: 'bg-green-100 text-green-700 hover:bg-green-200',
-  info: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-  warning: 'bg-amber-100 text-amber-700 hover:bg-amber-200',
+  neutral: 'bg-border/50 text-muted hover:bg-border',
+  danger: 'bg-danger/10 text-danger hover:bg-danger/20',
+  success: 'bg-success/10 text-success hover:bg-success/20',
+  info: 'bg-info/10 text-info hover:bg-info/20',
+  warning: 'bg-warning/10 text-warning hover:bg-warning/20',
 } as const
 
 export type RowActionTone = keyof typeof TONES

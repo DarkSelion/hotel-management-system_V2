@@ -115,8 +115,8 @@ export function PaymentModal({
     cn(
       'flex flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors',
       active
-        ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
-        : 'border-border bg-white text-gray-700 hover:bg-gray-100',
+        ? 'border-foreground bg-foreground text-card shadow-sm'
+        : 'border-border bg-card text-foreground hover:bg-bg',
     )
 
   return (
@@ -124,7 +124,7 @@ export function PaymentModal({
       <div className="space-y-4">
         {!reservation && (
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Reservation</label>
+            <label className="text-sm font-medium text-foreground">Reservation</label>
             <Select
               value={selectedReservation ? String(selectedReservation.id) : ''}
               onChange={(e) => handleReservationSelect(Number(e.target.value))}
@@ -140,19 +140,19 @@ export function PaymentModal({
         )}
 
         {activeReservation && (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-border bg-gray-50/70 px-3 py-2.5 text-sm">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-border bg-bg px-3 py-2.5 text-sm">
             <span className="text-muted text-left">Guest</span>
-            <span className="font-medium text-gray-900 text-right">
+            <span className="font-medium text-foreground text-right">
               {activeReservation.guest?.first_name} {activeReservation.guest?.last_name}
             </span>
             <span className="text-muted text-left">Room</span>
-            <span className="font-medium text-gray-900 text-right">Room {activeReservation.room?.room_number ?? '-'}</span>
+            <span className="font-medium text-foreground text-right">Room {activeReservation.room?.room_number ?? '-'}</span>
             <span className="text-muted text-left">Stay</span>
-            <span className="font-medium text-gray-900 text-right">
+            <span className="font-medium text-foreground text-right">
               {formatDateDisplay(activeReservation.check_in)} – {formatDateDisplay(activeReservation.check_out)}
             </span>
             <span className="text-muted text-left">Balance due</span>
-            <span className="font-semibold text-gray-900 text-right">{formatCurrency(due)}</span>
+            <span className="font-semibold text-foreground text-right">{formatCurrency(due)}</span>
           </div>
         )}
 
@@ -171,12 +171,12 @@ export function PaymentModal({
           <div className="space-y-3">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Amount to collect</span>
+                <span className="text-sm font-medium text-foreground">Amount to collect</span>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => handleAmountChange(due)}
-                    className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
+                    className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-sm hover:bg-bg"
                   >
                     Full
                   </button>
@@ -184,7 +184,7 @@ export function PaymentModal({
                     <button
                       type="button"
                       onClick={() => handleAmountChange(Math.round(due / 2))}
-                      className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
+                      className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-sm hover:bg-bg"
                     >
                       Half
                     </button>
@@ -192,7 +192,7 @@ export function PaymentModal({
                 </div>
               </div>
               <div className="relative">
-                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-gray-400">₱</span>
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted">₱</span>
                 <input
                   type="number"
                   aria-label="Amount to collect"
@@ -201,15 +201,15 @@ export function PaymentModal({
                   step="0.01"
                   value={amount}
                   onChange={(e) => handleAmountChange(Number(e.target.value))}
-                  className="w-full rounded-lg border border-border bg-card py-2 pl-7 pr-3 text-sm font-medium text-gray-900 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/50"
+                  className="w-full rounded-lg border border-border bg-card py-2 pl-7 pr-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/50"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <span className="text-sm font-medium text-gray-700">Cash tendered</span>
+              <span className="text-sm font-medium text-foreground">Cash tendered</span>
               <div className="relative">
-                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-gray-400">₱</span>
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted">₱</span>
                 <input
                   type="number"
                   aria-label="Cash tendered"
@@ -217,21 +217,21 @@ export function PaymentModal({
                   step="0.01"
                   value={tendered}
                   onChange={(e) => handleTenderedChange(Number(e.target.value))}
-                  className="w-full rounded-lg border border-border bg-card py-2 pl-7 pr-3 text-sm font-medium text-gray-900 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/50"
+                  className="w-full rounded-lg border border-border bg-card py-2 pl-7 pr-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/50"
                 />
               </div>
             </div>
 
             {changeDue > 0 ? (
-              <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm">
-                <span className="font-medium text-emerald-800">Change due</span>
-                <span className="text-lg font-bold text-emerald-900">{formatCurrency(changeDue)}</span>
+              <div className="flex items-center justify-between rounded-lg border border-success/20 bg-success/10 px-3 py-2.5 text-sm">
+                <span className="font-medium text-success">Change due</span>
+                <span className="text-lg font-bold text-success">{formatCurrency(changeDue)}</span>
               </div>
             ) : (
               stillOwes > 0 && (
-                <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm">
-                  <span className="font-medium text-amber-800">Guest still owes</span>
-                  <span className="text-lg font-bold text-amber-900">{formatCurrency(stillOwes)}</span>
+                <div className="flex items-center justify-between rounded-lg border border-warning/20 bg-warning/10 px-3 py-2.5 text-sm">
+                  <span className="font-medium text-warning">Guest still owes</span>
+                  <span className="text-lg font-bold text-warning">{formatCurrency(stillOwes)}</span>
                 </div>
               )
             )}
@@ -249,12 +249,12 @@ export function PaymentModal({
           <div className="space-y-3">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Amount to collect</span>
+                <span className="text-sm font-medium text-foreground">Amount to collect</span>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => handleAmountChange(due)}
-                    className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
+                    className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-sm hover:bg-bg"
                   >
                     Full
                   </button>
@@ -262,7 +262,7 @@ export function PaymentModal({
                     <button
                       type="button"
                       onClick={() => handleAmountChange(Math.round(due / 2))}
-                      className="rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100"
+                      className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-sm hover:bg-bg"
                     >
                       Half
                     </button>
@@ -270,7 +270,7 @@ export function PaymentModal({
                 </div>
               </div>
               <div className="relative">
-                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-gray-400">₱</span>
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted">₱</span>
                 <input
                   type="number"
                   aria-label="Amount to collect"
@@ -279,7 +279,7 @@ export function PaymentModal({
                   step="0.01"
                   value={amount}
                   onChange={(e) => handleAmountChange(Number(e.target.value))}
-                  className="w-full rounded-lg border border-border bg-card py-2 pl-7 pr-3 text-sm font-medium text-gray-900 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/50"
+                  className="w-full rounded-lg border border-border bg-card py-2 pl-7 pr-3 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/50"
                 />
               </div>
             </div>
@@ -291,15 +291,15 @@ export function PaymentModal({
               onChange={(e) => setReference(e.target.value)}
             />
 
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p className="rounded-lg border border-warning/20 bg-warning/10 px-3 py-2 text-xs text-warning">
               Recorded as <span className="font-medium">pending</span> — verify on the Payments page.
             </p>
           </div>
         )}
 
         {error && (
-          <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+          <div className="flex items-start gap-2 rounded-lg border border-danger/20 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
             <span>{error}</span>
           </div>
         )}

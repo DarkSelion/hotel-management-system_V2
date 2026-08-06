@@ -322,8 +322,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 window.location.href = '/admin/login'
               }}
               className={cn(
-                'mt-1 flex w-full items-center justify-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition-all duration-150',
-                'hover:bg-red-50 hover:text-red-600',
+                'mt-1 flex w-full items-center justify-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-danger transition-all duration-150',
+                'hover:bg-danger/10 hover:text-danger',
                 collapsed ? '' : 'justify-start',
               )}
               aria-label="Logout"

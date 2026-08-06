@@ -146,7 +146,7 @@ export default function ReportsPage() {
     <div>
       <PageHeader title="Reports" />
 
-      <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-0.5 w-fit">
+      <div className="mb-6 flex gap-1 rounded-lg bg-border/50 p-0.5 w-fit">
         {REPORTS_TABS.map((tab) => (
           <button
             key={tab}
@@ -154,7 +154,7 @@ export default function ReportsPage() {
             className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? 'bg-card text-primary shadow-sm'
-                : 'text-muted hover:text-gray-700'
+                : 'text-muted hover:text-foreground'
             }`}
           >
             {tab}
@@ -207,7 +207,7 @@ export default function ReportsPage() {
           ) : revenue.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-12">
               <Inbox className="mb-3 h-10 w-10 text-muted/50" />
-              <p className="text-sm font-medium text-gray-900">No data for selected period</p>
+              <p className="text-sm font-medium text-foreground">No data for selected period</p>
             </div>
           ) : (
             <>
@@ -315,7 +315,7 @@ export default function ReportsPage() {
           ) : occupancy.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-12">
               <Inbox className="mb-3 h-10 w-10 text-muted/50" />
-              <p className="text-sm font-medium text-gray-900">No data for selected period</p>
+              <p className="text-sm font-medium text-foreground">No data for selected period</p>
             </div>
           ) : (
             <>
@@ -435,7 +435,7 @@ export default function ReportsPage() {
           ) : !statusBreakdown || statusBreakdown.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-12">
               <Inbox className="mb-3 h-10 w-10 text-muted/50" />
-              <p className="text-sm font-medium text-gray-900">No data for selected period</p>
+              <p className="text-sm font-medium text-foreground">No data for selected period</p>
             </div>
           ) : (
             <>

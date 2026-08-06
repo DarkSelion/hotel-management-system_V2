@@ -71,7 +71,7 @@ export default function RoomImagesPage() {
                 className="h-24 w-24 flex-shrink-0 rounded-md object-cover"
               />
             ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-100 text-muted">
+              <div className="flex h-24 w-24 items-center justify-center rounded-md bg-bg text-muted">
                 <ImageIcon className="h-8 w-8" />
               </div>
             )}
@@ -226,7 +226,7 @@ function EditRoomImagesModal({
     >
       <div className="space-y-6">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Room Type</label>
+          <label className="mb-1 block text-sm font-medium text-foreground">Room Type</label>
           <Select
             value={selectedRoomTypeId}
             onChange={(e) => setSelectedRoomTypeId(Number(e.target.value))}
@@ -321,13 +321,13 @@ function RoomImageManager({ roomId }: { roomId: number }) {
       {imagesLoading ? (
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="aspect-[4/3] animate-pulse rounded-lg bg-gray-200" />
+            <div key={i} className="aspect-[4/3] animate-pulse rounded-lg bg-bg" />
           ))}
         </div>
       ) : images.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
           <ImageIcon className="mb-3 h-12 w-12 text-muted/50" />
-          <p className="text-sm font-medium text-gray-900">No images yet</p>
+          <p className="text-sm font-medium text-foreground">No images yet</p>
           <p className="text-sm text-muted">Upload photos for this room.</p>
         </div>
       ) : (
@@ -351,7 +351,7 @@ function RoomImageManager({ roomId }: { roomId: number }) {
                   <button
                     onClick={() => handleSetPrimary(image)}
                     disabled={updateMutation.isPending}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow hover:bg-white"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-card/90 text-gold shadow hover:bg-card"
                     title="Set as primary"
                   >
                     <Star className="h-4 w-4" />
@@ -359,7 +359,7 @@ function RoomImageManager({ roomId }: { roomId: number }) {
                 )}
                 <button
                   onClick={() => setDeleteTarget(image)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-danger shadow hover:bg-white"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-card/90 text-danger shadow hover:bg-card"
                   title="Delete"
                 >
                   <Trash2 className="h-4 w-4" />

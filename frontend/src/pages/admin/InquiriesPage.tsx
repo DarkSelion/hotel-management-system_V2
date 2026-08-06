@@ -58,29 +58,29 @@ export default function InquiriesPage() {
     {
       key: 'name',
       label: 'Name',
-      render: (r) => <span className="font-medium text-gray-900">{r.name}</span>,
+      render: (r) => <span className="font-medium text-foreground">{r.name}</span>,
     },
     {
       key: 'email',
       label: 'Email',
-      render: (r) => <span className="text-gray-600">{r.email}</span>,
+      render: (r) => <span className="text-muted">{r.email}</span>,
     },
     {
       key: 'subject',
       label: 'Subject',
-      render: (r) => <span className="text-gray-900">{r.subject}</span>,
+      render: (r) => <span className="text-foreground">{r.subject}</span>,
     },
     {
       key: 'message',
       label: 'Message',
       render: (r) => (
-        <span className="block max-w-[280px] truncate text-gray-500">{r.message}</span>
+        <span className="block max-w-[280px] truncate text-muted">{r.message}</span>
       ),
     },
     {
       key: 'created_at',
       label: 'Received',
-      render: (r) => <span className="text-gray-500">{formatDateDisplay(r.created_at)}</span>,
+      render: (r) => <span className="text-muted">{formatDateDisplay(r.created_at)}</span>,
     },
     {
       key: 'actions',
@@ -155,7 +155,7 @@ export default function InquiriesPage() {
                 <label className="text-xs font-medium text-muted flex items-center gap-1">
                   <User className="h-3 w-3" /> From
                 </label>
-                <p className="mt-0.5 text-sm text-gray-900 break-words">{selected.name}</p>
+                <p className="mt-0.5 text-sm text-foreground break-words">{selected.name}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted flex items-center gap-1">
@@ -167,20 +167,20 @@ export default function InquiriesPage() {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Received</label>
-                <p className="mt-0.5 text-sm text-gray-900">{formatDateDisplay(selected.created_at)}</p>
+                <p className="mt-0.5 text-sm text-foreground">{formatDateDisplay(selected.created_at)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Subject</label>
-                <p className="mt-0.5 text-sm font-medium text-gray-900 break-words">{selected.subject}</p>
+                <p className="mt-0.5 text-sm font-medium text-foreground break-words">{selected.subject}</p>
               </div>
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-muted">Message</label>
-                <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-gray-900">{selected.message}</p>
+                <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-foreground">{selected.message}</p>
               </div>
               {selected.ip_address && (
                 <div className="sm:col-span-2">
                   <label className="text-xs font-medium text-muted">IP Address</label>
-                  <p className="mt-0.5 text-sm text-gray-500">{selected.ip_address}</p>
+                  <p className="mt-0.5 text-sm text-muted">{selected.ip_address}</p>
                 </div>
               )}
             </div>

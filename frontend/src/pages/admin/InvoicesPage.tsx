@@ -459,7 +459,7 @@ export default function InvoicesPage() {
         {detailLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-4 w-full animate-pulse rounded bg-gray-200" />
+              <div key={i} className="h-4 w-full animate-pulse rounded bg-bg" />
             ))}
           </div>
         ) : detailInvoice ? (
@@ -467,10 +467,10 @@ export default function InvoicesPage() {
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
                 {hotelLogo && (
-                  <img src={hotelLogo} alt={hotelName} className="h-12 w-12 rounded-lg border border-border bg-white object-contain p-1" />
+                  <img src={hotelLogo} alt={hotelName} className="h-12 w-12 rounded-lg border border-border bg-card object-contain p-1" />
                 )}
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{hotelName}</h3>
+                  <h3 className="text-lg font-bold text-foreground">{hotelName}</h3>
                   {hotelAddress && <p className="text-sm text-muted">{hotelAddress}</p>}
                   <p className="text-sm text-muted">{hotelPhone}</p>
                   <p className="text-sm text-muted">{hotelEmail}</p>
@@ -485,16 +485,16 @@ export default function InvoicesPage() {
 
             <div className="rounded-lg border border-border p-4">
               <p className="text-xs font-medium text-muted">Guest</p>
-              <p className="text-sm font-medium text-gray-900">{getGuestName(detailInvoice)}</p>
+              <p className="text-sm font-medium text-foreground">{getGuestName(detailInvoice)}</p>
               <p className="text-xs text-muted">{detailInvoice.guest?.email ?? ''}</p>
             </div>
 
             <div>
-              <h4 className="mb-2 text-sm font-semibold text-gray-900">Invoice Items</h4>
+              <h4 className="mb-2 text-sm font-semibold text-foreground">Invoice Items</h4>
               <div className="overflow-hidden rounded-lg border border-border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-gray-50/50">
+                    <tr className="border-b border-border bg-bg/50">
                       <th className="px-4 py-2 text-left font-medium text-muted">Description</th>
                       <th className="px-4 py-2 text-right font-medium text-muted">Qty</th>
                       <th className="px-4 py-2 text-right font-medium text-muted">Unit Price</th>
@@ -504,10 +504,10 @@ export default function InvoicesPage() {
                   <tbody>
                     {detailInvoice.items.map((item, idx) => (
                       <tr key={idx} className="border-b border-border last:border-0">
-                        <td className="px-4 py-2 text-gray-900">{item.description}</td>
+                        <td className="px-4 py-2 text-foreground">{item.description}</td>
                         <td className="px-4 py-2 text-right text-muted">{item.quantity}</td>
                         <td className="px-4 py-2 text-right text-muted">{formatCurrency(item.unit_price)}</td>
-                        <td className="px-4 py-2 text-right font-medium text-gray-900">{formatCurrency(item.total_price)}</td>
+                        <td className="px-4 py-2 text-right font-medium text-foreground">{formatCurrency(item.total_price)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -528,7 +528,7 @@ export default function InvoicesPage() {
                 <span className="text-muted">Discount</span>
                 <span>{formatCurrency(0)}</span>
               </div>
-              <div className="flex justify-between border-t border-border pt-1 font-semibold text-gray-900">
+              <div className="flex justify-between border-t border-border pt-1 font-semibold text-foreground">
                 <span>Total</span>
                 <span>{formatCurrency(detailInvoice.total_amount)}</span>
               </div>
@@ -536,7 +536,7 @@ export default function InvoicesPage() {
 
             {detailInvoice.status === 'paid' && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-gray-900">Payment History</h4>
+                <h4 className="mb-2 text-sm font-semibold text-foreground">Payment History</h4>
                 <p className="text-sm text-muted">Payment recorded on {formatDate(detailInvoice.issued_date)}</p>
               </div>
             )}
@@ -574,7 +574,7 @@ export default function InvoicesPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Reservation</label>
+            <label className="text-sm font-medium text-foreground">Reservation</label>
             <Select
               value={form.reservation_id ? String(form.reservation_id) : ''}
               onChange={(e) => handleReservationSelect(Number(e.target.value))}
@@ -591,7 +591,7 @@ export default function InvoicesPage() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Invoice Items</label>
+              <label className="text-sm font-medium text-foreground">Invoice Items</label>
               <Button variant="ghost" size="sm" onClick={addLineItem}>
                 <Plus className="h-3.5 w-3.5" /> Add Item
               </Button>
@@ -629,7 +629,7 @@ export default function InvoicesPage() {
                       error={formErrors[`item_${idx}_price`]}
                     />
                   </div>
-                  <div className="flex h-10 items-center justify-center font-medium text-gray-900 min-w-[80px]">
+                  <div className="flex h-10 items-center justify-center font-medium text-foreground min-w-[80px]">
                     {formatCurrency(item.quantity * item.unit_price)}
                   </div>
                   <Button variant="ghost" size="sm" square onClick={() => removeLineItem(idx)} disabled={form.items.length <= 1}>
@@ -672,8 +672,8 @@ export default function InvoicesPage() {
             />
           </div>
 
-          <div className="rounded-lg border border-border bg-gray-50/50 p-4">
-            <h4 className="mb-2 text-sm font-semibold text-gray-900">Invoice Preview</h4>
+          <div className="rounded-lg border border-border bg-bg/50 p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Invoice Preview</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">Subtotal</span>
@@ -691,7 +691,7 @@ export default function InvoicesPage() {
                   <span>-{formatCurrency(formSubtotal * (form.discount_percent / 100))}</span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-border pt-1 font-semibold text-gray-900">
+              <div className="flex justify-between border-t border-border pt-1 font-semibold text-foreground">
                 <span>Total</span>
                 <span>{formatCurrency(formTotal)}</span>
               </div>

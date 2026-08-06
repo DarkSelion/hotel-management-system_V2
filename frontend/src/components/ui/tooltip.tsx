@@ -115,7 +115,7 @@ export function Tooltip({
       {visible && (
         <div
           className={cn(
-            'fixed z-[60] rounded-md bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg',
+            'fixed z-[60] rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-card shadow-lg',
             'pointer-events-none transition-opacity duration-200',
           )}
           style={{ top: `${position.top}px`, left: `${position.left}px` }}

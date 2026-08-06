@@ -244,7 +244,7 @@ export default function PaymentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-medium text-muted">Reference Number</label>
-                <p className="text-sm font-medium text-gray-900">{selectedPayment.reference_number ?? `PAY-${selectedPayment.id}`}</p>
+                <p className="text-sm font-medium text-foreground">{selectedPayment.reference_number ?? `PAY-${selectedPayment.id}`}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Status</label>
@@ -252,28 +252,28 @@ export default function PaymentsPage() {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Amount</label>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(selectedPayment.amount)}</p>
+                <p className="text-lg font-bold text-foreground">{formatCurrency(selectedPayment.amount)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Payment Method</label>
-                <p className="flex items-center gap-1.5 text-sm text-gray-900">
+                <p className="flex items-center gap-1.5 text-sm text-foreground">
                   {METHOD_ICONS[selectedPayment.payment_method] ?? null}
                   {getMethodLabel(selectedPayment.payment_method)}
                 </p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Date</label>
-                <p className="text-sm text-gray-900">{formatDate(selectedPayment.paid_at ?? selectedPayment.created_at)}</p>
+                <p className="text-sm text-foreground">{formatDate(selectedPayment.paid_at ?? selectedPayment.created_at)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Receipt Number</label>
-                <p className="text-sm text-gray-900">RCT-{selectedPayment.id.toString().padStart(5, '0')}</p>
+                <p className="text-sm text-foreground">RCT-{selectedPayment.id.toString().padStart(5, '0')}</p>
               </div>
             </div>
 
             {selectedPayment.reservation && (
               <div className="rounded-lg border border-border p-4">
-                <h4 className="mb-2 text-sm font-semibold text-gray-900">Reservation Details</h4>
+                <h4 className="mb-2 text-sm font-semibold text-foreground">Reservation Details</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <span className="text-muted">Reservation:</span>

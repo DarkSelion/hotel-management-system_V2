@@ -187,7 +187,7 @@ export function DateRangePicker({ value, onChange, min, max, placeholder = 'Sele
         <button type="button" onClick={prevMonth} className="rounded-md p-1.5 text-muted hover:bg-cream hover:text-primary transition-colors">
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="text-sm font-semibold text-gray-900">
+        <span className="text-sm font-semibold text-foreground">
           {MONTHS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
         </span>
         <button type="button" onClick={nextMonth} className="rounded-md p-1.5 text-muted hover:bg-cream hover:text-primary transition-colors">
@@ -230,8 +230,8 @@ export function DateRangePicker({ value, onChange, min, max, placeholder = 'Sele
                 (rangeStart || rangeEnd) && 'bg-primary text-white font-semibold shadow-sm',
                 !(rangeStart || rangeEnd) && inRange && 'bg-primary/10',
                 !(rangeStart || rangeEnd) && isToday && !isSelected && 'bg-gold/15 text-gold-dark font-semibold ring-1 ring-gold/30',
-                !(rangeStart || rangeEnd) && isDisabled && 'text-gray-300 cursor-not-allowed',
-                !(rangeStart || rangeEnd) && !inRange && !isDisabled && !isToday && 'text-gray-700 hover:bg-cream hover:text-primary',
+                !(rangeStart || rangeEnd) && isDisabled && 'text-border cursor-not-allowed',
+                !(rangeStart || rangeEnd) && !inRange && !isDisabled && !isToday && 'text-foreground hover:bg-cream hover:text-primary',
                 isHovered && !isSelected && !inRange && !isDisabled && 'bg-cream',
               )}
             >

@@ -79,20 +79,20 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
       : ''
 
     return (
-      <div className="rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 shadow-lg ring-1 ring-black/5">
-        <p className="text-xs text-gray-500">{labelDate}</p>
-        <p className="text-sm font-semibold text-gray-900">{value}</p>
+      <div className="rounded-xl border border-border bg-card px-3.5 py-2.5 shadow-lg ring-1 ring-black/5">
+        <p className="text-xs text-muted">{labelDate}</p>
+        <p className="text-sm font-semibold text-foreground">{value}</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full rounded-xl border border-gray-200 bg-white p-5">
+    <div className="w-full rounded-xl border border-border bg-card p-5">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Revenue Overview</h3>
-          <p className="mt-0.5 text-xs text-gray-400">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">Revenue Overview</h3>
+          <p className="mt-0.5 text-xs text-muted/70">
             {activeTab === 'revenue'
               ? '30-day revenue trend and booking volume'
               : '30-day booking volume and revenue trend'}
@@ -100,7 +100,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
         </div>
 
         {/* Pill toggle */}
-        <div className="inline-flex items-center gap-1 rounded-full bg-gray-100 p-1">
+        <div className="inline-flex items-center gap-1 rounded-full bg-bg p-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -108,8 +108,8 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
               className={cn(
                 'relative rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200',
                 activeTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700',
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted hover:text-foreground',
               )}
             >
               <span className="flex items-center gap-1.5">
@@ -119,7 +119,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
                     'rounded-full px-1.5 py-0.25 text-xs font-semibold',
                     activeTab === tab.id
                       ? 'bg-primary/10 text-primary'
-                      : 'bg-gray-200 text-gray-400',
+                      : 'bg-border text-muted',
                   )}
                 >
                   {tab.id === 'revenue'
@@ -135,7 +135,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
       {/* Summary bar */}
       {summary && (
         <div className="mb-4 flex items-baseline gap-2">
-          <span className="text-2xl font-bold tabular-nums text-gray-900">
+          <span className="text-2xl font-bold tabular-nums text-foreground">
             {activeTab === 'revenue'
               ? formatCurrency(summary.recentTotal)
               : formatNumber(summary.recentTotal)}
@@ -144,7 +144,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
             <span
               className={cn(
                 'flex items-center gap-1 text-xs font-medium',
-                summary.change > 0 ? 'text-emerald-600' : 'text-rose-500',
+                summary.change > 0 ? 'text-success' : 'text-danger',
               )}
             >
               {summary.change > 0 ? (
@@ -154,7 +154,7 @@ export function RevenueChart({ data, activeTab, onTabChange }: RevenueChartProps
               )}
               {summary.change > 0 ? '+' : ''}
               {summary.change.toFixed(1)}%
-              <span className="text-gray-400">vs prior</span>
+              <span className="text-muted">vs prior</span>
             </span>
           )}
         </div>

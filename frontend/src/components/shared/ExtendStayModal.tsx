@@ -103,20 +103,20 @@ export function ExtendStayModal({
     >
       {reservation && (
         <div className="space-y-4">
-          <dl className="divide-y divide-border rounded-lg border border-border bg-gray-50/70 text-sm">
+          <dl className="divide-y divide-border rounded-lg border border-border bg-bg text-sm">
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Guest</dt>
-              <dd className="font-medium text-gray-900">
+              <dd className="font-medium text-foreground">
                 {reservation.guest?.first_name} {reservation.guest?.last_name}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Room</dt>
-              <dd className="font-medium text-gray-900">Room {reservation.room?.room_number ?? '-'}</dd>
+              <dd className="font-medium text-foreground">Room {reservation.room?.room_number ?? '-'}</dd>
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Scheduled Check Out</dt>
-              <dd className="font-medium text-gray-900">{formatDateDisplay(currentCheckOut)}</dd>
+              <dd className="font-medium text-foreground">{formatDateDisplay(currentCheckOut)}</dd>
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Status</dt>
@@ -127,8 +127,8 @@ export function ExtendStayModal({
           </dl>
 
           {reservation.is_overstay && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+            <div className="flex items-start gap-2.5 rounded-lg border border-danger/20 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
               <span>Guest has overstayed past the scheduled check-out date.</span>
             </div>
           )}
@@ -145,10 +145,10 @@ export function ExtendStayModal({
           </div>
 
           {preview && (
-            <div className="rounded-lg border border-border bg-gray-50/70 text-sm">
+            <div className="rounded-lg border border-border bg-bg text-sm">
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-muted">Nights</span>
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-foreground">
                   {preview.existingNights} → {preview.newNights}
                   {preview.extraNights > 0 && (
                     <span className="ml-1 text-xs text-success">(+{preview.extraNights})</span>
@@ -157,7 +157,7 @@ export function ExtendStayModal({
               </div>
               <div className="flex items-center justify-between border-t border-border px-3 py-2">
                 <span className="text-muted">New Total</span>
-                <span className="font-medium text-gray-900">{formatCurrency(preview.newTotal)}</span>
+                <span className="font-medium text-foreground">{formatCurrency(preview.newTotal)}</span>
               </div>
               {preview.extraAmount !== 0 && (
                 <div className="flex items-center justify-between border-t border-border px-3 py-2">
@@ -167,14 +167,14 @@ export function ExtendStayModal({
               )}
               <div className="flex items-center justify-between border-t border-border px-3 py-2">
                 <span className="text-muted">Amount Due After</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(preview.newDue)}</span>
+                <span className="font-semibold text-foreground">{formatCurrency(preview.newDue)}</span>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+            <div className="flex items-start gap-2.5 rounded-lg border border-danger/20 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
               <span>{error}</span>
             </div>
           )}

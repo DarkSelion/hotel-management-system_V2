@@ -37,7 +37,7 @@ const formatTime = (dateStr: string) =>
 
 function StatCardSkeleton({ compact }: { compact?: boolean }) {
   return (
-    <div className={`rounded-lg border border-gray-200 bg-white ${compact ? 'px-4 py-3' : 'p-5'}`}>
+    <div className={`rounded-lg border border-border bg-card ${compact ? 'px-4 py-3' : 'p-5'}`}>
       <Skeleton className="mb-2 h-3 w-20" />
       <Skeleton className={`rounded ${compact ? 'h-7 w-16' : 'h-10 w-24'}`} />
     </div>
@@ -46,7 +46,7 @@ function StatCardSkeleton({ compact }: { compact?: boolean }) {
 
 function ChartSkeleton() {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <Skeleton className="mb-4 h-5 w-40" />
       <Skeleton className="h-[280px] w-full rounded-lg" />
     </div>
@@ -55,7 +55,7 @@ function ChartSkeleton() {
 
 function PieChartSkeleton() {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <Skeleton className="mb-4 h-5 w-36" />
       <div className="flex items-center justify-center">
         <Skeleton className="h-[220px] w-[220px] rounded-full" />
@@ -89,12 +89,12 @@ export default function DashboardPage() {
     return (
       <div>
         <PageHeader title="Dashboard" description="Hotel overview & statistics" />
-        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-12 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-12 text-center">
           <div className="mb-4 rounded-full bg-danger/10 p-3 text-danger">
             <RefreshCw className="h-6 w-6" />
           </div>
-          <h3 className="mb-1 text-lg font-semibold text-gray-900">Failed to load dashboard</h3>
-          <p className="mb-4 text-sm text-gray-500">Something went wrong. Please try again.</p>
+          <h3 className="mb-1 text-lg font-semibold text-foreground">Failed to load dashboard</h3>
+          <p className="mb-4 text-sm text-muted">Something went wrong. Please try again.</p>
           <Button variant="primary" onClick={() => refetchStats()}>
             Retry
           </Button>
@@ -110,10 +110,10 @@ export default function DashboardPage() {
       {/* Hero: Occupancy Bar */}
       <div className="mb-4">
         {initialLoading || !stats ? (
-          <div className="rounded-xl border border-gray-200 bg-primary p-5">
-            <Skeleton className="mb-3 h-4 w-32 bg-white/10" />
-            <Skeleton className="mb-4 h-12 w-40 bg-white/10" />
-            <Skeleton className="h-2 w-full rounded-full bg-white/10" />
+          <div className="rounded-xl border border-border bg-primary p-5">
+            <Skeleton className="mb-3 h-4 w-32 bg-card/10" />
+            <Skeleton className="mb-4 h-12 w-40 bg-card/10" />
+            <Skeleton className="h-2 w-full rounded-full bg-card/10" />
           </div>
         ) : (
           <OccupancyHero
@@ -176,7 +176,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Divider: subtle line signals section boundary */}
-      <div className="mb-8 border-t border-gray-200" />
+      <div className="mb-8 border-t border-border" />
 
       {/* Charts Section */}
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -191,8 +191,8 @@ export default function DashboardPage() {
               onTabChange={(tab) => setChartTab(tab)}
             />
           ) : (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <p className="text-sm text-gray-500">No revenue data available</p>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="text-sm text-muted">No revenue data available</p>
             </div>
           )}
         </div>
@@ -202,8 +202,8 @@ export default function DashboardPage() {
           {sourcesLoading ? (
             <PieChartSkeleton />
           ) : (
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Booking Sources</h3>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted">Booking Sources</h3>
               {mappedSources && mappedSources.length > 0 ? (
                 <div className="h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -230,14 +230,14 @@ export default function DashboardPage() {
                         verticalAlign="bottom"
                         height={36}
                         formatter={(value: string) => (
-                          <span className="text-xs text-gray-500">{value}</span>
+                          <span className="text-xs text-muted">{value}</span>
                         )}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="flex h-[220px] items-center justify-center text-sm text-gray-400">
+                <div className="flex h-[220px] items-center justify-center text-sm text-muted">
                   No booking data
                 </div>
               )}
@@ -249,9 +249,9 @@ export default function DashboardPage() {
       {/* Recent Activities & Latest Reservations */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Recent Activities */}
-        <div className="rounded-xl border border-gray-200 bg-white">
-          <div className="border-b border-gray-100 px-5 py-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Recent Activities</h3>
+        <div className="rounded-xl border border-border bg-card">
+          <div className="border-b border-border px-5 py-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">Recent Activities</h3>
           </div>
           <div className="p-5">
             {activitiesLoading ? (
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                     key={activity.id}
                     className={`relative flex items-start gap-3 pb-3 ${
                       index < Math.min(activities.length, 7) - 1
-                        ? 'border-l-2 border-gray-100 pl-4'
+                        ? 'border-l-2 border-border pl-4'
                         : 'pl-4'
                     }`}
                   >
@@ -283,10 +283,10 @@ export default function DashboardPage() {
                       }`}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800 truncate">
+                      <p className="text-sm text-foreground truncate">
                         {activity.description || activity.action}
                       </p>
-                      <p className="mt-0.5 text-xs text-gray-400">
+                      <p className="mt-0.5 text-xs text-muted">
                         {formatTime(activity.created_at)}
                       </p>
                     </div>
@@ -295,19 +295,19 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="mb-3 rounded-full bg-gray-100 p-3 text-gray-400">
+                <div className="mb-3 rounded-full bg-border/50 p-3 text-muted">
                   <Activity className="h-5 w-5" />
                 </div>
-                <p className="text-sm text-gray-400">No recent activities</p>
+                <p className="text-sm text-muted">No recent activities</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Latest Reservations */}
-        <div className="rounded-xl border border-gray-200 bg-white">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Latest Reservations</h3>
+        <div className="rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">Latest Reservations</h3>
             <Link
               to="/admin/reservations"
               className="group flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-light"
@@ -337,31 +337,31 @@ export default function DashboardPage() {
                     ? `${reservation.guest.first_name?.[0] ?? ''}${reservation.guest.last_name?.[0] ?? ''}`.toUpperCase()
                     : '?'
                   const statusColors: Record<string, string> = {
-                    pending: 'border-l-amber-400',
-                    confirmed: 'border-l-blue-400',
-                    checked_in: 'border-l-emerald-400',
-                    checked_out: 'border-l-gray-400',
-                    cancelled: 'border-l-rose-400',
-                    no_show: 'border-l-rose-400',
+                    pending: 'border-l-warning',
+                    confirmed: 'border-l-info',
+                    checked_in: 'border-l-success',
+                    checked_out: 'border-l-muted',
+                    cancelled: 'border-l-danger',
+                    no_show: 'border-l-danger',
                   }
                   return (
                     <div
                       key={reservation.id}
-                      className={`flex items-center gap-4 border-l-4 ${statusColors[reservation.status] || 'border-l-gray-300'} px-5 py-3 transition-colors hover:bg-gray-50/50`}
+                      className={`flex items-center gap-4 border-l-4 ${statusColors[reservation.status] || 'border-l-border'} px-5 py-3 transition-colors hover:bg-bg`}
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
                         {initials}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {reservation.guest?.first_name} {reservation.guest?.last_name}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted">
                           {reservation.reservation_number} · Room {reservation.room?.room_number ?? '-'}
                         </p>
                       </div>
                       {reservation.is_overstay ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">
                           <AlertTriangle className="h-3 w-3" />
                           Overstay
                         </span>
@@ -374,10 +374,10 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="mb-3 rounded-full bg-gray-100 p-3 text-gray-400">
+                <div className="mb-3 rounded-full bg-border/50 p-3 text-muted">
                   <Calendar className="h-5 w-5" />
                 </div>
-                <p className="text-sm text-gray-400">No reservations found</p>
+                <p className="text-sm text-muted">No reservations found</p>
               </div>
             )}
           </div>
@@ -390,11 +390,11 @@ export default function DashboardPage() {
 function getActivityColor(module: string): string {
   const map: Record<string, string> = {
     reservation: 'bg-primary',
-    payment: 'bg-emerald-500',
-    guest: 'bg-amber-500',
-    room: 'bg-sky-500',
-    housekeeping: 'bg-violet-500',
-    maintenance: 'bg-rose-500',
+    payment: 'bg-success',
+    guest: 'bg-warning',
+    room: 'bg-info',
+    housekeeping: 'bg-purple',
+    maintenance: 'bg-danger',
   }
-  return map[module] || 'bg-gray-400'
+    return map[module] || 'bg-muted'
 }

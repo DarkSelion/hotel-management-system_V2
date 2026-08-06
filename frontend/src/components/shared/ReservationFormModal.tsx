@@ -213,7 +213,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                     'flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors',
                     wizardStep === step && 'bg-primary text-white',
                     wizardStep > step && 'bg-success text-white',
-                    wizardStep < step && 'bg-gray-200 text-muted',
+                    wizardStep < step && 'bg-border text-muted',
                   )}
                 >
                   {wizardStep > step ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
@@ -231,7 +231,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 <div
                   className={cn(
                     'mx-2 mb-5 h-px flex-1',
-                    wizardStep > step ? 'bg-success' : 'bg-gray-200',
+                    wizardStep > step ? 'bg-success' : 'bg-border',
                   )}
                 />
               )}
@@ -247,7 +247,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Guest Information</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">First Name *</label>
+                <label className="text-sm font-medium text-foreground">First Name *</label>
                 <Input
                   value={form.guest_first_name}
                   onChange={(e) => handleFormChange('guest_first_name', e.target.value)}
@@ -256,7 +256,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Last Name *</label>
+                <label className="text-sm font-medium text-foreground">Last Name *</label>
                 <Input
                   value={form.guest_last_name}
                   onChange={(e) => handleFormChange('guest_last_name', e.target.value)}
@@ -265,7 +265,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Phone *</label>
+                <label className="text-sm font-medium text-foreground">Phone *</label>
                 <Input
                   value={form.guest_phone}
                   onChange={(e) => handleFormChange('guest_phone', e.target.value)}
@@ -274,7 +274,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Email</label>
+                <label className="text-sm font-medium text-foreground">Email</label>
                 <Input
                   type="email"
                   value={form.guest_email}
@@ -288,7 +288,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">Stay Details</h4>
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Booking Source</label>
+                <label className="text-sm font-medium text-foreground">Booking Source</label>
                 <Select
                   value={form.source}
                   onChange={(e) => handleFormChange('source', e.target.value)}
@@ -301,7 +301,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Check-in *</label>
+                  <label className="text-sm font-medium text-foreground">Check-in *</label>
                   <DatePicker
                     value={form.check_in}
                     onChange={(v) => handleFormChange('check_in', v)}
@@ -310,7 +310,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Check-out *</label>
+                  <label className="text-sm font-medium text-foreground">Check-out *</label>
                   <DatePicker
                     value={form.check_out}
                     onChange={(v) => handleFormChange('check_out', v)}
@@ -321,7 +321,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Adults *</label>
+                  <label className="text-sm font-medium text-foreground">Adults *</label>
                   <Input
                     type="number"
                     min={1}
@@ -331,7 +331,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Children</label>
+                  <label className="text-sm font-medium text-foreground">Children</label>
                   <Input
                     type="number"
                     min={0}
@@ -352,13 +352,13 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
           {!formHasDates ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <BedDouble className="mb-3 h-10 w-10 text-muted/50" />
-              <p className="text-sm font-medium text-gray-900">Set dates first</p>
+              <p className="text-sm font-medium text-foreground">Set dates first</p>
               <p className="text-sm text-muted">Go back and select check-in / check-out dates.</p>
             </div>
           ) : availableRooms.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <BedDouble className="mb-3 h-10 w-10 text-muted/50" />
-              <p className="text-sm font-medium text-gray-900">No rooms available</p>
+              <p className="text-sm font-medium text-foreground">No rooms available</p>
               <p className="text-sm text-muted">No rooms are available for the selected dates. Try different dates.</p>
             </div>
           ) : (
@@ -382,17 +382,17 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                       'flex items-start gap-3 rounded-lg border p-4 text-left transition-all hover:shadow-sm',
                       form.room_id === room.id
                         ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                        : 'border-border bg-card hover:border-gray-300',
+                        : 'border-border bg-card hover:border-border',
                     )}
                   >
                     <div className={cn(
                       'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold',
-                      form.room_id === room.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600',
+                      form.room_id === room.id ? 'bg-primary text-white' : 'bg-border/50 text-muted',
                     )}>
                       {room.room_number}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900">{room.room_type?.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{room.room_type?.name}</p>
                       <p className="text-xs text-muted">
                         Floor {room.floor ?? '-'} · ₱{room.room_type?.base_price}/night
                       </p>
@@ -415,7 +415,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Price per Night (₱)</label>
+              <label className="text-sm font-medium text-foreground">Price per Night (₱)</label>
               <Input
                 type="number"
                 min={0}
@@ -424,7 +424,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Discount (%)</label>
+              <label className="text-sm font-medium text-foreground">Discount (%)</label>
               <Input
                 type="number"
                 min={0}
@@ -435,7 +435,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Special Requests</label>
+            <label className="text-sm font-medium text-foreground">Special Requests</label>
             <textarea
               className="flex h-20 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               value={form.special_requests}
@@ -443,8 +443,8 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               placeholder="Any special requests..."
             />
           </div>
-          <div className="rounded-lg border border-border bg-gray-50 p-4">
-            <h4 className="mb-2 text-sm font-semibold text-gray-900">Price Summary</h4>
+          <div className="rounded-lg border border-border bg-bg p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Price Summary</h4>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">Nights</span>
@@ -468,7 +468,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 <span className="text-muted">Tax (12%)</span>
                 <span>{formatCurrency(((nights * form.price_per_night) - ((nights * form.price_per_night) * (form.discount_percent / 100))) * 0.12)}</span>
               </div>
-              <div className="flex justify-between border-t border-border pt-2 font-semibold text-gray-900">
+              <div className="flex justify-between border-t border-border pt-2 font-semibold text-foreground">
                 <span>Total</span>
                 <span>{formatCurrency(totalPreview)}</span>
               </div>
@@ -480,11 +480,11 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
       {/* Step 4: Review & Confirm */}
       {wizardStep === 4 && (
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-gray-50 p-4">
+          <div className="rounded-lg border border-border bg-bg p-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs font-medium text-muted mb-1">Guest</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   {form.guest_first_name} {form.guest_last_name}
                 </p>
                 {form.guest_email && <p className="text-xs text-muted">{form.guest_email}</p>}
@@ -492,21 +492,21 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               </div>
               <div>
                 <p className="text-xs font-medium text-muted mb-1">Room</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   {availableRooms.find(r => r.id === Number(form.room_id))?.room_number ?? '-'}
                 </p>
                 <p className="text-xs text-muted">{availableRooms.find(r => r.id === Number(form.room_id))?.room_type?.name}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted mb-1">Check-in → Check-out</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   {formatDateDisplay(form.check_in)} → {formatDateDisplay(form.check_out)}
                 </p>
                 <p className="text-xs text-muted">{nights} night{nights !== 1 ? 's' : ''}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted mb-1">Guests</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   {form.adults} Adult{form.adults !== 1 ? 's' : ''}
                   {form.children > 0 ? `, ${form.children} Child${form.children !== 1 ? 'ren' : ''}` : ''}
                 </p>
@@ -514,7 +514,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               {form.source && (
                 <div>
                   <p className="text-xs font-medium text-muted mb-1">Source</p>
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-foreground">
                     {BOOKING_SOURCES.find(s => s.value === form.source)?.label ?? form.source}
                   </p>
                 </div>
@@ -522,14 +522,14 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
               {form.special_requests && (
                 <div className="col-span-2">
                   <p className="text-xs font-medium text-muted mb-1">Special Requests</p>
-                  <p className="text-sm text-gray-900">{form.special_requests}</p>
+                  <p className="text-sm text-foreground">{form.special_requests}</p>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-gray-50 p-4">
-            <h4 className="mb-2 text-sm font-semibold text-gray-900">Price Breakdown</h4>
+          <div className="rounded-lg border border-border bg-bg p-4">
+            <h4 className="mb-2 text-sm font-semibold text-foreground">Price Breakdown</h4>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">{nights} nights × {formatCurrency(form.price_per_night)}</span>
@@ -545,7 +545,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 <span className="text-muted">Tax (12%)</span>
                 <span>{formatCurrency(((nights * form.price_per_night) - ((nights * form.price_per_night) * (form.discount_percent / 100))) * 0.12)}</span>
               </div>
-              <div className="flex justify-between border-t border-border pt-2 text-base font-bold text-gray-900">
+              <div className="flex justify-between border-t border-border pt-2 text-base font-bold text-foreground">
                 <span>Total</span>
                 <span>{formatCurrency(totalPreview)}</span>
               </div>

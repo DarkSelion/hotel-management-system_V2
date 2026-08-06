@@ -40,7 +40,7 @@ export function ConfirmDialog({
           <div
             className={cn(
               'mb-4 rounded-full p-3',
-              variant === 'danger' ? 'bg-red-100 text-danger' : 'bg-amber-100 text-warning',
+              variant === 'danger' ? 'bg-danger/10 text-danger' : 'bg-warning/10 text-warning',
             )}
           >
             {icon ??
@@ -51,7 +51,7 @@ export function ConfirmDialog({
               ))}
           </div>
         )}
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         {message && <p className="mt-2 text-sm text-muted">{message}</p>}
         {children}
       </div>

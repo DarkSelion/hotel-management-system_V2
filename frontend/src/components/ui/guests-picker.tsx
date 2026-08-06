@@ -77,7 +77,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
       {/* Rooms */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-900">Rooms</p>
+          <p className="text-sm font-medium text-foreground">Rooms</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -88,7 +88,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
           >
             <Minus className="h-3 w-3" />
           </button>
-          <span className="w-6 text-center text-sm font-medium text-gray-900">{value.rooms}</span>
+          <span className="w-6 text-center text-sm font-medium text-foreground">{value.rooms}</span>
           <button
             type="button"
             onClick={() => adjust('rooms', 1)}
@@ -102,7 +102,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
       {/* Adults */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-900">Adults</p>
+          <p className="text-sm font-medium text-foreground">Adults</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -113,7 +113,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
           >
             <Minus className="h-3 w-3" />
           </button>
-          <span className="w-6 text-center text-sm font-medium text-gray-900">{value.adults}</span>
+          <span className="w-6 text-center text-sm font-medium text-foreground">{value.adults}</span>
           <button
             type="button"
             onClick={() => adjust('adults', 1)}
@@ -127,7 +127,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
       {/* Children */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-900">Children</p>
+          <p className="text-sm font-medium text-foreground">Children</p>
           <p className="text-[10px] text-muted">Ages 0–17</p>
         </div>
         <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
           >
             <Minus className="h-3 w-3" />
           </button>
-          <span className="w-6 text-center text-sm font-medium text-gray-900">{value.children}</span>
+          <span className="w-6 text-center text-sm font-medium text-foreground">{value.children}</span>
           <button
             type="button"
             onClick={() => adjust('children', 1)}
@@ -166,7 +166,7 @@ export function GuestsPicker({ value, onChange, className, error }: GuestsPicker
           )}
         >
           <Users className="mr-2 h-4 w-4 shrink-0 text-muted" />
-          <span className="flex-1 truncate text-gray-700">{displayText}</span>
+          <span className="flex-1 truncate text-foreground">{displayText}</span>
         </button>
 
         {open && ReactDOM.createPortal(popup, document.body)}

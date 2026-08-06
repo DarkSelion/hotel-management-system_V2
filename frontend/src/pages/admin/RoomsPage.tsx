@@ -218,7 +218,7 @@ export default function RoomsPage() {
       label: 'Room',
       sortable: true,
       render: (r) => (
-        <span className="font-semibold text-gray-900">{r.room_number}</span>
+        <span className="font-semibold text-foreground">{r.room_number}</span>
       ),
     },
     {
@@ -255,7 +255,7 @@ export default function RoomsPage() {
       label: 'Price',
       sortable: true,
       render: (r) => (
-        <span className="font-medium text-gray-900">{formatCurrency(getPrice(r))}</span>
+        <span className="font-medium text-foreground">{formatCurrency(getPrice(r))}</span>
       ),
     },
     {
@@ -448,7 +448,7 @@ export default function RoomsPage() {
           </Select>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Description</label>
             <textarea
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Room description..."
@@ -458,7 +458,7 @@ export default function RoomsPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Internal notes..."

@@ -15,12 +15,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50',
           {
-            'default': 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+            'default': 'bg-border/50 text-foreground hover:bg-border',
             'primary': 'bg-primary text-white hover:bg-primary-light',
             'gold': 'bg-gold text-white hover:bg-gold-light',
-            'ghost': 'text-gray-600 hover:bg-gray-100',
-            'outline': 'border border-border bg-transparent text-gray-700 hover:bg-gray-50',
-            'danger': 'bg-danger text-white hover:bg-red-600',
+            'ghost': 'text-muted hover:bg-border/50',
+            'outline': 'border border-border bg-transparent text-foreground hover:bg-bg',
+            'danger': 'bg-danger text-white hover:bg-danger/90',
           }[variant],
           square ? 'size-8 px-0' : {
             sm: 'h-8 px-3 text-xs',

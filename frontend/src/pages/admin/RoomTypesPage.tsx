@@ -264,7 +264,7 @@ export default function RoomTypesPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Room Type <span className="text-danger">*</span>
             </label>
             <Input
@@ -275,7 +275,7 @@ export default function RoomTypesPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Capacity <span className="text-danger">*</span>
               </label>
               <Input
@@ -286,7 +286,7 @@ export default function RoomTypesPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Room Price (₱) <span className="text-danger">*</span>
               </label>
               <Input
@@ -300,7 +300,7 @@ export default function RoomTypesPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Room Size (sqm)</label>
+              <label className="mb-1 block text-sm font-medium text-foreground">Room Size (sqm)</label>
               <Input
                 type="number"
                 min={0}
@@ -311,7 +311,7 @@ export default function RoomTypesPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Bed Type</label>
+              <label className="mb-1 block text-sm font-medium text-foreground">Bed Type</label>
               <Select
                 value={form.bed_type}
                 onChange={(e) => setForm(f => ({ ...f, bed_type: e.target.value }))}
@@ -324,12 +324,12 @@ export default function RoomTypesPage() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Room Description</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Room Description</label>
             <textarea
               value={form.description}
               onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
               rows={4}
-              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm placeholder:text-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm placeholder:text-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
               placeholder="Describe the room type..."
             />
           </div>

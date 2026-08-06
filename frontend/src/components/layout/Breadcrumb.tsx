@@ -28,7 +28,7 @@ export function Breadcrumb() {
 
   return (
     <nav className="flex items-center gap-1 text-xs text-muted">
-      <Link to="/admin/dashboard" className="hover:text-gray-700 transition-colors">
+      <Link to="/admin/dashboard" className="hover:text-foreground transition-colors">
         Home
       </Link>
       {segments.map((segment, index) => {
@@ -40,9 +40,9 @@ export function Breadcrumb() {
           <span key={segment} className="flex items-center gap-1">
             <ChevronRight className="h-3 w-3" />
             {isLast ? (
-              <span className="text-gray-700 font-medium">{label}</span>
+              <span className="text-foreground font-medium">{label}</span>
             ) : (
-              <Link to={path} className="hover:text-gray-700 transition-colors">
+              <Link to={path} className="hover:text-foreground transition-colors">
                 {label}
               </Link>
             )}

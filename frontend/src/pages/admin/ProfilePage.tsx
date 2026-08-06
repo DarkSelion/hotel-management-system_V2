@@ -117,7 +117,7 @@ export default function ProfilePage() {
       <div>
         <PageHeader title="Profile" />
         <div className="space-y-6">
-          <Card><CardContent className="pt-6"><div className="h-48 animate-pulse rounded bg-gray-100" /></CardContent></Card>
+          <Card><CardContent className="pt-6"><div className="h-48 animate-pulse rounded bg-border/50" /></CardContent></Card>
         </div>
       </div>
     )
@@ -135,11 +135,11 @@ export default function ProfilePage() {
               <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <UserCircle className="h-12 w-12" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">{me?.name}</h3>
+              <h3 className="text-lg font-semibold text-foreground">{me?.name}</h3>
               <span className="mt-1 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                 {ROLE_LABELS[me?.role?.slug ?? ''] ?? me?.role?.name ?? 'User'}
               </span>
-              <div className="mt-4 w-full space-y-3 text-left text-sm text-gray-600">
+              <div className="mt-4 w-full space-y-3 text-left text-sm text-muted">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted" />
                   <span>{me?.email}</span>
@@ -166,7 +166,7 @@ export default function ProfilePage() {
           {/* Edit Profile */}
           <Card>
             <CardContent className="pt-6">
-              <h4 className="mb-4 text-sm font-semibold text-gray-900">Edit Profile</h4>
+              <h4 className="mb-4 text-sm font-semibold text-foreground">Edit Profile</h4>
               <form onSubmit={handleProfileSubmit} className="space-y-4">
                 <Input
                   label="Full Name"
@@ -204,7 +204,7 @@ export default function ProfilePage() {
           {/* Change Password */}
           <Card>
             <CardContent className="pt-6">
-              <h4 className="mb-4 text-sm font-semibold text-gray-900">Change Password</h4>
+              <h4 className="mb-4 text-sm font-semibold text-foreground">Change Password</h4>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <Input
                   label="Current Password"

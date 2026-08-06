@@ -13,7 +13,7 @@ export function PageHeader({ title, description, breadcrumb, actions }: PageHead
       {breadcrumb && <div className="mb-2">{breadcrumb}</div>}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
           {description && <p className="mt-1 text-sm text-muted">{description}</p>}
         </div>
         {actions && <div className="flex items-center gap-3">{actions}</div>}

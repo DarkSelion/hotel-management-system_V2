@@ -231,7 +231,7 @@ export default function GuestsPage() {
       sortable: true,
       render: (g) => (
         <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-900">
+          <span className="font-medium text-foreground">
             {g.first_name} {g.last_name}
           </span>
           {g.is_vip && (
@@ -505,7 +505,7 @@ export default function GuestsPage() {
           </div>
 
           <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-border text-gold focus:ring-gold/50"
@@ -515,7 +515,7 @@ export default function GuestsPage() {
               <Star className="h-4 w-4 text-gold" />
               VIP Guest
             </label>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-border text-danger focus:ring-danger/50"
@@ -528,7 +528,7 @@ export default function GuestsPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Notes</label>
+            <label className="mb-1 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Any additional notes..."
@@ -548,7 +548,7 @@ export default function GuestsPage() {
         {detailLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-4 w-full animate-pulse rounded bg-gray-200" />
+              <div key={i} className="h-4 w-full animate-pulse rounded bg-bg" />
             ))}
           </div>
         ) : detailGuest ? (
@@ -559,7 +559,7 @@ export default function GuestsPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-foreground">
                     {detailGuest.first_name} {detailGuest.last_name}
                   </h3>
                   {detailGuest.is_vip && <Badge variant="gold">VIP</Badge>}
@@ -584,7 +584,7 @@ export default function GuestsPage() {
             <div className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4">
               <div>
                 <span className="text-xs font-medium text-muted">Date of Birth</span>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm text-foreground">
                   {detailGuest.date_of_birth
                     ? formatDateDisplay(detailGuest.date_of_birth)
                     : '-'}
@@ -592,11 +592,11 @@ export default function GuestsPage() {
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Gender</span>
-                <p className="text-sm text-gray-900 capitalize">{detailGuest.gender || '-'}</p>
+                <p className="text-sm text-foreground capitalize">{detailGuest.gender || '-'}</p>
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Address</span>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm text-foreground">
                   {[detailGuest.address, detailGuest.city, detailGuest.country]
                     .filter(Boolean)
                     .join(', ') || '-'}
@@ -604,13 +604,13 @@ export default function GuestsPage() {
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Total Bookings</span>
-                <p className="text-sm text-gray-900">
+                <p className="text-sm text-foreground">
                   {(detailGuest.reservations ?? []).filter(r => ['pending', 'confirmed', 'checked_in'].includes(r.status)).length}
                 </p>
               </div>
               <div>
                 <span className="text-xs font-medium text-muted">Total Spent</span>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   {formatCurrency(getTotalSpent((detailGuest.reservations ?? []).filter(r => ['pending', 'confirmed', 'checked_in', 'checked_out'].includes(r.status))))}
                 </p>
               </div>
@@ -618,7 +618,7 @@ export default function GuestsPage() {
 
             {detailGuest.notes && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-gray-900">Notes</h4>
+                <h4 className="mb-2 text-sm font-semibold text-foreground">Notes</h4>
                 <p className="text-sm text-muted">{detailGuest.notes}</p>
               </div>
             )}
@@ -627,12 +627,12 @@ export default function GuestsPage() {
               const current = getCurrentReservation(detailGuest.reservations || [])
               return current ? (
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-gray-900">Current Reservation</h4>
+                  <h4 className="mb-2 text-sm font-semibold text-foreground">Current Reservation</h4>
                   <div className="rounded-lg border border-border p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Bed className="h-4 w-4 text-muted" />
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-foreground">
                           Room {current.room?.room_number}
                         </span>
                         <StatusBadge status={current.status} />
@@ -653,11 +653,11 @@ export default function GuestsPage() {
             })()}
 
             <div>
-              <h4 className="mb-2 text-sm font-semibold text-gray-900">Visit History</h4>
+              <h4 className="mb-2 text-sm font-semibold text-foreground">Visit History</h4>
               {historyLoading ? (
                 <div className="space-y-2">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-12 w-full animate-pulse rounded bg-gray-200" />
+                    <div key={i} className="h-12 w-full animate-pulse rounded bg-bg" />
                   ))}
                 </div>
               ) : guestHistoryList.length === 0 ? (
@@ -669,7 +669,7 @@ export default function GuestsPage() {
                 <div className="overflow-hidden rounded-lg border border-border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-border bg-gray-50">
+                      <tr className="border-b border-border bg-bg">
                         <th className="px-4 py-2 text-left font-medium text-muted">Reservation</th>
                         <th className="px-4 py-2 text-left font-medium text-muted">Room</th>
                         <th className="px-4 py-2 text-left font-medium text-muted">Dates</th>
@@ -680,7 +680,7 @@ export default function GuestsPage() {
                     <tbody>
                       {guestHistoryList.map((r) => (
                         <tr key={r.id} className="border-b border-border last:border-0">
-                          <td className="px-4 py-2 font-medium text-gray-900">
+                          <td className="px-4 py-2 font-medium text-foreground">
                             #{r.reservation_number}
                           </td>
                           <td className="px-4 py-2 text-muted">
@@ -693,7 +693,7 @@ export default function GuestsPage() {
                           <td className="px-4 py-2">
                             <StatusBadge status={r.status} />
                           </td>
-                          <td className="px-4 py-2 text-right font-medium text-gray-900">
+                          <td className="px-4 py-2 text-right font-medium text-foreground">
                             {formatCurrency(Number(r.total_amount))}
                           </td>
                         </tr>

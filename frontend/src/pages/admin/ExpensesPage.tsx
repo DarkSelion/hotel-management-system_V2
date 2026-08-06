@@ -18,23 +18,23 @@ import {
 } from 'lucide-react'
 
 const CATEGORIES = [
-  { value: 'utilities', label: 'Utilities', color: 'bg-blue-100 text-blue-700' },
-  { value: 'maintenance', label: 'Maintenance', color: 'bg-amber-100 text-amber-700' },
-  { value: 'supplies', label: 'Supplies', color: 'bg-green-100 text-green-700' },
-  { value: 'salary', label: 'Salary', color: 'bg-purple-100 text-purple-700' },
-  { value: 'marketing', label: 'Marketing', color: 'bg-pink-100 text-pink-700' },
-  { value: 'food', label: 'Food', color: 'bg-orange-100 text-orange-700' },
-  { value: 'other', label: 'Other', color: 'bg-gray-100 text-gray-600' },
+  { value: 'utilities', label: 'Utilities', color: 'bg-info/10 text-info' },
+  { value: 'maintenance', label: 'Maintenance', color: 'bg-warning/10 text-warning' },
+  { value: 'supplies', label: 'Supplies', color: 'bg-success/10 text-success' },
+  { value: 'salary', label: 'Salary', color: 'bg-purple/10 text-purple' },
+  { value: 'marketing', label: 'Marketing', color: 'bg-gold/10 text-gold-dark' },
+  { value: 'food', label: 'Food', color: 'bg-danger/10 text-danger' },
+  { value: 'other', label: 'Other', color: 'bg-border/50 text-muted' },
 ]
 
 const CATEGORY_COLORS: Record<string, string> = {
-  utilities: 'bg-blue-100 text-blue-700',
-  maintenance: 'bg-amber-100 text-amber-700',
-  supplies: 'bg-green-100 text-green-700',
-  salary: 'bg-purple-100 text-purple-700',
-  marketing: 'bg-pink-100 text-pink-700',
-  food: 'bg-orange-100 text-orange-700',
-  other: 'bg-gray-100 text-gray-600',
+  utilities: 'bg-info/10 text-info',
+  maintenance: 'bg-warning/10 text-warning',
+  supplies: 'bg-success/10 text-success',
+  salary: 'bg-purple/10 text-purple',
+  marketing: 'bg-gold/10 text-gold-dark',
+  food: 'bg-danger/10 text-danger',
+  other: 'bg-border/50 text-muted',
 }
 
 function formatDate(dateStr: string) {
@@ -182,7 +182,7 @@ export default function ExpensesPage() {
       render: (r) => {
         const cat = CATEGORIES.find(c => c.value === r.category)
         return (
-          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[r.category] ?? 'bg-gray-100 text-gray-600'}`}>
+          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[r.category] ?? 'bg-border/50 text-muted'}`}>
             {cat?.label ?? r.category}
           </span>
         )
@@ -192,7 +192,7 @@ export default function ExpensesPage() {
       key: 'description',
       label: 'Description',
       sortable: true,
-      render: (r) => <span className="text-gray-900">{r.description || '-'}</span>,
+      render: (r) => <span className="text-foreground">{r.description || '-'}</span>,
     },
     {
       key: 'amount',
@@ -315,26 +315,26 @@ export default function ExpensesPage() {
               <div>
                 <label className="text-xs font-medium text-muted">Category</label>
                 <p className="mt-0.5">
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[selectedExpense.category] ?? 'bg-gray-100 text-gray-600'}`}>
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${CATEGORY_COLORS[selectedExpense.category] ?? 'bg-border/50 text-muted'}`}>
                     {CATEGORIES.find(c => c.value === selectedExpense.category)?.label ?? selectedExpense.category}
                   </span>
                 </p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Amount</label>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(selectedExpense.amount)}</p>
+                <p className="text-lg font-bold text-foreground">{formatCurrency(selectedExpense.amount)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Date</label>
-                <p className="text-sm text-gray-900">{formatDate(selectedExpense.date)}</p>
+                <p className="text-sm text-foreground">{formatDate(selectedExpense.date)}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Created By</label>
-                <p className="text-sm text-gray-900">{selectedExpense.created_by?.name ?? '-'}</p>
+                <p className="text-sm text-foreground">{selectedExpense.created_by?.name ?? '-'}</p>
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-medium text-muted">Description</label>
-                <p className="text-sm text-gray-900">{selectedExpense.description || '-'}</p>
+                <p className="text-sm text-foreground">{selectedExpense.description || '-'}</p>
               </div>
             </div>
             <div className="flex gap-2 pt-2">
@@ -390,7 +390,7 @@ export default function ExpensesPage() {
           />
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Description</label>
+            <label className="text-sm font-medium text-foreground">Description</label>
             <textarea
               className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
               placeholder="Expense description..."
@@ -406,9 +406,9 @@ export default function ExpensesPage() {
           />
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Receipt</label>
+            <label className="text-sm font-medium text-foreground">Receipt</label>
             <div className="flex items-center gap-3">
-              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted hover:bg-gray-50">
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted hover:bg-bg">
                 <FileText className="h-4 w-4" />
                 Upload Receipt
                 <input type="file" className="hidden" accept="image/*,.pdf" />

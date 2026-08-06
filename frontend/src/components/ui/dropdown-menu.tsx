@@ -90,7 +90,7 @@ export function DropdownMenu({ trigger, items, align = 'left' }: DropdownMenuPro
               <button
                 className={cn(
                   'flex w-full items-center gap-2 px-2.5 py-1.5 text-[13px] transition-colors',
-                  item.danger ? 'text-danger hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50',
+                  item.danger ? 'text-danger hover:bg-danger/10' : 'text-foreground hover:bg-bg',
                 )}
                 onClick={() => {
                   item.onClick?.()

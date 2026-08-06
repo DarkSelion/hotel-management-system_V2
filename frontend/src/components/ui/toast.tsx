@@ -34,10 +34,10 @@ const iconMap = {
 }
 
 const colorMap = {
-  success: 'border-l-4 border-success bg-green-50 text-green-800',
-  error: 'border-l-4 border-danger bg-red-50 text-red-800',
-  warning: 'border-l-4 border-warning bg-amber-50 text-amber-800',
-  info: 'border-l-4 border-blue-500 bg-blue-50 text-blue-800',
+  success: 'border-l-4 border-success bg-success/10 text-success',
+  error: 'border-l-4 border-danger bg-danger/10 text-danger',
+  warning: 'border-l-4 border-warning bg-warning/10 text-warning',
+  info: 'border-l-4 border-info bg-info/10 text-info',
 }
 
 function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {

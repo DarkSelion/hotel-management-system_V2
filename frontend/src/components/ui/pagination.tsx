@@ -30,14 +30,14 @@ export function Pagination({ currentPage, lastPage, onPageChange }: PaginationPr
   return (
     <div className="flex items-center gap-1">
       <button
-        className={cn(btnBase, 'text-muted hover:bg-gray-100', currentPage <= 1 && 'pointer-events-none opacity-50')}
+        className={cn(btnBase, 'text-muted hover:bg-bg', currentPage <= 1 && 'pointer-events-none opacity-50')}
         onClick={() => onPageChange(1)}
         disabled={currentPage <= 1}
       >
         <ChevronsLeft className="h-4 w-4" />
       </button>
       <button
-        className={cn(btnBase, 'text-muted hover:bg-gray-100', currentPage <= 1 && 'pointer-events-none opacity-50')}
+        className={cn(btnBase, 'text-muted hover:bg-bg', currentPage <= 1 && 'pointer-events-none opacity-50')}
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
       >
@@ -55,7 +55,7 @@ export function Pagination({ currentPage, lastPage, onPageChange }: PaginationPr
               btnBase,
               page === currentPage
                 ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-100',
+                : 'text-foreground hover:bg-bg',
             )}
             onClick={() => onPageChange(page)}
           >
@@ -64,14 +64,14 @@ export function Pagination({ currentPage, lastPage, onPageChange }: PaginationPr
         ),
       )}
       <button
-        className={cn(btnBase, 'text-muted hover:bg-gray-100', currentPage >= lastPage && 'pointer-events-none opacity-50')}
+        className={cn(btnBase, 'text-muted hover:bg-bg', currentPage >= lastPage && 'pointer-events-none opacity-50')}
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= lastPage}
       >
         <ChevronRight className="h-4 w-4" />
       </button>
       <button
-        className={cn(btnBase, 'text-muted hover:bg-gray-100', currentPage >= lastPage && 'pointer-events-none opacity-50')}
+        className={cn(btnBase, 'text-muted hover:bg-bg', currentPage >= lastPage && 'pointer-events-none opacity-50')}
         onClick={() => onPageChange(lastPage)}
         disabled={currentPage >= lastPage}
       >

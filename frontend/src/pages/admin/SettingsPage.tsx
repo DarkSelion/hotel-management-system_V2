@@ -175,7 +175,7 @@ export default function SettingsPage() {
         <PageHeader title="General Settings" />
         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-12 text-center">
           <AlertCircle className="mb-3 h-10 w-10 text-danger" />
-          <p className="mb-2 text-sm font-medium text-gray-900">Failed to load settings</p>
+          <p className="mb-2 text-sm font-medium text-foreground">Failed to load settings</p>
           <Button variant="outline" onClick={() => refetch()}>
             <RotateCcw className="h-4 w-4" /> Retry
           </Button>
@@ -188,7 +188,7 @@ export default function SettingsPage() {
     <div>
       <PageHeader title="General Settings" />
 
-      <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-0.5 w-fit">
+      <div className="mb-6 flex gap-1 rounded-lg bg-border/50 p-0.5 w-fit">
         {SETTINGS_TABS.map((tab) => (
           <button
             key={tab}
@@ -196,7 +196,7 @@ export default function SettingsPage() {
             className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? 'bg-card text-primary shadow-sm'
-                : 'text-muted hover:text-gray-700'
+                : 'text-muted hover:text-foreground'
             }`}
           >
             {tab}
@@ -220,16 +220,16 @@ export default function SettingsPage() {
             {activeTab === 'Hotel' && (
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Hotel Logo / Branding Image</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Hotel Logo / Branding Image</h3>
                   <div className="flex items-center gap-4">
                     {(logoPreview || logoUrl) ? (
                       <img
                         src={logoPreview || logoUrl}
                         alt="Hotel logo"
-                        className="h-16 w-16 rounded-lg border border-border bg-white object-contain p-1"
+                        className="h-16 w-16 rounded-lg border border-border bg-card object-contain p-1"
                       />
                     ) : (
-                      <div className="h-16 w-16 rounded-lg border border-dashed border-border bg-gray-50 flex items-center justify-center text-muted">
+                      <div className="h-16 w-16 rounded-lg border border-dashed border-border bg-bg flex items-center justify-center text-muted">
                         <Upload className="h-5 w-5" />
                       </div>
                     )}
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                   onChange={(e) => setBookingForm((p) => ({ ...p, default_discount: Number(e.target.value) }))}
                 />
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Cancellation Policy</label>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Cancellation Policy</label>
                   <textarea
                     className="flex min-h-[100px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
                     value={bookingForm.cancellation_policy}
@@ -413,7 +413,7 @@ export default function SettingsPage() {
                     onChange={(e) => setSecurityForm((p) => ({ ...p, max_login_attempts: Number(e.target.value) }))}
                   />
                 </div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
@@ -428,7 +428,7 @@ export default function SettingsPage() {
             {activeTab === 'Contact' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Page Content</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Page Content</h3>
                   <div className="space-y-4">
                     <Input
                       label="Hero Heading"
@@ -436,7 +436,7 @@ export default function SettingsPage() {
                       onChange={(e) => setContactForm((p) => ({ ...p, contact_heading: e.target.value }))}
                     />
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-gray-700">Hero Description</label>
+                      <label className="mb-1 block text-sm font-medium text-foreground">Hero Description</label>
                       <textarea
                         className="flex min-h-[60px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
                         value={contactForm.contact_description}
@@ -447,7 +447,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Contact Information</h3>
                   <div className="space-y-4">
                     <Input
                       label="Reception Hours"
@@ -458,10 +458,10 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Address & Contact Details</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Address & Contact Details</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
+                      <label className="mb-1 block text-sm font-medium text-foreground">Address</label>
                       <textarea
                         className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
                         value={contactForm.hotel_address}
@@ -485,7 +485,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Social Media</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Social Media</h3>
                   <div className="grid grid-cols-3 gap-4">
                     <Input
                       label="Facebook URL"
@@ -509,7 +509,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Map</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Map</h3>
                   <Input
                     label="Google Maps Embed URL"
                     value={contactForm.contact_map_embed_url}
@@ -535,7 +535,7 @@ export default function SettingsPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-900">FAQ</h3>
+                    <h3 className="text-sm font-semibold text-foreground">FAQ</h3>
                     <button
                       type="button"
                       onClick={() => setFaqItems((p) => [...p, { q: '', a: '' }])}
@@ -582,18 +582,18 @@ export default function SettingsPage() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between rounded-lg border border-border p-4">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">Enable Online Payments</p>
+                    <p className="text-sm font-semibold text-foreground">Enable Online Payments</p>
                     <p className="text-xs text-muted mt-0.5">Allow guests to pay via GCash through the portal</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setPaymentForm((p) => ({ ...p, online_payment_enabled: !p.online_payment_enabled }))}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 ${
-                      paymentForm.online_payment_enabled ? 'bg-primary' : 'bg-gray-300'
+                      paymentForm.online_payment_enabled ? 'bg-primary' : 'bg-border'
                     }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                         paymentForm.online_payment_enabled ? 'translate-x-5' : 'translate-x-0'
                       }`}
                     />
@@ -609,16 +609,16 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted -mt-2">This number is displayed to guests when they make a GCash payment.</p>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">GCash QR Code</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-3">GCash QR Code</h3>
                   <div className="flex items-center gap-4">
                     {(qrPreview || qrUrl) ? (
                       <img
                         src={qrPreview || qrUrl}
                         alt="GCash QR code"
-                        className="h-24 w-24 rounded-lg border border-border bg-white object-contain p-1"
+                        className="h-24 w-24 rounded-lg border border-border bg-card object-contain p-1"
                       />
                     ) : (
-                      <div className="h-24 w-24 rounded-lg border border-dashed border-border bg-gray-50 flex items-center justify-center text-muted">
+                      <div className="h-24 w-24 rounded-lg border border-dashed border-border bg-bg flex items-center justify-center text-muted">
                         <Upload className="h-5 w-5" />
                       </div>
                     )}

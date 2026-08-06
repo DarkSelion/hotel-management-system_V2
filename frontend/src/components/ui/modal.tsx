@@ -55,10 +55,10 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', footer }:
       >
         {title && (
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
             <button
               onClick={onClose}
-              className="rounded-lg p-1 text-muted hover:bg-gray-100 hover:text-gray-700"
+              className="rounded-lg p-1 text-muted hover:bg-bg hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </button>

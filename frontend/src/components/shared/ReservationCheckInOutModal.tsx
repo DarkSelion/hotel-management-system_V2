@@ -75,24 +75,24 @@ export function ReservationCheckInOutModal({
     >
       <div className="mt-4 w-full space-y-3 text-left">
         {reservation && (
-          <dl className="divide-y divide-border rounded-lg border border-border bg-gray-50/70 text-sm">
+          <dl className="divide-y divide-border rounded-lg border border-border bg-bg text-sm">
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Guest</dt>
-              <dd className="font-medium text-gray-900">{guestName}</dd>
+              <dd className="font-medium text-foreground">{guestName}</dd>
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Room</dt>
-              <dd className="font-medium text-gray-900">Room {roomNumber}</dd>
+              <dd className="font-medium text-foreground">Room {roomNumber}</dd>
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Stay</dt>
-              <dd className="font-medium text-gray-900">
+              <dd className="font-medium text-foreground">
                 {formatDateDisplay(reservation.check_in)} – {formatDateDisplay(reservation.check_out)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4 px-3 py-2">
               <dt className="text-muted">Payment</dt>
-              <dd className="font-medium text-gray-900">
+              <dd className="font-medium text-foreground">
                 {reservation.payment_status === 'unpaid' ? (
                   <StatusBadge status="unpaid" />
                 ) : (
@@ -104,26 +104,26 @@ export function ReservationCheckInOutModal({
         )}
 
         {error && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+          <div className="flex items-start gap-2.5 rounded-lg border border-danger/20 bg-danger/5 px-3 py-2.5 text-sm text-danger">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
             <span>{error.message}</span>
           </div>
         )}
 
         {hasBalance && reservation && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div className="flex items-start gap-2.5 rounded-lg border border-warning/20 bg-warning/10 px-3 py-2.5">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
             <div className="min-w-0 flex-1 text-sm">
-              <p className="font-medium text-amber-900">
+              <p className="font-medium text-warning">
                 Outstanding balance: {formatCurrency(reservation.due_amount)}
               </p>
               {requiresPayment ? (
-                <p className="text-[13px] text-amber-700">
+                <p className="text-[13px] text-warning">
                   A payment is required before {isCheckIn ? 'checking in' : 'checking out'}.
                 </p>
               ) : (
                 !isRetry && (
-                  <p className="text-[13px] text-amber-700">
+                  <p className="text-[13px] text-warning">
                     Guest will still be checked {isCheckIn ? 'in' : 'out'} — payments are optional.
                   </p>
                 )
@@ -132,7 +132,7 @@ export function ReservationCheckInOutModal({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-3 text-amber-800 hover:bg-amber-100"
+                  className="mt-3 text-warning hover:bg-warning/10"
                   onClick={() => setShowPaymentModal(true)}
                 >
                   <Wallet className="h-4 w-4" />

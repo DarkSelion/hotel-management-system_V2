@@ -84,7 +84,7 @@ export function DataTable<T>({
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-12">
         <AlertCircle className="mb-3 h-10 w-10 text-danger" />
-        <p className="mb-2 text-sm font-medium text-gray-900">Something went wrong</p>
+        <p className="mb-2 text-sm font-medium text-foreground">Something went wrong</p>
         <p className="mb-4 text-sm text-muted">{error}</p>
         {onRetry && (
           <Button variant="outline" onClick={onRetry}>
@@ -138,7 +138,7 @@ export function DataTable<T>({
                 <TableRow key={`skeleton-${i}`}>
                   {columns.map((col) => (
                     <TableCell key={col.key}>
-                      <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                      <div className="h-4 w-full animate-pulse rounded bg-bg" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -148,7 +148,7 @@ export function DataTable<T>({
                 <TableCell colSpan={columns.length}>
                   <div className="flex flex-col items-center justify-center py-12">
                     <Inbox className="mb-3 h-10 w-10 text-muted/50" />
-                    <p className="text-sm font-medium text-gray-900">No data found</p>
+                    <p className="text-sm font-medium text-foreground">No data found</p>
                     <p className="text-sm text-muted">Try adjusting your search or filters.</p>
                   </div>
                 </TableCell>
@@ -175,7 +175,7 @@ export function DataTable<T>({
           </p>
           <div className="inline-flex items-center rounded-lg border border-border bg-card">
             <button
-              className="flex h-8 w-8 items-center justify-center rounded-l-lg text-muted transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50"
+              className="flex h-8 w-8 items-center justify-center rounded-l-lg text-muted transition-colors hover:bg-bg disabled:pointer-events-none disabled:opacity-50"
               onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
               disabled={pagination.currentPage <= 1}
             >
@@ -192,8 +192,8 @@ export function DataTable<T>({
                   onClick={() => pagination.onPageChange(page)}
                   className={`flex h-8 min-w-[2rem] items-center justify-center border-l border-border px-2 text-sm transition-colors ${
                     page === pagination.currentPage
-                      ? 'z-10 mx-0.5 rounded-md border border-border bg-white text-foreground shadow-sm'
-                      : 'text-muted hover:bg-gray-50 hover:text-foreground'
+                      ? 'z-10 mx-0.5 rounded-md border border-border bg-card text-foreground shadow-sm'
+                      : 'text-muted hover:bg-bg hover:text-foreground'
                   }`}
                 >
                   {page}
@@ -201,7 +201,7 @@ export function DataTable<T>({
               ),
             )}
             <button
-              className="flex h-8 w-8 items-center justify-center rounded-r-lg border-l border-border text-muted transition-colors hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50"
+              className="flex h-8 w-8 items-center justify-center rounded-r-lg border-l border-border text-muted transition-colors hover:bg-bg disabled:pointer-events-none disabled:opacity-50"
               onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
               disabled={pagination.currentPage >= pagination.lastPage}
             >
