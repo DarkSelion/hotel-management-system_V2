@@ -175,6 +175,99 @@ class DateFilterTest extends TestCase
         $this->assertNotContains($outOfRange->id, $ids);
     }
 
+    public function test_expenses_index_search_by_description(): void
+    {
+        Sanctum::actingAs($this->admin());
+        $match = Expense::create([
+            'category' => 'Supplies',
+            'amount' => 250,
+            'description' => 'Purchased shampoo bottles',
+            'date' => '2026-09-10',
+            'created_by' => $this->admin()->id,
+        ]);
+        $other = $this->makeExpense('2026-09-11');
+
+        $response = $this->getJson('/api/expenses?search=shampoo');
+
+        $response->assertOk();
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        $this->assertContains($match->id, $ids);
+        $this->assertNotContains($other->id, $ids);
+    }
+
+    public function test_expenses_index_search_by_category(): void
+    {
+        Sanctum::actingAs($this->admin());
+        $match = Expense::create([
+            'category' => 'maintenance',
+            'amount' => 1200,
+            'description' => 'AC repair',
+            'date' => '2026-09-10',
+            'created_by' => $this->admin()->id,
+        ]);
+        $other = $this->makeExpense('2026-09-11');
+
+        $response = $this->getJson('/api/expenses?search=maintenance');
+
+        $response->assertOk();
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        $this->assertContains($match->id, $ids);
+        $this->assertNotContains($other->id, $ids);
+    }
+
+    public function test_expenses_summary_returns_totals_and_this_month(): void
+    {
+        Sanctum::actingAs($this->admin());
+        Expense::create([
+            'category' => 'Supplies',
+            'amount' => 1000,
+            'description' => 'Soap',
+            'date' => now()->toDateString(),
+            'created_by' => $this->admin()->id,
+        ]);
+        Expense::create([
+            'category' => 'Utilities',
+            'amount' => 1500,
+            'description' => 'Water',
+            'date' => now()->toDateString(),
+            'created_by' => $this->admin()->id,
+        ]);
+
+        $response = $this->getJson('/api/expenses/summary');
+
+        $response->assertOk();
+        $this->assertEquals(2500, $response->json('total_amount'));
+        $this->assertEquals(2, $response->json('count'));
+        $this->assertEquals(1250, $response->json('average'));
+        $this->assertEquals(2500, $response->json('this_month_amount'));
+    }
+
+    public function test_expenses_summary_respects_category_filter(): void
+    {
+        Sanctum::actingAs($this->admin());
+        Expense::create([
+            'category' => 'Supplies',
+            'amount' => 1000,
+            'description' => 'Soap',
+            'date' => now()->toDateString(),
+            'created_by' => $this->admin()->id,
+        ]);
+        Expense::create([
+            'category' => 'Utilities',
+            'amount' => 1500,
+            'description' => 'Water',
+            'date' => now()->toDateString(),
+            'created_by' => $this->admin()->id,
+        ]);
+
+        $response = $this->getJson('/api/expenses/summary?category=Supplies');
+
+        $response->assertOk();
+        $this->assertEquals(1000, $response->json('total_amount'));
+        $this->assertEquals(1, $response->json('count'));
+        $this->assertEquals(1000, $response->json('average'));
+    }
+
     public function test_invoices_index_filters_by_date_range(): void
     {
         Sanctum::actingAs($this->admin());

@@ -29,4 +29,13 @@ class Expense extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    protected $appends = ['created_by_user'];
+
+    public function getCreatedByUserAttribute()
+    {
+        $creator = $this->createdBy;
+
+        return $creator ? $creator->only(['id', 'name']) : null;
+    }
 }

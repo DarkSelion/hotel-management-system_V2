@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from '@/hooks/useApi'
+import { useExpenses, useExpensesSummary, useCreateExpense, useUpdateExpense, useDeleteExpense } from '@/hooks/useApi'
 import type { Expense } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { StatCard } from '@/components/shared/StatCard'
 import { DataTable, type Column } from '@/components/shared/DataTable'
 import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -13,7 +14,7 @@ import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { DatePicker } from '@/components/ui/date-picker'
 import {
-  Plus, Eye, Edit, Trash2, FileText, Save,
+  Plus, Eye, Edit, Trash2, FileText, Save, Wallet, TrendingUp, ReceiptText, CalendarRange,
   AlertCircle,
 } from 'lucide-react'
 
@@ -82,12 +83,18 @@ export default function ExpensesPage() {
   }, [page, sortBy, search, categoryFilter, dateFrom, dateTo])
 
   const { data: expensesData, isLoading, error, refetch } = useExpenses(queryParams)
+  const { data: summaryData } = useExpensesSummary(queryParams)
   const createExpense = useCreateExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
 
   const expenses = expensesData?.data ?? []
   const totalPages = expensesData?.last_page ?? 1
+
+  const totalExpenses = summaryData?.total_amount ?? 0
+  const expenseCount = summaryData?.count ?? 0
+  const avgExpense = summaryData?.average ?? 0
+  const thisMonthExpenses = summaryData?.this_month_amount ?? 0
 
   function openDetailModal(expense: Expense) {
     setSelectedExpense(expense)
@@ -213,7 +220,7 @@ export default function ExpensesPage() {
       key: 'created_by',
       label: 'Created By',
       sortable: true,
-      render: (r) => <span>{r.created_by?.name ?? '-'}</span>,
+      render: (r) => <span>{r.created_by_user?.name ?? '-'}</span>,
     },
     {
       key: 'actions',
@@ -255,6 +262,13 @@ export default function ExpensesPage() {
           </Button>
         }
       />
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={<Wallet className="h-5 w-5" />} label="Total (Filtered)" value={formatCurrency(totalExpenses)} />
+        <StatCard icon={<CalendarRange className="h-5 w-5" />} label="This Month" value={formatCurrency(thisMonthExpenses)} />
+        <StatCard icon={<ReceiptText className="h-5 w-5" />} label="Expense Entries" value={expenseCount} />
+        <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Average Expense" value={formatCurrency(avgExpense)} />
+      </div>
 
       <Card>
         <CardContent className="pt-6">
@@ -330,7 +344,7 @@ export default function ExpensesPage() {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Created By</label>
-                <p className="text-sm text-foreground">{selectedExpense.created_by?.name ?? '-'}</p>
+                <p className="text-sm text-foreground">{selectedExpense.created_by_user?.name ?? '-'}</p>
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-medium text-muted">Description</label>

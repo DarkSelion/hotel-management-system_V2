@@ -76,13 +76,16 @@ export default function StaffPage() {
   const [showAddSchedule, setShowAddSchedule] = useState(false)
   const [scheduleForm, setScheduleForm] = useState({ staff_id: '', date: '', start_time: '', end_time: '', department: '', notes: '' })
 
+  const [showAddLeave, setShowAddLeave] = useState(false)
+  const [leaveForm, setLeaveForm] = useState({ user_id: '', type: 'annual', start_date: '', end_date: '', reason: '' })
+
 
   const { data: staffList, isLoading: staffLoading, error: staffError, refetch: refetchStaff } = useStaffList()
   const { data: rolesData } = useRoles()
   const createStaff = useCreateStaff()
   const { data: schedulesData, isLoading: schedulesLoading, error: schedulesError, refetch: refetchSchedules } = useStaffSchedules(
     scheduleDateFilter || scheduleStaffFilter
-      ? { date: scheduleDateFilter || undefined, staff_id: scheduleStaffFilter || undefined }
+      ? { date: scheduleDateFilter || undefined, user_id: scheduleStaffFilter || undefined }
       : undefined,
   )
   const { data: leaveRequestsData, isLoading: leaveLoading, error: leaveError, refetch: refetchLeaves } = useLeaveRequests()
@@ -239,14 +242,14 @@ export default function StaffPage() {
   }
 
   function handleApproveLeave(id: number) {
-    api.put(`/staff/leave-requests/${id}`, { status: 'approved' }).then(() => {
+    api.put(`/leave-requests/${id}`, { status: 'approved' }).then(() => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] })
       addToast('Leave request approved', 'success')
     }).catch(() => addToast('Failed to approve leave request', 'error'))
   }
 
   function handleRejectLeave(id: number) {
-    api.put(`/staff/leave-requests/${id}`, { status: 'rejected' }).then(() => {
+    api.put(`/leave-requests/${id}`, { status: 'rejected' }).then(() => {
       queryClient.invalidateQueries({ queryKey: ['leave-requests'] })
       addToast('Leave request rejected', 'success')
     }).catch(() => addToast('Failed to reject leave request', 'error'))
@@ -254,7 +257,15 @@ export default function StaffPage() {
 
   function handleAddSchedule(e: React.FormEvent) {
     e.preventDefault()
-    api.post('/staff-schedules', scheduleForm).then(() => {
+    const payload = {
+      user_id: scheduleForm.staff_id,
+      date: scheduleForm.date,
+      start_time: scheduleForm.start_time,
+      end_time: scheduleForm.end_time,
+      department: scheduleForm.department || undefined,
+      notes: scheduleForm.notes || undefined,
+    }
+    api.post('/staff-schedules', payload).then(() => {
       queryClient.invalidateQueries({ queryKey: ['staff-schedules'] })
       setShowAddSchedule(false)
       setScheduleForm({ staff_id: '', date: '', start_time: '', end_time: '', department: '', notes: '' })
@@ -262,11 +273,28 @@ export default function StaffPage() {
     }).catch(() => addToast('Failed to add schedule', 'error'))
   }
 
+  function handleAddLeave(e: React.FormEvent) {
+    e.preventDefault()
+    const payload = {
+      user_id: leaveForm.user_id,
+      type: leaveForm.type,
+      start_date: leaveForm.start_date,
+      end_date: leaveForm.end_date,
+      reason: leaveForm.reason || undefined,
+    }
+    api.post('/leave-requests', payload).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] })
+      setShowAddLeave(false)
+      setLeaveForm({ user_id: '', type: 'annual', start_date: '', end_date: '', reason: '' })
+      addToast('Leave request created successfully', 'success')
+    }).catch(() => addToast('Failed to create leave request', 'error'))
+  }
+
   const leaveColumns: Column<any>[] = [
     {
       key: 'staff_name',
       label: 'Staff Name',
-      render: (l) => <span className="font-medium text-foreground">{l.staff?.name ?? l.staff_name ?? '-'}</span>,
+      render: (l) => <span className="font-medium text-foreground">{l.user?.name ?? '-'}</span>,
     },
     {
       key: 'type',
@@ -329,7 +357,7 @@ export default function StaffPage() {
     {
       key: 'staff_name',
       label: 'Staff Name',
-      render: (s) => <span className="font-medium text-foreground">{s.staff?.name ?? s.staff_name ?? '-'}</span>,
+      render: (s) => <span className="font-medium text-foreground">{s.user?.name ?? '-'}</span>,
     },
     {
       key: 'date',
@@ -485,6 +513,13 @@ export default function StaffPage() {
 
       {activeTab === 'Leave Requests' && (
         <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Leave Requests</CardTitle>
+            <Button variant="primary" size="sm" onClick={() => setShowAddLeave(true)}>
+              <Plus className="h-4 w-4" />
+              Request Leave
+            </Button>
+          </CardHeader>
           <CardContent className="pt-6">
             {leaveLoading ? (
               <div className="space-y-2">
@@ -755,6 +790,65 @@ export default function StaffPage() {
               placeholder="Notes..."
               value={scheduleForm.notes}
               onChange={(e) => setScheduleForm((p) => ({ ...p, notes: e.target.value }))}
+            />
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={showAddLeave}
+        onClose={() => setShowAddLeave(false)}
+        title="Request Leave"
+        size="md"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setShowAddLeave(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleAddLeave}>
+              <Save className="h-4 w-4" /> Save
+            </Button>
+          </div>
+        }
+      >
+        <form onSubmit={handleAddLeave} className="space-y-4">
+          <Select
+            label="Staff"
+            value={leaveForm.user_id}
+            onChange={(e) => setLeaveForm((p) => ({ ...p, user_id: e.target.value }))}
+          >
+            <option value="" disabled>Select staff</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </Select>
+          <Select
+            label="Leave Type"
+            value={leaveForm.type}
+            onChange={(e) => setLeaveForm((p) => ({ ...p, type: e.target.value }))}
+          >
+            <option value="annual">Annual</option>
+            <option value="sick">Sick</option>
+            <option value="personal">Personal</option>
+            <option value="other">Other</option>
+          </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <DatePicker
+              label="Start Date"
+              value={leaveForm.start_date}
+              onChange={(v) => setLeaveForm((p) => ({ ...p, start_date: v }))}
+            />
+            <DatePicker
+              label="End Date"
+              value={leaveForm.end_date}
+              onChange={(v) => setLeaveForm((p) => ({ ...p, end_date: v }))}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-foreground">Reason</label>
+            <textarea
+              className="flex min-h-[80px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary"
+              placeholder="Reason..."
+              value={leaveForm.reason}
+              onChange={(e) => setLeaveForm((p) => ({ ...p, reason: e.target.value }))}
             />
           </div>
         </form>

@@ -11,7 +11,14 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Expense::query();
+        $query = Expense::with('createdBy');
+
+        if ($search = $request->search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
 
         if ($category = $request->category) {
             $query->where('category', $category);
@@ -25,9 +32,68 @@ class ExpenseController extends Controller
             $query->where('date', '<=', $to);
         }
 
+        $sort = $request->sort ?? '-date';
+        $dir = $sort[0] === '-' ? 'desc' : 'asc';
+        $field = ltrim($sort, '-');
+        $allowed = ['date', 'amount', 'category', 'description', 'created_at'];
+        if (in_array($field, $allowed)) {
+            $query->orderBy($field, $dir);
+        } else {
+            $query->orderBy('date', 'desc');
+        }
+
         return response()->json(
-            $query->orderBy('date', 'desc')->paginate($request->per_page ?? 10)
+            $query->paginate($request->per_page ?? 10)
         );
+    }
+
+    public function summary(Request $request)
+    {
+        $query = Expense::query();
+
+        if ($search = $request->search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
+
+        if ($category = $request->category) {
+            $query->where('category', $category);
+        }
+
+        if ($from = $request->date_from) {
+            $query->where('date', '>=', $from);
+        }
+
+        if ($to = $request->date_to) {
+            $query->where('date', '<=', $to);
+        }
+
+        $total = (float) $query->sum('amount');
+        $count = $query->count();
+
+        $monthQuery = Expense::query();
+        if ($category) {
+            $monthQuery->where('category', $category);
+        }
+        if ($search) {
+            $monthQuery->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
+        $thisMonth = (float) (clone $monthQuery)
+            ->whereYear('date', now()->year)
+            ->whereMonth('date', now()->month)
+            ->sum('amount');
+
+        return response()->json([
+            'total_amount' => $total,
+            'count' => $count,
+            'average' => $count > 0 ? round($total / $count, 2) : 0,
+            'this_month_amount' => $thisMonth,
+        ]);
     }
 
     public function store(Request $request)

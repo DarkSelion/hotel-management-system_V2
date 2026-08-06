@@ -111,6 +111,7 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
         Route::post('/maintenance/{request}/assign', [MaintenanceController::class, 'assign']);
 
         // Expenses
+        Route::get('/expenses/summary', [ExpenseController::class, 'summary']);
         Route::apiResource('expenses', ExpenseController::class);
 
         // Staff
