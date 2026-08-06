@@ -33,6 +33,7 @@ interface ReservationFormData {
   discount_percent: number
   special_requests: string
   source: string
+  status: 'pending' | 'confirmed'
 }
 
 const today = new Date().toISOString().split('T')[0]
@@ -51,6 +52,7 @@ const emptyForm: ReservationFormData = {
   discount_percent: 0,
   special_requests: '',
   source: '',
+  status: 'confirmed',
 }
 
 function buildInitialForm(reservation: Reservation | null): ReservationFormData {
@@ -77,6 +79,7 @@ function buildInitialForm(reservation: Reservation | null): ReservationFormData 
     discount_percent: 0,
     special_requests: reservation.special_requests ?? '',
     source: reservation.source ?? '',
+    status: 'confirmed',
   }
 }
 
@@ -161,7 +164,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
   const isFormSubmitting = createReservation.isPending || updateReservation.isPending
 
   async function handleFormSubmit() {
-    const payload = {
+    const payload: Record<string, string | number | boolean | undefined> = {
       guest_first_name: form.guest_first_name.trim(),
       guest_last_name: form.guest_last_name.trim(),
       guest_email: form.guest_email.trim() || undefined,
@@ -176,6 +179,10 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
       total_amount: totalPreview,
       special_requests: form.special_requests,
       source: form.source || undefined,
+    }
+
+    if (!editingReservation) {
+      payload.status = form.status
     }
 
     try {
@@ -376,7 +383,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                     type="button"
                     onClick={() => {
                       handleFormChange('room_id', room.id)
-                      setForm(prev => ({ ...prev, price_per_night: room.room_type.base_price }))
+                      setForm(prev => ({ ...prev, price_per_night: room.price_override ?? room.room_type.base_price }))
                     }}
                     className={cn(
                       'flex items-start gap-3 rounded-lg border p-4 text-left transition-all hover:shadow-sm',
@@ -394,7 +401,7 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-foreground">{room.room_type?.name}</p>
                       <p className="text-xs text-muted">
-                        Floor {room.floor ?? '-'} · ₱{room.room_type?.base_price}/night
+                        Floor {room.floor ?? '-'} · ₱{(room.price_override ?? room.room_type?.base_price)?.toLocaleString()}/night
                       </p>
                     </div>
                     {form.room_id === room.id && (
@@ -413,16 +420,16 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
       {/* Step 3: Pricing & Extras */}
       {wizardStep === 3 && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-foreground">Price per Night (₱)</label>
-              <Input
-                type="number"
-                min={0}
-                value={form.price_per_night}
-                onChange={(e) => handleFormChange('price_per_night', Number(e.target.value))}
-              />
+          <div className="rounded-lg border border-border bg-bg px-4 py-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted">Rate per Night (from room type)</span>
+              <span className="font-semibold text-foreground">{formatCurrency(form.price_per_night)}</span>
             </div>
+            <p className="mt-1 text-xs text-muted">
+              The nightly rate is set automatically based on the selected room type.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-1">
               <label className="text-sm font-medium text-foreground">Discount (%)</label>
               <Input
@@ -552,10 +559,27 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
-            <div className="h-2 w-2 rounded-full bg-primary" />
-            <p className="text-xs font-medium text-primary">This reservation will be set to <span className="font-bold">Confirmed</span></p>
-          </div>
+          {!editingReservation ? (
+            <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+              <label className="text-xs font-medium text-foreground">Reservation Status</label>
+              <Select
+                value={form.status}
+                onChange={(e) => handleFormChange('status', e.target.value as 'pending' | 'confirmed')}
+              >
+                <option value="confirmed">Confirmed</option>
+                <option value="pending">Pending Payment</option>
+              </Select>
+              <p className="text-xs text-muted">
+                Choose <span className="font-semibold">Pending Payment</span> when awaiting a downpayment or GCash proof. The reservation
+                becomes <span className="font-semibold">Confirmed</span> automatically once a completed payment is recorded.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-bg px-4 py-2.5">
+              <div className="h-2 w-2 rounded-full bg-primary" />
+              <p className="text-xs font-medium text-primary">Status is managed from the reservation details.</p>
+            </div>
+          )}
         </div>
       )}
 

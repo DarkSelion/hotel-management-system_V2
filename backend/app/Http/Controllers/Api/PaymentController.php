@@ -14,7 +14,7 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Payment::with(['reservation.guest']);
+        $query = Payment::with(['reservation.guest', 'reservation.room.roomType']);
 
         if ($search = $request->search) {
             $query->where(function ($q) use ($search) {
@@ -85,7 +85,15 @@ class PaymentController extends Controller
                 $data['status'] = 'completed';
             }
 
+            if (empty($data['reference_number'])) {
+                $data['reference_number'] = 'PAY-' . now()->format('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
+            }
+
             $payment = Payment::create($data);
+
+            if ($data['status'] === 'completed' && $reservation->status === 'pending') {
+                $reservation->update(['status' => 'confirmed']);
+            }
 
             $paidAmount = $reservation->payments()
                 ->where('status', 'completed')
@@ -109,12 +117,12 @@ class PaymentController extends Controller
             'description' => "Recorded payment of ₱" . number_format($payment->amount, 2) . " for reservation #" . $payment->reservation->reservation_number,
         ]);
 
-        return response()->json($payment->load('reservation.guest'), 201);
+        return response()->json($payment->load(['reservation.guest', 'reservation.room.roomType']), 201);
     }
 
     public function show(Payment $payment)
     {
-        return response()->json($payment->load(['reservation.guest']));
+        return response()->json($payment->load(['reservation.guest', 'reservation.room.roomType']));
     }
 
     public function update(Request $request, Payment $payment)
@@ -130,6 +138,10 @@ class PaymentController extends Controller
 
         if (in_array('status', array_keys($data))) {
             $reservation = $payment->reservation;
+            if ($data['status'] === 'completed' && $reservation->status === 'pending') {
+                $reservation->update(['status' => 'confirmed']);
+            }
+
             $paidAmount = $reservation->payments()
                 ->where('status', 'completed')
                 ->sum('amount');
@@ -150,7 +162,7 @@ class PaymentController extends Controller
             'description' => "Updated payment #{$payment->id} status to {$payment->status}",
         ]);
 
-        return response()->json($payment->load('reservation.guest'));
+        return response()->json($payment->load(['reservation.guest', 'reservation.room.roomType']));
     }
 
     public function destroy(Payment $payment)

@@ -68,7 +68,8 @@ export default function ReservationsPage() {
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = {
       page,
-      sort: sortBy,
+      sort_field: sortBy.replace(/^-/, ''),
+      sort_dir: sortBy.startsWith('-') ? 'desc' : 'asc',
     }
     if (search) params.search = search
     if (statusFilter) params.status = statusFilter

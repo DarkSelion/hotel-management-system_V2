@@ -46,7 +46,7 @@ export function ReservationRowActions({
   if ((status === 'pending' || status === 'confirmed') && onCancel) {
     buttons.push(<RowActionButton key="cancel" tone="danger" title="Cancel" icon={<XCircle className="h-4 w-4" />} onClick={onCancel} />)
   }
-  if (status === 'confirmed' && !overdue && onCheckIn) {
+  if ((status === 'confirmed' || status === 'pending') && !overdue && onCheckIn) {
     buttons.push(<RowActionButton key="checkin" tone="success" title="Check In" icon={<LogIn className="h-4 w-4" />} onClick={onCheckIn} />)
   }
   if (overdue && onMarkNoShow) {

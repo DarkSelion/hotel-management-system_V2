@@ -887,4 +887,120 @@ class ReservationsPageTest extends TestCase
         $response = $this->deleteJson("/api/reservations/{$reservation->id}");
         $response->assertStatus(422);
     }
+
+    public function test_create_reservation_with_pending_status(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $room = $this->room('available');
+
+        $response = $this->postJson('/api/reservations', [
+            'guest_first_name' => 'Juan',
+            'guest_last_name' => 'Dela Cruz',
+            'guest_phone' => '09171234567',
+            'room_id' => $room->id,
+            'check_in' => '2026-09-10',
+            'check_out' => '2026-09-12',
+            'adults' => 2,
+            'price_per_night' => 1000,
+            'status' => 'pending',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertEquals('pending', $response->json('status'));
+        $this->assertDatabaseHas('rooms', ['id' => $room->id, 'status' => 'reserved']);
+    }
+
+    public function test_create_reservation_rejects_invalid_status(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $room = $this->room('available');
+
+        $response = $this->postJson('/api/reservations', [
+            'guest_first_name' => 'Juan',
+            'guest_last_name' => 'Dela Cruz',
+            'guest_phone' => '09171234567',
+            'room_id' => $room->id,
+            'check_in' => '2026-09-10',
+            'check_out' => '2026-09-12',
+            'adults' => 2,
+            'price_per_night' => 1000,
+            'status' => 'cancelled',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_completed_payment_flips_pending_reservation_to_confirmed(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'pending']);
+
+        $response = $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 1100,
+            'payment_method' => 'cash',
+            'payment_type' => 'partial',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'status' => 'confirmed',
+        ]);
+    }
+
+    public function test_pending_payment_does_not_flip_pending_reservation(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'pending']);
+
+        $response = $this->postJson('/api/payments', [
+            'reservation_id' => $reservation->id,
+            'amount' => 1100,
+            'payment_method' => 'gcash',
+            'payment_type' => 'partial',
+            'status' => 'pending',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_updating_payment_to_completed_flips_pending_reservation_to_confirmed(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'pending']);
+        $payment = $this->recordPayment($reservation, [
+            'status' => 'pending',
+            'payment_method' => 'gcash',
+        ]);
+
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->putJson("/api/payments/{$payment->id}", [
+            'status' => 'completed',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'status' => 'confirmed',
+        ]);
+    }
 }

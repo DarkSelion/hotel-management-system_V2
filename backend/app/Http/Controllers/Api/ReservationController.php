@@ -27,6 +27,9 @@ class ReservationController extends Controller
                     ->orWhereHas('guest', function ($q) use ($search) {
                         $q->where('first_name', 'like', "%{$search}%")
                             ->orWhere('last_name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('room', function ($q) use ($search) {
+                        $q->where('room_number', 'like', "%{$search}%");
                     });
             });
         }
@@ -46,6 +49,14 @@ class ReservationController extends Controller
 
         $sortField = $request->sort_field ?? 'created_at';
         $sortDir = $request->sort_dir ?? 'desc';
+
+        $sortable = ['reservation_number', 'check_in', 'check_out', 'total_amount', 'status', 'payment_status', 'created_at', 'updated_at'];
+        if (! in_array($sortField, $sortable)) {
+            $sortField = 'created_at';
+        }
+        if (! in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'desc';
+        }
 
         $query->orderBy($sortField, $sortDir);
 
@@ -69,6 +80,7 @@ class ReservationController extends Controller
             'price_per_night' => 'required|numeric|min:0',
             'total_amount' => 'nullable|numeric|min:0',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'status' => 'sometimes|in:pending,confirmed',
         ]);
 
         $reservation = DB::transaction(function () use ($data, $request) {
@@ -114,7 +126,7 @@ class ReservationController extends Controller
                 'reservation_number' => 'BK-'.$year.'-'.str_pad($lastId + 1, 4, '0', STR_PAD_LEFT),
                 'guest_id' => $guest->id,
                 'room_id' => $data['room_id'],
-                'status' => 'confirmed',
+                'status' => $data['status'] ?? 'confirmed',
                 'check_in' => $data['check_in'],
                 'check_out' => $data['check_out'],
                 'adults' => $data['adults'],
