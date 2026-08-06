@@ -164,11 +164,12 @@ export default function InvoicesPage() {
 
   function openEditForm(invoice: InvoiceExtended) {
     setEditingInvoice(invoice)
+    const itemsSubtotal = invoice.items.reduce((s, i) => s + i.total_price, 0)
     setForm({
       reservation_id: invoice.reservation_id ?? '',
       items: invoice.items.map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price })),
-      tax_percent: invoice.tax_percent ?? 12,
-      discount_percent: invoice.discount_percent ?? 0,
+      tax_percent: itemsSubtotal > 0 ? Math.round((invoice.tax_amount / itemsSubtotal) * 1000) / 10 : 0,
+      discount_percent: itemsSubtotal > 0 ? Math.round((invoice.discount_amount / itemsSubtotal) * 1000) / 10 : 0,
       issued_date: invoice.issued_date?.split('T')[0] ?? '',
       due_date: invoice.due_date?.split('T')[0] ?? '',
     })
@@ -201,14 +202,18 @@ export default function InvoicesPage() {
   function handleFormSubmit() {
     if (!validateForm()) return
 
+    const subtotal = calcSubtotal(form.items)
+    const tax = subtotal * (form.tax_percent / 100)
+    const discount = subtotal * (form.discount_percent / 100)
+
     const payload = {
       reservation_id: Number(form.reservation_id),
       items: form.items.map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price })),
-      tax_percent: form.tax_percent,
-      discount_percent: form.discount_percent,
+      subtotal,
+      tax,
+      discount,
       issued_date: form.issued_date,
       due_date: form.due_date,
-      total_amount: Math.round(formTotal * 100) / 100,
     }
 
     if (editingInvoice) {
@@ -518,15 +523,15 @@ export default function InvoicesPage() {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">Subtotal</span>
-                <span>{formatCurrency(detailInvoice.items.reduce((s, i) => s + i.total_price, 0))}</span>
+                <span>{formatCurrency(detailInvoice.amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Tax</span>
-                <span>{formatCurrency(0)}</span>
+                <span>{formatCurrency(detailInvoice.tax_amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Discount</span>
-                <span>{formatCurrency(0)}</span>
+                <span>{formatCurrency(detailInvoice.discount_amount)}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-1 font-semibold text-foreground">
                 <span>Total</span>

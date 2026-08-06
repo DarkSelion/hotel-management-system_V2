@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useCreatePayment } from '@/hooks/useApi'
+import { useCreatePayment, useCheckIn } from '@/hooks/useApi'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { Banknote, Smartphone, Loader2, AlertCircle } from 'lucide-react'
+import { Banknote, Smartphone, Loader2, AlertCircle, LogIn } from 'lucide-react'
 import type { Payment, Reservation } from '@/types'
 
 interface PaymentModalProps {
@@ -16,6 +16,7 @@ interface PaymentModalProps {
   reservations?: Reservation[]
   confirmLabel?: string
   hideHalf?: boolean
+  showCheckInOption?: boolean
   onSuccess?: (payment: Payment) => void
 }
 
@@ -34,24 +35,29 @@ export function PaymentModal({
   reservations,
   confirmLabel = 'Record Payment',
   hideHalf = false,
+  showCheckInOption = false,
   onSuccess,
 }: PaymentModalProps) {
   const createPayment = useCreatePayment()
+  const checkIn = useCheckIn()
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
   const [method, setMethod] = useState<'cash' | 'gcash'>('cash')
   const [amount, setAmount] = useState(0)
   const [tendered, setTendered] = useState(0)
   const [reference, setReference] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [checkInAfter, setCheckInAfter] = useState(false)
 
   const activeReservation = reservation ?? selectedReservation
   const due = dueOf(activeReservation)
+  const canCheckInAfter = showCheckInOption && !!activeReservation && activeReservation.status === 'confirmed'
 
   useEffect(() => {
     if (!isOpen) return
     setMethod('cash')
     setReference('')
     setError(null)
+    setCheckInAfter(false)
     if (reservation) {
       setAmount(dueOf(reservation))
       setTendered(dueOf(reservation))
@@ -103,6 +109,9 @@ export function PaymentModal({
         reference_number: reference.trim() || undefined,
         status: method === 'gcash' ? 'pending' : 'completed',
       })) as unknown as Payment
+      if (checkInAfter && activeReservation.status === 'confirmed') {
+        await checkIn.mutateAsync(activeReservation.id)
+      }
       onSuccess?.(payment)
       onClose()
     } catch (err) {
@@ -295,6 +304,19 @@ export function PaymentModal({
               Recorded as <span className="font-medium">pending</span> — verify on the Payments page.
             </p>
           </div>
+        )}
+
+        {canCheckInAfter && (
+          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+              checked={checkInAfter}
+              onChange={(e) => setCheckInAfter(e.target.checked)}
+            />
+            <LogIn className="h-4 w-4 text-primary" />
+            <span className="font-medium text-foreground">Check in after payment</span>
+          </label>
         )}
 
         {error && (

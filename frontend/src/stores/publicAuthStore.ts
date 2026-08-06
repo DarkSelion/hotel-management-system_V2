@@ -13,7 +13,6 @@ interface PublicUser {
   nationality?: string
   date_of_birth?: string
   gender?: string
-  is_vip?: boolean
   is_blacklisted?: boolean
 }
 

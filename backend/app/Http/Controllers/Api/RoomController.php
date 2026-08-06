@@ -30,6 +30,13 @@ class RoomController extends Controller
             $query->where('room_number', 'like', "%{$search}%");
         }
 
+        if ($request->boolean('all')) {
+            $rooms = $query->orderBy('room_number')->get();
+            $rooms->transform(fn($room) => new RoomResource($room));
+
+            return response()->json($rooms);
+        }
+
         $rooms = $query->orderBy('room_number')->paginate($request->per_page ?? 10);
         $rooms->getCollection()->transform(fn($room) => new RoomResource($room));
 
@@ -73,10 +80,11 @@ class RoomController extends Controller
             'floor' => 'sometimes|integer|min:0',
             'status' => 'sometimes|in:available,occupied,reserved,dirty,maintenance',
             'cleaning_status' => 'sometimes|in:clean,dirty,in_progress',
-            'price_override' => 'sometimes|numeric|min:0',
+            'price_override' => 'sometimes|nullable|numeric|min:0',
             'capacity' => 'sometimes|integer|min:1',
             'amenities' => 'nullable|array',
             'description' => 'nullable|string',
+            'notes' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
         ]);
 

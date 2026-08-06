@@ -105,7 +105,7 @@ export default function HousekeepingPage() {
   }
 
   const { data: tasksData, isLoading, error, refetch } = useHousekeepingTasks(params)
-  const { data: staffData } = useStaffAssignable()
+  const { data: staffData } = useStaffAssignable('housekeeping')
   const { data: roomsData } = useRooms({ all: 'true' })
 
   const createTask = useCreateHousekeepingTask()
@@ -143,11 +143,11 @@ export default function HousekeepingPage() {
 
   function handleCreateTask() {
     const payload: Record<string, unknown> = {
-      room_id: Number(taskForm.room_id),
       task_type: taskForm.task_type,
       priority: taskForm.priority,
       scheduled_date: taskForm.scheduled_date,
     }
+    if (taskForm.room_id) payload.room_id = Number(taskForm.room_id)
     if (taskForm.assigned_to) payload.assigned_to = Number(taskForm.assigned_to)
     if (taskForm.notes) payload.notes = taskForm.notes
     createTask.mutate(payload, { onSuccess: () => setShowNewTaskModal(false) })
@@ -168,7 +168,7 @@ export default function HousekeepingPage() {
   function openEditModal(task: HousekeepingTask) {
     setEditTask(task)
     setTaskForm({
-      room_id: String(task.room.id),
+      room_id: task.room ? String(task.room.id) : '',
       task_type: task.task_type,
       priority: task.priority,
       scheduled_date: task.scheduled_date,
@@ -216,7 +216,7 @@ export default function HousekeepingPage() {
       key: 'room_number',
       label: 'Room #',
       sortable: true,
-      render: (t) => <span className="font-semibold">{t.room.room_number}</span>,
+      render: (t) => <span className="font-semibold">{t.room ? t.room.room_number : '—'}</span>,
     },
     {
       key: 'task_type',
@@ -368,7 +368,7 @@ export default function HousekeepingPage() {
                   <CardContent className="p-4">
                     <div className="mb-2 flex items-start justify-between">
                       <div>
-                        <p className="text-lg font-bold text-foreground">{task.room.room_number}</p>
+                        <p className="text-lg font-bold text-foreground">{task.room ? task.room.room_number : 'General Task'}</p>
                         <Badge variant="default" size="sm">{task.task_type}</Badge>
                       </div>
                       <StatusBadge status={task.priority} />
@@ -524,6 +524,7 @@ export default function HousekeepingPage() {
             value={taskForm.room_id}
             onChange={(e) => setTaskForm(f => ({ ...f, room_id: e.target.value }))}
           >
+            <option value="">No room (general task)</option>
             {dirtyRooms.map(r => (
               <option key={r.id} value={r.id}>
                 {r.room_number} — {r.room_type?.name ?? ''} ({r.cleaning_status})
@@ -597,7 +598,7 @@ export default function HousekeepingPage() {
       >
         <div className="space-y-4">
           <p className="text-sm text-muted">
-            Assign staff to Room {selectedTask?.room.room_number} — {selectedTask?.task_type}
+            Assign staff to {selectedTask?.room ? `Room ${selectedTask?.room.room_number} — ` : ''}{selectedTask?.task_type}
           </p>
           <Select
             label="Staff Member"

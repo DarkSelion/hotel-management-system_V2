@@ -13,6 +13,11 @@ vi.mock('@/hooks/useApi', () => ({
   useReservations: (params?: Record<string, unknown>) => mockUseReservations(params),
   useCreatePayment: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useDeletePayment: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdatePayment: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
+vi.mock('@/components/ui/toast', () => ({
+  useToast: () => ({ addToast: vi.fn() }),
 }))
 
 vi.mock('@/components/shared/PaymentModal', () => ({

@@ -14,10 +14,11 @@ import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/components/ui/toast'
 import { useAuthStore } from '@/stores/authStore'
 import { isAdminRole } from '@/lib/permissions'
 import {
-  Plus, Search, Eye, Edit, Trash2, Star, Phone, Mail, Globe,
+  Plus, Search, Eye, Edit, Trash2, Phone, Mail, Globe,
   Calendar, Bed, Save,
   AlertCircle, UserX, MapPin
 } from 'lucide-react'
@@ -54,8 +55,8 @@ interface GuestFormData {
   city: string
   country: string
   postal_code: string
-  is_vip: boolean
   is_blacklisted: boolean
+  blacklist_reason: string
   notes: string
 }
 
@@ -71,8 +72,8 @@ const defaultFormData: GuestFormData = {
   city: '',
   country: '',
   postal_code: '',
-  is_vip: false,
   is_blacklisted: false,
+  blacklist_reason: '',
   notes: '',
 }
 
@@ -91,7 +92,6 @@ function getTotalSpent(reservations: Reservation[]): number {
 export default function GuestsPage() {
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [vipOnly, setVipOnly] = useState(false)
   const [blacklistedOnly, setBlacklistedOnly] = useState(false)
   const [sortBy, setSortBy] = useState('')
 
@@ -110,7 +110,6 @@ export default function GuestsPage() {
     page: currentPage,
     per_page: 10,
     search: search || undefined,
-    vip: vipOnly ? '1' : undefined,
     blacklisted: blacklistedOnly ? '1' : undefined,
     sort: sortBy || undefined,
   }
@@ -121,6 +120,7 @@ export default function GuestsPage() {
   const createGuest = useCreateGuest()
   const updateGuest = useUpdateGuest()
   const deleteGuest = useDeleteGuest()
+  const { addToast } = useToast()
 
   const guests = guestsData?.data ?? []
   const paginationInfo = guestsData
@@ -152,8 +152,8 @@ export default function GuestsPage() {
       city: guest.city ?? '',
       country: guest.country ?? '',
       postal_code: '',
-      is_vip: guest.is_vip ?? false,
       is_blacklisted: guest.is_blacklisted ?? false,
+      blacklist_reason: guest.blacklist_reason ?? '',
       notes: guest.notes ?? '',
     })
     setFormErrors({})
@@ -169,7 +169,7 @@ export default function GuestsPage() {
     const errors: Partial<Record<keyof GuestFormData, string>> = {}
     if (!formData.first_name.trim()) errors.first_name = 'First name is required'
     if (!formData.last_name.trim()) errors.last_name = 'Last name is required'
-    if (!formData.email.trim()) errors.email = 'Email is required'
+    if (formData.email.trim() && !/^\S+@\S+\.\S+$/.test(formData.email.trim())) errors.email = 'Enter a valid email'
     if (!formData.phone.trim()) errors.phone = 'Phone is required'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -190,8 +190,8 @@ export default function GuestsPage() {
       address: formData.address || undefined,
       city: formData.city || undefined,
       country: formData.country || undefined,
-      is_vip: formData.is_vip,
       is_blacklisted: formData.is_blacklisted,
+      blacklist_reason: formData.is_blacklisted && formData.blacklist_reason.trim() ? formData.blacklist_reason.trim() : null,
       notes: formData.notes || undefined,
     }
 
@@ -210,6 +210,11 @@ export default function GuestsPage() {
     if (!deleteConfirmId) return
     deleteGuest.mutate(deleteConfirmId, {
       onSuccess: () => setDeleteConfirmId(null),
+      onError: (err) => {
+        const message = err instanceof Error ? err.message : 'Failed to delete guest.'
+        addToast(message, 'error')
+        setDeleteConfirmId(null)
+      },
     })
   }
 
@@ -234,9 +239,6 @@ export default function GuestsPage() {
           <span className="font-medium text-foreground">
             {g.first_name} {g.last_name}
           </span>
-          {g.is_vip && (
-            <Star className="h-4 w-4 fill-gold text-gold" />
-          )}
         </div>
       ),
     },
@@ -283,7 +285,6 @@ export default function GuestsPage() {
       label: 'Status',
       render: (g) => {
         if (g.is_blacklisted) return <StatusBadge status="cancelled" />
-        if (g.is_vip) return <Badge variant="gold">VIP</Badge>
         return <Badge variant="default">Regular</Badge>
       },
     },
@@ -347,14 +348,6 @@ export default function GuestsPage() {
                 onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }}
               />
             </div>
-            <Button
-              variant={vipOnly ? 'gold' : 'outline'}
-              size="sm"
-              onClick={() => { setVipOnly(!vipOnly); setCurrentPage(1) }}
-            >
-              <Star className="h-4 w-4" />
-              VIP Only
-            </Button>
             <Button
               variant={blacklistedOnly ? 'danger' : 'outline'}
               size="sm"
@@ -508,16 +501,6 @@ export default function GuestsPage() {
             <label className="flex items-center gap-2 text-sm font-medium text-foreground">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-border text-gold focus:ring-gold/50"
-                checked={formData.is_vip}
-                onChange={(e) => updateField('is_vip', e.target.checked)}
-              />
-              <Star className="h-4 w-4 text-gold" />
-              VIP Guest
-            </label>
-            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <input
-                type="checkbox"
                 className="h-4 w-4 rounded border-border text-danger focus:ring-danger/50"
                 checked={formData.is_blacklisted}
                 onChange={(e) => updateField('is_blacklisted', e.target.checked)}
@@ -526,6 +509,18 @@ export default function GuestsPage() {
               Blacklisted
             </label>
           </div>
+
+          {formData.is_blacklisted && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-foreground">Blacklist Reason</label>
+              <textarea
+                className="flex min-h-[70px] w-full rounded-lg border border-border bg-card px-3 py-2 text-sm ring-offset-card placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/50 focus-visible:border-danger"
+                placeholder="Why is this guest blacklisted?"
+                value={formData.blacklist_reason}
+                onChange={(e) => updateField('blacklist_reason', e.target.value)}
+              />
+            </div>
+          )}
 
           <div>
             <label className="mb-1 block text-sm font-medium text-foreground">Notes</label>
@@ -562,7 +557,6 @@ export default function GuestsPage() {
                   <h3 className="text-lg font-semibold text-foreground">
                     {detailGuest.first_name} {detailGuest.last_name}
                   </h3>
-                  {detailGuest.is_vip && <Badge variant="gold">VIP</Badge>}
                   {detailGuest.is_blacklisted && <Badge variant="danger">Blacklisted</Badge>}
                 </div>
                 <div className="mt-1 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted">
@@ -615,6 +609,13 @@ export default function GuestsPage() {
                 </p>
               </div>
             </div>
+
+            {detailGuest.is_blacklisted && detailGuest.blacklist_reason && (
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-foreground">Blacklist Reason</h4>
+                <p className="text-sm text-muted">{detailGuest.blacklist_reason}</p>
+              </div>
+            )}
 
             {detailGuest.notes && (
               <div>

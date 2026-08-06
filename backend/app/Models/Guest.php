@@ -26,8 +26,8 @@ class Guest extends Authenticatable
         'country',
         'postal_code',
         'photo',
-        'is_vip',
         'is_blacklisted',
+        'blacklist_reason',
         'notes',
     ];
 
@@ -39,7 +39,6 @@ class Guest extends Authenticatable
     protected function casts(): array
     {
         return [
-            'is_vip' => 'boolean',
             'is_blacklisted' => 'boolean',
             'date_of_birth' => 'date:Y-m-d',
             'password' => 'hashed',

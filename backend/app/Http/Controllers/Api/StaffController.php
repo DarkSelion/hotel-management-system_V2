@@ -19,13 +19,19 @@ class StaffController extends Controller
         );
     }
 
-    public function assignable()
+    public function assignable(Request $request)
     {
+        $query = User::where('is_active', true)
+            ->where('role', '!=', 'guest');
+
+        if ($role = $request->role) {
+            $query->whereHas('role', function ($q) use ($role) {
+                $q->where('slug', $role);
+            });
+        }
+
         return response()->json(
-            User::where('is_active', true)
-                ->where('role', '!=', 'guest')
-                ->orderBy('name')
-                ->get(['id', 'name'])
+            $query->orderBy('name')->get(['id', 'name'])
         );
     }
 
@@ -127,6 +133,7 @@ class StaffController extends Controller
             'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
+            'department' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
         ]);
 

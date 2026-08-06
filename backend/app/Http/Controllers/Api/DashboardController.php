@@ -27,6 +27,7 @@ class DashboardController extends Controller
         $occupiedRooms = Room::where('status', 'occupied')->count();
         $availableRooms = Room::where('status', 'available')->count();
         $bookedRooms = Room::whereIn('status', ['occupied', 'reserved'])->count();
+        $dirtyRooms = Room::where('status', 'dirty')->count();
 
         $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100, 2) : 0;
 
@@ -52,6 +53,7 @@ class DashboardController extends Controller
             'occupancy_rate' => $occupancyRate,
             'available_rooms' => $availableRooms,
             'booked_rooms' => $bookedRooms,
+            'dirty_rooms' => $dirtyRooms,
             'check_ins_today' => $checkInsToday,
             'check_outs_today' => $checkOutsToday,
             'pending_reservations' => $pendingReservations,

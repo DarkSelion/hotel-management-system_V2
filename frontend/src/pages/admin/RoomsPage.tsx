@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useRooms, useRoomTypes, useCreateRoom, useUpdateRoom, useUpdateRoomStatus, useDeleteRoom } from '@/hooks/useApi'
+import { useRooms, useRoomTypes, useUpdateRoom } from '@/hooks/useApi'
 import type { Room } from '@/types'
 import { formatCurrency } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
 import { RowActions, RowActionButton } from '@/components/shared/RowActions'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,8 +15,8 @@ import { Modal } from '@/components/ui/modal'
 import { useAuthStore } from '@/stores/authStore'
 import { isAdminRole } from '@/lib/permissions'
 import {
-  Plus, Search, Users,
-  Edit, Trash2, Save, MapPin
+  Search, Users,
+  Edit, Save, MapPin
 } from 'lucide-react'
 
 const ROOM_STATUS_OPTIONS = [
@@ -27,10 +26,6 @@ const ROOM_STATUS_OPTIONS = [
   { value: 'reserved', label: 'Reserved' },
   { value: 'cleaning', label: 'Cleaning' },
 ]
-
-const EDITABLE_STATUSES = ROOM_STATUS_OPTIONS.filter(
-  o => o.value === 'available' || o.value === 'maintenance' || o.value === 'reserved',
-)
 
 const FLOOR_OPTIONS = [
   { value: '', label: 'All Floors' },
@@ -76,9 +71,6 @@ export default function RoomsPage() {
   const [formData, setFormData] = useState<RoomFormData>(defaultFormData)
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof RoomFormData, string>>>({})
 
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
-  const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ id: number; status: string } | null>(null)
-
   const params: Record<string, string | number | undefined> = {
     page: currentPage,
     per_page: 12,
@@ -91,10 +83,7 @@ export default function RoomsPage() {
 
   const { data: roomsData, isLoading: roomsLoading, error: roomsError, refetch: refetchRooms } = useRooms(params)
   const { data: roomTypesData } = useRoomTypes(undefined, { enabled: isAdmin })
-  const createRoom = useCreateRoom()
   const updateRoom = useUpdateRoom()
-  const updateRoomStatus = useUpdateRoomStatus()
-  const deleteRoom = useDeleteRoom()
 
   const rooms = roomsData?.data ?? []
   const paginationInfo = roomsData
@@ -111,13 +100,6 @@ export default function RoomsPage() {
     return typeof room.room_type === 'object' ? room.room_type?.id : 0
   }
 
-  function openAddModal() {
-    setSelectedRoom(null)
-    setFormData(defaultFormData)
-    setFormErrors({})
-    setModalMode('add')
-  }
-
   function openEditModal(room: Room) {
     setSelectedRoom(room)
     setFormData({
@@ -127,7 +109,7 @@ export default function RoomsPage() {
       price_override: room.price_override?.toString() ?? '',
       status: room.status,
       description: room.description ?? '',
-      notes: '',
+      notes: room.notes ?? '',
     })
     setFormErrors({})
     setModalMode('edit')
@@ -151,42 +133,20 @@ export default function RoomsPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!validateForm()) return
+    if (!selectedRoom) return
 
     const payload: Record<string, unknown> = {
       room_number: formData.room_number,
       room_type_id: formData.room_type_id,
       floor: Number(formData.floor),
-      status: formData.status,
-      description: formData.description || undefined,
-    }
-    if (formData.price_override) {
-      payload.price_override = Number(formData.price_override)
+      description: formData.description === '' ? null : formData.description,
+      notes: formData.notes === '' ? null : formData.notes,
+      price_override: formData.price_override === '' ? null : Number(formData.price_override),
     }
 
-    if (modalMode === 'add') {
-      createRoom.mutate(payload, {
-        onSuccess: () => closeModal(),
-      })
-    } else if (selectedRoom) {
-      updateRoom.mutate({ id: selectedRoom.id, data: payload }, {
-        onSuccess: () => closeModal(),
-      })
-    }
-  }
-
-  function handleDelete() {
-    if (!deleteConfirmId) return
-    deleteRoom.mutate(deleteConfirmId, {
-      onSuccess: () => setDeleteConfirmId(null),
+    updateRoom.mutate({ id: selectedRoom.id, data: payload }, {
+      onSuccess: () => closeModal(),
     })
-  }
-
-  function confirmStatusChange() {
-    if (!statusChangeConfirm) return
-    updateRoomStatus.mutate(
-      { id: statusChangeConfirm.id, status: statusChangeConfirm.status },
-      { onSuccess: () => setStatusChangeConfirm(null) },
-    )
   }
 
   function updateField<K extends keyof RoomFormData>(key: K, value: RoomFormData[K]) {
@@ -210,7 +170,7 @@ export default function RoomsPage() {
     return rt ? Number(rt.base_price) : 0
   }
 
-  const isMutating = createRoom.isPending || updateRoom.isPending
+  const isMutating = updateRoom.isPending
 
   const listColumns: Column<Room>[] = [
     {
@@ -273,20 +233,12 @@ export default function RoomsPage() {
       render: (r) => (
         <RowActions>
           {isAdmin && (
-            <>
-              <RowActionButton
-                tone="neutral"
-                title="Edit"
-                icon={<Edit className="h-4 w-4" />}
-                onClick={() => openEditModal(r)}
-              />
-              <RowActionButton
-                tone="danger"
-                title="Delete"
-                icon={<Trash2 className="h-4 w-4" />}
-                onClick={() => setDeleteConfirmId(r.id)}
-              />
-            </>
+            <RowActionButton
+              tone="neutral"
+              title="Edit"
+              icon={<Edit className="h-4 w-4" />}
+              onClick={() => openEditModal(r)}
+            />
           )}
         </RowActions>
       ),
@@ -298,16 +250,6 @@ export default function RoomsPage() {
       <PageHeader
         title="Rooms"
         description="Manage hotel rooms and their availability."
-        actions={
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Button variant="gold" onClick={openAddModal}>
-                <Plus className="h-4 w-4" />
-                Add Room
-              </Button>
-            )}
-          </div>
-        }
       />
 
       <Card>
@@ -437,15 +379,12 @@ export default function RoomsPage() {
             />
           </div>
 
-          <Select
-            label="Status"
-            value={formData.status}
-            onChange={(e) => updateField('status', e.target.value)}
-          >
-            {EDITABLE_STATUSES.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </Select>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-foreground">Status</label>
+            <div className="rounded-lg border border-border bg-bg px-3 py-2.5 text-sm text-muted">
+              {ROOM_STATUS_OPTIONS.find((o) => o.value === formData.status)?.label ?? formData.status}
+            </div>
+          </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-foreground">Description</label>
@@ -468,27 +407,6 @@ export default function RoomsPage() {
           </div>
         </form>
       </Modal>
-
-      <ConfirmDialog
-        isOpen={deleteConfirmId !== null}
-        onClose={() => setDeleteConfirmId(null)}
-        onConfirm={handleDelete}
-        title="Delete Room"
-        message="Are you sure you want to delete this room? This action cannot be undone."
-        confirmLabel="Delete"
-        isLoading={deleteRoom.isPending}
-      />
-
-      <ConfirmDialog
-        isOpen={statusChangeConfirm !== null}
-        onClose={() => setStatusChangeConfirm(null)}
-        onConfirm={confirmStatusChange}
-        title="Change Room Status"
-        message={`Are you sure you want to change this room's status to "${statusChangeConfirm?.status}"?`}
-        variant="warning"
-        confirmLabel="Change Status"
-        isLoading={updateRoomStatus.isPending}
-      />
     </div>
   )
 }

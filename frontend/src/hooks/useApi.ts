@@ -5,7 +5,7 @@ import type {
   DashboardStats, RevenueData, BookingSourceData, OccupancyData, RoomTypeData,
   Reservation, PaginatedResponse, Guest, GuestHistory, Room, RoomImage, RoomType,
   Payment, Invoice, HousekeepingTask, MaintenanceRequest,
-  Expense, User, Role, ActivityLog, ApiResponse, StaffSchedule, LeaveRequest, ContactMessage,
+  Expense, ExpenseSummary, User, Role, ActivityLog, ApiResponse, StaffSchedule, LeaveRequest, ContactMessage,
 } from '@/types'
 
 function buildQueryString(params?: Record<string, string | number | undefined | null>): string {
@@ -443,6 +443,19 @@ export function useCreatePayment() {
   })
 }
 
+export function useUpdatePayment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: unknown }) =>
+      api.put<ApiResponse<Payment>>(`/payments/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] })
+      queryClient.invalidateQueries({ queryKey: ['reservations'] })
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+    },
+  })
+}
+
 export function useDeletePayment() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -650,6 +663,14 @@ export function useExpenses(params?: Record<string, string | number | undefined>
   })
 }
 
+export function useExpensesSummary(params?: Record<string, string | number | undefined>) {
+  const qs = buildQueryString(params)
+  return useQuery({
+    queryKey: ['expenses', 'summary', params],
+    queryFn: () => api.get<ExpenseSummary>(`/expenses/summary?${qs}`),
+  })
+}
+
 export function useCreateExpense() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -691,10 +712,11 @@ export function useStaffList() {
   })
 }
 
-export function useStaffAssignable() {
+export function useStaffAssignable(role?: string) {
+  const qs = role ? `?role=${encodeURIComponent(role)}` : ''
   return useQuery({
-    queryKey: ['staff', 'assignable'],
-    queryFn: () => api.get<User[]>('/staff/assignable'),
+    queryKey: ['staff', 'assignable', role],
+    queryFn: () => api.get<User[]>(`/staff/assignable${qs}`),
   })
 }
 
@@ -719,7 +741,7 @@ export function useStaffSchedules(params?: Record<string, string | number | unde
   const qs = buildQueryString(params)
   return useQuery({
     queryKey: ['staff-schedules', params],
-    queryFn: () => api.get<PaginatedResponse<StaffSchedule>>(`/staff/schedules?${qs}`),
+    queryFn: () => api.get<PaginatedResponse<StaffSchedule>>(`/staff-schedules?${qs}`),
   })
 }
 
@@ -727,7 +749,7 @@ export function useLeaveRequests(params?: Record<string, string | number | undef
   const qs = buildQueryString(params)
   return useQuery({
     queryKey: ['leave-requests', params],
-    queryFn: () => api.get<PaginatedResponse<LeaveRequest>>(`/staff/leave-requests?${qs}`),
+    queryFn: () => api.get<PaginatedResponse<LeaveRequest>>(`/leave-requests?${qs}`),
   })
 }
 

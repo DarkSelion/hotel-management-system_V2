@@ -19,6 +19,7 @@ class RoomResource extends JsonResource
             'price_override' => $this->price_override,
             'capacity' => $this->capacity,
             'description' => $this->description,
+            'notes' => $this->notes,
             'amenities' => AmenityResource::collection($this->whenLoaded('amenities')),
             'images' => RoomImageResource::collection($this->whenLoaded('images')),
         ];

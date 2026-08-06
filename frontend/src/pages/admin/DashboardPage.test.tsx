@@ -42,6 +42,7 @@ function stats(overrides: Partial<DashboardStats> = {}): DashboardStats {
     pending_reservations: 4,
     overstaying: 1,
     total_rooms: 15,
+    dirty_rooms: 2,
     ...overrides,
   }
 }

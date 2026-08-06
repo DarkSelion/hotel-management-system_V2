@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/components/ui/toast'
 import { useAuthStore } from '@/stores/authStore'
 import { isAdminRole } from '@/lib/permissions'
 import { Plus, Search, Eye, Image, Clock, DollarSign, User } from 'lucide-react'
@@ -32,9 +33,9 @@ const CATEGORY_OPTIONS = [
 const PRIORITY_OPTIONS = [
   { value: '', label: 'All Priorities' },
   { value: 'low', label: 'Low' },
-  { value: 'normal', label: 'Normal' },
+  { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
-  { value: 'critical', label: 'Critical' },
+  { value: 'urgent', label: 'Urgent' },
 ]
 
 const STATUS_OPTIONS = [
@@ -81,7 +82,7 @@ export default function MaintenancePage() {
     title: '',
     description: '',
     category: '',
-    priority: 'normal',
+    priority: 'medium',
     notes: '',
   })
 
@@ -103,13 +104,14 @@ export default function MaintenancePage() {
   const createRequest = useCreateMaintenanceRequest()
   const updateStatus = useUpdateMaintenanceStatus()
   const assignRequest = useAssignMaintenanceRequest()
+  const { addToast } = useToast()
 
   const requests = requestsData?.data ?? []
   const staff = staffData ?? []
   const rooms = roomsData?.data ?? []
 
   function openNewModal() {
-    setFormData({ room_id: '', title: '', description: '', category: '', priority: 'normal', notes: '' })
+    setFormData({ room_id: '', title: '', description: '', category: '', priority: 'medium', notes: '' })
     setShowNewModal(true)
   }
 
@@ -134,7 +136,13 @@ export default function MaintenancePage() {
       priority: formData.priority,
     }
     if (formData.notes) payload.notes = formData.notes
-    createRequest.mutate(payload, { onSuccess: () => setShowNewModal(false) })
+    createRequest.mutate(payload, {
+      onSuccess: () => setShowNewModal(false),
+      onError: (err) => {
+        const message = err instanceof Error ? err.message : 'Failed to report maintenance request.'
+        addToast(message, 'error')
+      },
+    })
   }
 
   function handleAssign() {

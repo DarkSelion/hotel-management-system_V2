@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { usePayments, useReservations } from '@/hooks/useApi'
+import { usePayments, useReservations, useUpdatePayment } from '@/hooks/useApi'
 import type { Payment, Reservation } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -13,10 +13,11 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { DatePicker } from '@/components/ui/date-picker'
+import { useToast } from '@/components/ui/toast'
 import { PAYMENT_METHODS } from '@/lib/constants'
 import {
   Plus, Eye, Banknote, Smartphone,
-  AlertCircle,
+  AlertCircle, Loader2,
 } from 'lucide-react'
 
 interface PaymentExtended extends Payment {
@@ -66,10 +67,32 @@ export default function PaymentsPage() {
 
   const { data: paymentsData, isLoading, error, refetch } = usePayments(queryParams)
   const { data: reservationsData } = useReservations({ per_page: 100, status: 'checked_in,checked_out,confirmed' })
+  const updatePayment = useUpdatePayment()
+  const { addToast } = useToast()
+
+  const [statusDraft, setStatusDraft] = useState<string | null>(null)
 
   const payments = (paymentsData?.data ?? []) as PaymentExtended[]
   const reservations = (reservationsData?.data ?? []) as Reservation[]
   const totalPages = paymentsData?.last_page ?? 1
+
+  function handleStatusChange(paymentId: number, status: string) {
+    setStatusDraft(status)
+    updatePayment.mutate(
+      { id: paymentId, data: { status } },
+      {
+        onSuccess: () => {
+          addToast('Payment status updated', 'success')
+          setStatusDraft(null)
+          refetch()
+        },
+        onError: () => {
+          addToast('Failed to update payment status', 'error')
+          setStatusDraft(null)
+        },
+      },
+    )
+  }
 
   function openDetailModal(payment: PaymentExtended) {
     setSelectedPayment(payment)
@@ -248,7 +271,23 @@ export default function PaymentsPage() {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Status</label>
-                <div className="mt-0.5"><StatusBadge status={selectedPayment.status} /></div>
+                {selectedPayment.status === 'pending' ? (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      className="mt-0.5"
+                      value={statusDraft ?? selectedPayment.status}
+                      onChange={(e) => handleStatusChange(selectedPayment.id, e.target.value)}
+                      disabled={updatePayment.isPending}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="completed">Completed</option>
+                      <option value="failed">Failed</option>
+                    </Select>
+                    {updatePayment.isPending && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />}
+                  </div>
+                ) : (
+                  <div className="mt-0.5"><StatusBadge status={selectedPayment.status} /></div>
+                )}
               </div>
               <div>
                 <label className="text-xs font-medium text-muted">Amount</label>
@@ -311,6 +350,7 @@ export default function PaymentsPage() {
         isOpen={showFormModal}
         onClose={closeFormModal}
         reservations={reservations}
+        showCheckInOption
       />
 
     </div>

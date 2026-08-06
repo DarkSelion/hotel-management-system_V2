@@ -27,7 +27,7 @@ class SearchController extends Controller
               ->orWhere('last_name', 'like', "%{$query}%")
               ->orWhere('email', 'like', "%{$query}%")
               ->orWhere('phone', 'like', "%{$query}%");
-        })->limit(5)->get(['id', 'first_name', 'last_name', 'email', 'phone', 'is_vip']);
+        })->limit(5)->get(['id', 'first_name', 'last_name', 'email', 'phone']);
 
         foreach ($guests as $guest) {
             $results[] = [
@@ -35,7 +35,7 @@ class SearchController extends Controller
                 'id' => $guest->id,
                 'title' => $guest->first_name . ' ' . $guest->last_name,
                 'subtitle' => $guest->email . ($guest->phone ? ' · ' . $guest->phone : ''),
-                'badge' => $guest->is_vip ? 'VIP' : null,
+                'badge' => null,
                 'route' => '/admin/guests',
             ];
         }

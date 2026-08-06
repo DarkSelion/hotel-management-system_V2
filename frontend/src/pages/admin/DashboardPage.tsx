@@ -7,18 +7,17 @@ import {
   useRecentActivities,
   useReservations,
 } from '@/hooks/useApi'
-import { formatCurrency, formatDateDisplay } from '@/lib/format'
+import { formatCurrency } from '@/lib/format'
 import { BOOKING_SOURCES } from '@/lib/constants'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { RevenueChart } from '@/components/charts/RevenueChart'
 import { OccupancyHero } from '@/components/dashboard/OccupancyHero'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import {
-  DollarSign, LogIn, LogOut, Clock, SprayCan,
+  DollarSign, LogIn, LogOut,
   Activity, RefreshCw, Calendar, ArrowRight, AlertTriangle,
 } from 'lucide-react'
 import {
@@ -28,9 +27,6 @@ import {
 import type { Reservation } from '@/types'
 
 const PIE_COLORS = ['#1e3a5f', '#10b981', '#f59e0b', '#6b7280', '#ef4444']
-
-const formatDate = (dateStr: string) =>
-  formatDateDisplay(dateStr)
 
 const formatTime = (dateStr: string) =>
   new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
@@ -83,7 +79,7 @@ export default function DashboardPage() {
     source: BOOKING_SOURCES.find((b) => b.value === s.source)?.label ?? s.source,
   }))
 
-  const totalDirtyRooms = stats ? stats.total_rooms - stats.available_rooms : 0
+  const totalDirtyRooms = stats?.dirty_rooms ?? 0
 
   if (hasError) {
     return (

@@ -1,12 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { PaymentModal } from './PaymentModal'
 import type { Guest, Payment, Reservation, Room } from '@/types'
 
-const { mockMutate } = vi.hoisted(() => ({ mockMutate: vi.fn() }))
+const { mockMutate, mockCheckIn } = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+  mockCheckIn: vi.fn(),
+}))
 
 vi.mock('@/hooks/useApi', () => ({
   useCreatePayment: () => ({ mutateAsync: mockMutate, isPending: false }),
+  useCheckIn: () => ({ mutateAsync: mockCheckIn, isPending: false }),
 }))
 
 type OnSuccess = (payment: Payment) => void
@@ -35,6 +39,7 @@ function reservation(overrides: Partial<Reservation> = {}): Reservation {
 function renderModal(overrides: {
   reservation?: Reservation | null
   reservations?: Reservation[]
+  showCheckInOption?: boolean
   onSuccess?: ReturnType<typeof vi.fn<OnSuccess>>
   onClose?: ReturnType<typeof vi.fn<OnClose>>
 } = {}) {
@@ -46,6 +51,7 @@ function renderModal(overrides: {
       onClose={onClose}
       reservation={overrides.reservation === undefined ? reservation() : overrides.reservation}
       reservations={overrides.reservations}
+      showCheckInOption={overrides.showCheckInOption}
       onSuccess={onSuccess}
     />,
   )
@@ -58,6 +64,7 @@ const tenderedInput = () => screen.getByLabelText('Cash tendered') as HTMLInputE
 describe('PaymentModal', () => {
   beforeEach(() => {
     mockMutate.mockReset()
+    mockCheckIn.mockReset()
   })
 
   it('defaults to the cash tab and shows the reservation summary', () => {
@@ -240,5 +247,42 @@ describe('PaymentModal', () => {
     fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } })
     expect(screen.getByText('Balance due')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Record Payment' })).toBeEnabled()
+  })
+
+  it('does not check in when the option is not enabled', async () => {
+    const { onSuccess, onClose } = renderModal()
+    mockMutate.mockResolvedValue({ id: 50, amount: 330, status: 'completed' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    expect(mockCheckIn).not.toHaveBeenCalled()
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled())
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+  })
+
+  it('shows the check-in option only when showCheckInOption and a confirmed reservation are present', () => {
+    renderModal({ showCheckInOption: true })
+    expect(screen.getByText('Check in after payment')).toBeInTheDocument()
+
+    const { container } = render(
+      <PaymentModal
+        isOpen
+        onClose={vi.fn()}
+        reservation={reservation({ status: 'checked_in' })}
+        showCheckInOption
+      />,
+    )
+    expect(within(container).queryByText('Check in after payment')).not.toBeInTheDocument()
+  })
+
+  it('checks in after a completed payment when the box is ticked', async () => {
+    renderModal({ showCheckInOption: true })
+    mockMutate.mockResolvedValue({ id: 50, amount: 330, status: 'completed' })
+    mockCheckIn.mockResolvedValue({})
+
+    fireEvent.click(screen.getByRole('checkbox'))
+    fireEvent.click(screen.getByRole('button', { name: 'Record Payment' }))
+
+    await waitFor(() => expect(mockCheckIn).toHaveBeenCalledWith(1))
   })
 })

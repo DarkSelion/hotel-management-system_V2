@@ -43,8 +43,8 @@ class GuestController extends Controller
             'nationality' => 'nullable|string|max:100',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
-            'is_vip' => 'nullable|boolean',
             'is_blacklisted' => 'nullable|boolean',
+            'blacklist_reason' => 'nullable|string|max:2000',
             'notes' => 'nullable|string',
         ]);
 
@@ -52,6 +52,10 @@ class GuestController extends Controller
             if (($data[$field] ?? null) === '') {
                 $data[$field] = null;
             }
+        }
+
+        if (!($data['is_blacklisted'] ?? false)) {
+            $data['blacklist_reason'] = null;
         }
 
         $rawPassword = substr(bin2hex(random_bytes(6)), 0, 12);
@@ -93,8 +97,8 @@ class GuestController extends Controller
             'nationality' => 'nullable|string|max:100',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
-            'is_vip' => 'nullable|boolean',
             'is_blacklisted' => 'nullable|boolean',
+            'blacklist_reason' => 'nullable|string|max:2000',
             'notes' => 'nullable|string',
         ]);
 
@@ -102,6 +106,10 @@ class GuestController extends Controller
             if (($data[$field] ?? null) === '') {
                 $data[$field] = null;
             }
+        }
+
+        if (!($data['is_blacklisted'] ?? false)) {
+            $data['blacklist_reason'] = null;
         }
 
         $guest->update($data);

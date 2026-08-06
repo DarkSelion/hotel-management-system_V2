@@ -28,6 +28,7 @@ const statusConfig: Record<string, { variant: 'success' | 'warning' | 'danger' |
   assigned: { variant: 'info', label: 'Assigned' },
   reported: { variant: 'warning', label: 'Reported' },
   low: { variant: 'default', label: 'Low' },
+  medium: { variant: 'info', label: 'Medium' },
   normal: { variant: 'info', label: 'Normal' },
   high: { variant: 'warning', label: 'High' },
   urgent: { variant: 'danger', label: 'Urgent' },

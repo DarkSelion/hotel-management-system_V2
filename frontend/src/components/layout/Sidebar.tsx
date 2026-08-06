@@ -309,30 +309,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           )}
         </Tooltip>
 
-        <Tooltip content="Logout" side="top" align="center">
-          {({ ref, onMouseEnter, onMouseLeave, onFocus, onBlur }) => (
-            <button
-              ref={ref as unknown as React.Ref<HTMLButtonElement>}
-              onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
-              onFocus={onFocus}
-              onBlur={onBlur}
-              onClick={() => {
-                localStorage.removeItem('auth-storage')
-                window.location.href = '/admin/login'
-              }}
-              className={cn(
-                'mt-1 flex w-full items-center justify-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-danger transition-all duration-150',
-                'hover:bg-danger/10 hover:text-danger',
-                collapsed ? '' : 'justify-start',
-              )}
-              aria-label="Logout"
-            >
-              <LogOut size={18} />
-              {!collapsed && <span>Logout</span>}
-            </button>
-          )}
-        </Tooltip>
       </div>
     </aside>
   )

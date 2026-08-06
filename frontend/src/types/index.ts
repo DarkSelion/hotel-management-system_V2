@@ -38,8 +38,8 @@ export interface Guest {
   address?: string;
   city?: string;
   country?: string;
-  is_vip: boolean;
   is_blacklisted: boolean;
+  blacklist_reason?: string;
   photo?: string;
   notes?: string;
   reservations?: Reservation[];
@@ -73,6 +73,7 @@ export interface Room {
   price_override?: number;
   capacity: number;
   description?: string;
+  notes?: string;
   images?: RoomImage[];
 }
 
@@ -142,9 +143,10 @@ export interface Invoice {
   invoice_number: string;
   reservation_id: number;
   guest_id: number;
+  amount: number;
+  tax_amount: number;
+  discount_amount: number;
   total_amount: number;
-  tax_percent?: number;
-  discount_percent?: number;
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   issued_date: string;
   due_date: string;
@@ -162,7 +164,7 @@ export interface InvoiceItem {
 
 export interface HousekeepingTask {
   id: number;
-  room: Room;
+  room: Room | null;
   assigned_to?: User;
   status: 'pending' | 'in_progress' | 'completed' | 'inspected';
   priority: 'low' | 'normal' | 'high' | 'urgent';
@@ -178,7 +180,7 @@ export interface MaintenanceRequest {
   title: string;
   description?: string;
   category: string;
-  priority: 'low' | 'normal' | 'high' | 'critical';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'reported' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
   assigned_to?: User;
   estimated_cost?: number;
@@ -203,7 +205,15 @@ export interface Expense {
   amount: number;
   description?: string;
   date: string;
-  created_by: User;
+  created_by: number;
+  created_by_user?: { id: number; name: string };
+}
+
+export interface ExpenseSummary {
+  total_amount: number;
+  count: number;
+  average: number;
+  this_month_amount: number;
 }
 
 export interface DashboardStats {
@@ -216,6 +226,7 @@ export interface DashboardStats {
   pending_reservations: number;
   overstaying: number;
   total_rooms: number;
+  dirty_rooms: number;
 }
 
 export interface RevenueData {
@@ -297,7 +308,6 @@ export interface PublicUser {
   date_of_birth?: string
   gender?: string
   postal_code?: string
-  is_vip?: boolean
   is_blacklisted?: boolean
   created_at?: string
 }

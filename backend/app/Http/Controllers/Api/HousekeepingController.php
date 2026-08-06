@@ -33,7 +33,7 @@ class HousekeepingController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
+            'room_id' => 'nullable|exists:rooms,id',
             'task_type' => 'required|string|max:100',
             'notes' => 'nullable|string',
             'priority' => 'sometimes|in:low,normal,medium,high,urgent',
@@ -46,13 +46,15 @@ class HousekeepingController extends Controller
 
         $task = HousekeepingTask::create($data);
 
+        $roomLabel = $task->room ? "for Room {$task->room->room_number}" : '(no room)';
+
         ActivityLog::create([
             'user_id' => $request->user()->id,
             'action' => 'created',
             'module' => 'housekeeping',
             'model_type' => 'HousekeepingTask',
             'model_id' => $task->id,
-            'description' => "Created housekeeping task: {$task->task_type} for Room {$task->room->room_number}",
+            'description' => "Created housekeeping task: {$task->task_type} {$roomLabel}",
         ]);
 
         return response()->json($task->load(['room', 'assignedTo']), 201);
@@ -126,7 +128,9 @@ class HousekeepingController extends Controller
         $task->update($updates);
 
         if ($data['status'] === 'completed') {
-            $task->room->update(['cleaning_status' => 'clean']);
+            if ($task->room) {
+                $task->room->update(['cleaning_status' => 'clean']);
+            }
         }
 
         ActivityLog::create([
