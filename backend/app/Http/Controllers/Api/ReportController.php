@@ -21,20 +21,38 @@ class ReportController extends Controller
             'group_by' => 'sometimes|in:day,week,month',
         ]);
 
-        $groupBy = $data['group_by'] ?? 'day';
+        $from = now()->parse($data['from'])->startOfDay();
+        $to = now()->parse($data['to'])->endOfDay();
+        $days = $from->diffInDays($to->copy()->startOfDay());
+        $dates = collect(range(0, $days))->map(fn ($day) => $from->copy()->addDays($day)->format('Y-m-d'));
 
-        $dateFormat = match ($groupBy) {
-            'week' => DB::raw("YEARWEEK(created_at, 1) as period"),
-            'month' => DB::raw("DATE_FORMAT(created_at, '%Y-%m') as period"),
-            default => DB::raw("DATE(created_at) as period"),
-        };
+        $revenueByDate = Payment::where('status', 'completed')
+            ->whereBetween('created_at', [$data['from'] . ' 00:00:00', $data['to'] . ' 23:59:59'])
+            ->get(['created_at', 'amount'])
+            ->groupBy(fn ($p) => $p->created_at->format('Y-m-d'))
+            ->map(fn ($group) => round($group->sum('amount'), 2));
 
-        $results = Payment::where('status', 'completed')
-            ->whereBetween('created_at', [$data['from'], $data['to'] . ' 23:59:59'])
-            ->select($dateFormat, DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
-            ->groupBy('period')
-            ->orderBy('period')
-            ->get();
+        $bookingsByDate = Reservation::whereBetween('created_at', [$data['from'] . ' 00:00:00', $data['to'] . ' 23:59:59'])
+            ->get(['created_at'])
+            ->groupBy(fn ($r) => $r->created_at->format('Y-m-d'))
+            ->map->count();
+
+        $occupiedByDate = $this->dailyOccupiedCounts($data['from'], $data['to']);
+        $totalRooms = Room::where('is_active', true)->count();
+
+        $results = $dates->map(function ($date) use ($revenueByDate, $bookingsByDate, $occupiedByDate, $totalRooms) {
+            $revenue = (float) ($revenueByDate[$date] ?? 0);
+            $bookings = (int) ($bookingsByDate[$date] ?? 0);
+            $occupied = (int) ($occupiedByDate[$date] ?? 0);
+
+            return [
+                'date' => $date,
+                'revenue' => $revenue,
+                'bookings' => $bookings,
+                'adr' => $bookings > 0 ? round($revenue / $bookings, 2) : 0,
+                'occupancy_rate' => $totalRooms > 0 ? round(($occupied / $totalRooms) * 100, 2) : 0,
+            ];
+        });
 
         return response()->json($results);
     }
@@ -53,27 +71,43 @@ class ReportController extends Controller
 
         $dates = collect(range(0, $days))->map(fn ($day) => $from->copy()->addDays($day)->format('Y-m-d'));
 
-        $reservations = Reservation::select('check_in', 'check_out', 'status')
-            ->whereIn('status', ['checked_in', 'confirmed'])
-            ->where('check_in', '<=', $to->format('Y-m-d'))
-            ->where(function ($q) use ($from) {
-                $q->where('check_out', '>=', $from->format('Y-m-d'))
-                    ->orWhere('status', 'checked_in');
-            })
-            ->get();
+        $occupiedByDate = $this->dailyOccupiedCounts($data['from'], $data['to']);
 
-        $results = $dates->map(function ($date) use ($reservations, $totalRooms) {
-            $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && ($r->status === 'checked_in' || $r->check_out > $date))->count();
+        $results = $dates->map(function ($date) use ($occupiedByDate, $totalRooms) {
+            $occupied = (int) ($occupiedByDate[$date] ?? 0);
 
             return [
                 'date' => $date,
-                'occupied' => $occupied,
-                'available' => $totalRooms - $occupied,
+                'available_rooms' => $totalRooms - $occupied,
+                'booked_rooms' => $occupied,
                 'rate' => $totalRooms > 0 ? round(($occupied / $totalRooms) * 100, 2) : 0,
             ];
         });
 
         return response()->json($results);
+    }
+
+    private function dailyOccupiedCounts(string $from, string $to): array
+    {
+        $start = now()->parse($from)->startOfDay();
+        $end = now()->parse($to)->endOfDay();
+        $days = $start->diffInDays($end->copy()->startOfDay());
+        $dates = collect(range(0, $days))->map(fn ($day) => $start->copy()->addDays($day)->format('Y-m-d'));
+
+        $reservations = Reservation::select('check_in', 'check_out', 'status')
+            ->whereIn('status', ['checked_in', 'confirmed'])
+            ->where('check_in', '<=', $end->format('Y-m-d'))
+            ->where(function ($q) use ($start) {
+                $q->where('check_out', '>=', $start->format('Y-m-d'))
+                    ->orWhere('status', 'checked_in');
+            })
+            ->get();
+
+        return $dates->mapWithKeys(function ($date) use ($reservations) {
+            $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && ($r->status === 'checked_in' || $r->check_out > $date))->count();
+
+            return [$date => $occupied];
+        })->all();
     }
 
     public function reservations(Request $request)

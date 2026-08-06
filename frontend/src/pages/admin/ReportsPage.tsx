@@ -67,7 +67,7 @@ function CustomTooltip({ active, payload, label }: any) {
       <p className="text-sm text-muted">{label}</p>
       {payload.map((entry: any) => (
         <p key={entry.name} className="text-sm font-semibold" style={{ color: entry.color }}>
-          {typeof entry.value === 'number' && entry.name !== 'bookings'
+          {typeof entry.value === 'number' && entry.name !== 'bookings' && entry.name !== 'rate'
             ? formatCurrency(entry.value)
             : entry.value}
         </p>
@@ -117,7 +117,7 @@ export default function ReportsPage() {
     ? occupancy.reduce((sum: number, o: any) => sum + (o.rate ?? 0), 0) / occupancy.length
     : 0
 
-  const statusBreakdown = reservations?.statuses ?? reservations?.breakdown ?? []
+  const statusBreakdown = reservations?.status_breakdown ?? []
   const totalReservations = reservations?.total ?? 0
 
   async function handleExport() {
@@ -190,10 +190,10 @@ export default function ReportsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Total Revenue" value={formatCurrency(totalRevenue)} accent="success" />
-            <StatCard icon={<Percent className="h-5 w-5" />} label="Average Daily Rate" value={formatCurrency(avgDailyRate)} accent="primary" />
-            <StatCard icon={<CalendarDays className="h-5 w-5" />} label="Total Bookings" value={totalBookings} accent="gold" />
-            <StatCard icon={<Hotel className="h-5 w-5" />} label="RevPAR" value={formatCurrency(revpar)} accent="warning" />
+            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Total Revenue" value={formatCurrency(totalRevenue)} />
+            <StatCard icon={<Percent className="h-5 w-5" />} label="Average Daily Rate" value={formatCurrency(avgDailyRate)} />
+            <StatCard icon={<CalendarDays className="h-5 w-5" />} label="Total Bookings" value={totalBookings} />
+            <StatCard icon={<Hotel className="h-5 w-5" />} label="RevPAR" value={formatCurrency(revpar)} />
           </div>
 
           {revenueLoading ? (
@@ -326,7 +326,6 @@ export default function ReportsPage() {
                   icon={<Percent className="h-5 w-5" />}
                   label="Average Occupancy"
                   value={`${Math.round(avgOccupancy)}%`}
-                  accent="primary"
                 />
               </div>
 
@@ -446,7 +445,6 @@ export default function ReportsPage() {
                   icon={<CalendarDays className="h-5 w-5" />}
                   label="Total Reservations"
                   value={totalReservations}
-                  accent="primary"
                 />
               </div>
 
@@ -464,7 +462,7 @@ export default function ReportsPage() {
                             cx="50%"
                             cy="50%"
                             outerRadius={100}
-                            dataKey="count"
+                            dataKey="total"
                             nameKey="status"
                             label={({ status, percent }: any) => `${status} (${(percent * 100).toFixed(0)}%)`}
                           >
@@ -498,10 +496,10 @@ export default function ReportsPage() {
                           {statusBreakdown.map((item: any, i: number) => (
                             <TableRow key={i}>
                               <TableCell className="font-medium capitalize">{item.status ?? item.name}</TableCell>
-                              <TableCell>{item.count ?? 0}</TableCell>
+                              <TableCell>{item.total ?? 0}</TableCell>
                               <TableCell>
                                 {totalReservations > 0
-                                  ? `${(((item.count ?? 0) / totalReservations) * 100).toFixed(1)}%`
+                                  ? `${(((item.total ?? 0) / totalReservations) * 100).toFixed(1)}%`
                                   : '0%'}
                               </TableCell>
                             </TableRow>
