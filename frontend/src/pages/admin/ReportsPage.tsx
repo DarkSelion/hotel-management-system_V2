@@ -14,6 +14,8 @@ import {
   LineChart, Line, PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import { DollarSign, CalendarDays, Percent, Hotel, Download, AlertCircle, RotateCcw, Inbox } from 'lucide-react'
+import { downloadFile } from '@/lib/api'
+import { useToast } from '@/components/ui/toast'
 
 const REPORTS_TABS = ['Revenue', 'Occupancy', 'Reservations', 'Export'] as const
 
@@ -25,7 +27,7 @@ const REPORT_TYPES = [
 
 const EXPORT_FORMATS = [
   { value: 'csv', label: 'CSV' },
-  { value: 'pdf', label: 'PDF (Coming Soon)' },
+  { value: 'pdf', label: 'PDF' },
 ]
 
 const PIE_COLORS = ['#f59e0b', '#1e3a5f', '#10b981', '#c9a84c', '#ef4444', '#6b7280']
@@ -75,6 +77,7 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export default function ReportsPage() {
+  const { addToast } = useToast()
   const [activeTab, setActiveTab] = useState<string>('Revenue')
 
   const today = new Date().toISOString().split('T')[0]
@@ -124,21 +127,20 @@ export default function ReportsPage() {
       to: exportTo,
     })
     try {
-      const { useAuthStore } = await import('@/stores/authStore')
-      const { token } = useAuthStore.getState()
-      const response = await fetch(`/api/reports/export/${exportType}?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!response.ok) throw new Error('Export failed')
-      const blob = await response.blob()
+      const { blob, filename } = await downloadFile(
+        `/reports/export/${exportType}?${params}`,
+        exportFormat === 'pdf' ? 'application/pdf' : 'text/csv',
+      )
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${exportType}-report.${exportFormat === 'pdf' ? 'pdf' : 'csv'}`
+      a.download = filename
+      document.body.appendChild(a)
       a.click()
+      a.remove()
       URL.revokeObjectURL(url)
     } catch {
-      // handled by error state if needed
+      addToast('Export failed. Please try again.', 'error')
     }
   }
 
@@ -535,7 +537,7 @@ export default function ReportsPage() {
                 onChange={(e) => setExportFormat(e.target.value)}
               >
                 {EXPORT_FORMATS.map((f) => (
-                  <option key={f.value} value={f.value} disabled={f.value === 'pdf'}>{f.label}</option>
+                  <option key={f.value} value={f.value}>{f.label}</option>
                 ))}
               </Select>
 
@@ -552,7 +554,7 @@ export default function ReportsPage() {
                 />
               </div>
 
-              <Button variant="primary" onClick={handleExport} disabled={exportFormat === 'pdf'}>
+              <Button variant="primary" onClick={handleExport}>
                 <Download className="h-4 w-4" />
                 Export
               </Button>

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Reservation;
 use App\Models\Room;
+use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -108,42 +110,85 @@ class ReportController extends Controller
             return response()->json(['message' => 'Invalid report type.'], 422);
         }
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $type . '-report.csv"',
-        ];
+        $format = $request->format ?? 'csv';
+        if (!in_array($format, ['csv', 'pdf'])) {
+            return response()->json(['message' => 'Invalid export format.'], 422);
+        }
 
         $from = $request->from ?? now()->subMonth()->toDateString();
         $to = $request->to ?? now()->toDateString();
 
+        if ($format === 'pdf') {
+            return $this->exportPdf($type, $from, $to);
+        }
+
+        return $this->exportCsv($type, $from, $to);
+    }
+
+    protected function exportCsv(string $type, string $from, string $to)
+    {
+        [$headers, $rows] = $this->buildRows($type, $from, $to);
+
         $filename = storage_path('app/' . $type . '-report.csv');
         $handle = fopen($filename, 'w');
+        fputcsv($handle, $headers);
+        foreach ($rows as $row) {
+            fputcsv($handle, $row);
+        }
+        fclose($handle);
 
+        return response()->download($filename, basename($filename), [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . basename($filename) . '"',
+        ])->deleteFileAfterSend(true);
+    }
+
+    protected function exportPdf(string $type, string $from, string $to)
+    {
+        [$headers, $rows] = $this->buildRows($type, $from, $to);
+
+        $hotel = Setting::where('group', 'hotel')->pluck('value', 'key');
+
+        $pdf = Pdf::loadView('reports.pdf', [
+            'type' => $type,
+            'from' => $from,
+            'to' => $to,
+            'headers' => $headers,
+            'rows' => $rows,
+            'hotel' => $hotel,
+        ]);
+
+        return $pdf->download($type . '-report.pdf');
+    }
+
+    protected function buildRows(string $type, string $from, string $to): array
+    {
         switch ($type) {
             case 'revenue':
-                fputcsv($handle, ['Date', 'Amount', 'Payment Method', 'Reservation']);
-                Payment::with('reservation')
+                $headers = ['Date', 'Amount', 'Payment Method', 'Reservation'];
+                $rows = Payment::with('reservation')
                     ->where('status', 'completed')
                     ->whereBetween('created_at', [$from, $to . ' 23:59:59'])
-                    ->chunk(100, function ($payments) use ($handle) {
-                        foreach ($payments as $p) {
-                            fputcsv($handle, [
-                                $p->created_at->format('Y-m-d'),
-                                $p->amount,
-                                $p->payment_method,
-                                $p->reservation?->reservation_number,
-                            ]);
-                        }
-                    });
+                    ->orderBy('created_at')
+                    ->get()
+                    ->map(function ($p) {
+                        return [
+                            $p->created_at->format('Y-m-d'),
+                            number_format((float) $p->amount, 2),
+                            $p->payment_method,
+                            $p->reservation?->reservation_number,
+                        ];
+                    })
+                    ->toArray();
                 break;
 
             case 'occupancy':
-                fputcsv($handle, ['Date', 'Occupied', 'Available', 'Rate (%)']);
+                $headers = ['Date', 'Occupied', 'Available', 'Rate (%)'];
                 $totalRooms = Room::where('is_active', true)->count();
                 $rangeStart = now()->parse($from)->startOfDay();
                 $rangeEnd = now()->parse($to)->endOfDay();
                 $days = $rangeStart->diffInDays($rangeEnd->copy()->startOfDay());
-                $dates = collect(range(0, $days))->map(fn($d) => $rangeStart->copy()->addDays($d)->format('Y-m-d'));
+                $dates = collect(range(0, $days))->map(fn ($d) => $rangeStart->copy()->addDays($d)->format('Y-m-d'));
 
                 $reservations = Reservation::select('check_in', 'check_out', 'status')
                     ->whereIn('status', ['checked_in', 'confirmed'])
@@ -154,37 +199,43 @@ class ReportController extends Controller
                     })
                     ->get();
 
-                foreach ($dates as $date) {
+                $rows = $dates->map(function ($date) use ($reservations, $totalRooms) {
                     $occupied = $reservations->filter(fn ($r) => $r->check_in <= $date && ($r->status === 'checked_in' || $r->check_out > $date))->count();
-                    fputcsv($handle, [$date, $occupied, $totalRooms - $occupied, $totalRooms > 0 ? round(($occupied / $totalRooms) * 100, 2) : 0]);
-                }
+                    return [
+                        $date,
+                        $occupied,
+                        $totalRooms - $occupied,
+                        $totalRooms > 0 ? round(($occupied / $totalRooms) * 100, 2) : 0,
+                    ];
+                })->toArray();
                 break;
 
             case 'reservations':
-                fputcsv($handle, ['ID', 'Number', 'Guest', 'Room', 'Check In', 'Check Out', 'Status', 'Total', 'Created']);
-                Reservation::with('guest', 'room')
+                $headers = ['ID', 'Number', 'Guest', 'Room', 'Check In', 'Check Out', 'Status', 'Total', 'Created'];
+                $rows = Reservation::with('guest', 'room')
                     ->whereBetween('created_at', [$from, $to . ' 23:59:59'])
-                    ->chunk(100, function ($reservations) use ($handle) {
-                        foreach ($reservations as $r) {
-                            fputcsv($handle, [
-                                $r->id,
-                                $r->reservation_number,
-                                ($r->guest->first_name ?? '') . ' ' . ($r->guest->last_name ?? ''),
-                                $r->room?->room_number,
-                                $r->check_in,
-                                $r->check_out,
-                                $r->status,
-                                $r->total_amount,
-                                $r->created_at->format('Y-m-d'),
-                            ]);
-                        }
-                    });
+                    ->orderBy('created_at')
+                    ->get()
+                    ->map(function ($r) {
+                        return [
+                            $r->id,
+                            $r->reservation_number,
+                            trim(($r->guest->first_name ?? '') . ' ' . ($r->guest->last_name ?? '')),
+                            $r->room?->room_number,
+                            $r->check_in,
+                            $r->check_out,
+                            $r->status,
+                            number_format((float) $r->total_amount, 2),
+                            $r->created_at->format('Y-m-d'),
+                        ];
+                    })
+                    ->toArray();
                 break;
 
+            default:
+                return [[], []];
         }
 
-        fclose($handle);
-
-        return response()->download($filename, basename($filename), $headers)->deleteFileAfterSend(true);
+        return [$headers, $rows];
     }
 }

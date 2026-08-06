@@ -43,9 +43,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return response.json()
 }
 
-export async function downloadFile(url: string): Promise<{ blob: Blob; filename: string }> {
+export async function downloadFile(url: string, accept = 'application/pdf'): Promise<{ blob: Blob; filename: string }> {
   const token = useAuthStore.getState().token
-  const headers: HeadersInit = { 'Accept': 'application/pdf' }
+  const headers: HeadersInit = { 'Accept': accept }
 
   if (token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
