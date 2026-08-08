@@ -44,11 +44,6 @@ class User extends Authenticatable
         return $this->hasMany(HousekeepingTask::class, 'assigned_to');
     }
 
-    public function maintenanceAssigned(): HasMany
-    {
-        return $this->hasMany(MaintenanceRequest::class, 'assigned_to');
-    }
-
     public function schedules(): HasMany
     {
         return $this->hasMany(StaffSchedule::class);

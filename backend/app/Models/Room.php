@@ -62,4 +62,20 @@ class Room extends Model
     {
         return $this->hasMany(RoomImage::class)->orderBy('sort_order');
     }
+
+    public function reconcileStatus(): void
+    {
+        $hasActive = Reservation::where('room_id', $this->id)
+            ->active()
+            ->exists();
+
+        if ($hasActive) {
+            $occupied = Reservation::where('room_id', $this->id)
+                ->where('status', 'checked_in')
+                ->exists();
+            $this->update(['status' => $occupied ? 'occupied' : 'reserved']);
+        } else {
+            $this->update(['status' => 'available']);
+        }
+    }
 }

@@ -5,7 +5,6 @@ export interface User {
   phone?: string;
   avatar?: string;
   role: Role;
-  department?: string;
   is_active: boolean;
   created_at: string;
 }
@@ -17,6 +16,14 @@ export interface Role {
   description?: string;
   permissions: Permission[];
   pivot?: { role_id: number; permission_id: number };
+}
+
+export interface Technician {
+  id: number;
+  name: string;
+  phone?: string;
+  specialty?: string;
+  is_active: boolean;
 }
 
 export interface Permission {
@@ -68,8 +75,8 @@ export interface Room {
   room_number: string;
   room_type: RoomType;
   floor: number;
-  status: 'available' | 'occupied' | 'maintenance' | 'reserved' | 'cleaning';
-  cleaning_status: 'clean' | 'dirty' | 'in_progress' | 'inspected';
+  status: 'available' | 'occupied' | 'maintenance' | 'reserved' | 'dirty';
+  cleaning_status: 'clean' | 'dirty' | 'in_progress';
   price_override?: number;
   capacity: number;
   description?: string;
@@ -182,7 +189,7 @@ export interface MaintenanceRequest {
   category: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'reported' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
-  assigned_to?: User;
+  assigned_to?: Technician;
   estimated_cost?: number;
   actual_cost?: number;
   created_at?: string;
@@ -190,12 +197,17 @@ export interface MaintenanceRequest {
 
 export interface ActivityLog {
   id: number;
+  user_id?: number | null;
   user?: User;
   action: string;
   module: string;
   model_id?: number;
   model_type?: string;
   description?: string;
+  old_values?: Record<string, unknown> | null;
+  new_values?: Record<string, unknown> | null;
+  ip_address?: string;
+  user_agent?: string;
   created_at: string;
 }
 
@@ -205,6 +217,8 @@ export interface Expense {
   amount: number;
   description?: string;
   date: string;
+  receipt?: string;
+  receipt_url?: string | null;
   created_by: number;
   created_by_user?: { id: number; name: string };
 }

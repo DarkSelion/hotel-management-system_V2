@@ -4,7 +4,7 @@ import { api, downloadFile } from '@/lib/api'
 import type {
   DashboardStats, RevenueData, BookingSourceData, OccupancyData, RoomTypeData,
   Reservation, PaginatedResponse, Guest, GuestHistory, Room, RoomImage, RoomType,
-  Payment, Invoice, HousekeepingTask, MaintenanceRequest,
+  Payment, Invoice, HousekeepingTask, MaintenanceRequest, Technician,
   Expense, ExpenseSummary, User, Role, ActivityLog, ApiResponse, StaffSchedule, LeaveRequest, ContactMessage,
 } from '@/types'
 
@@ -653,6 +653,46 @@ export function useAssignMaintenanceRequest() {
   })
 }
 
+// ── Technicians ─────────────────────────────────────────
+
+export function useTechnicians() {
+  return useQuery({
+    queryKey: ['technicians'],
+    queryFn: () => api.get<Technician[]>('/technicians'),
+  })
+}
+
+export function useCreateTechnician() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) => api.post<ApiResponse<Technician>>('/technicians', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['technicians'] })
+    },
+  })
+}
+
+export function useUpdateTechnician() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) =>
+      api.put<ApiResponse<Technician>>(`/technicians/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['technicians'] })
+    },
+  })
+}
+
+export function useDeleteTechnician() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/technicians/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['technicians'] })
+    },
+  })
+}
+
 // ── Expenses ───────────────────────────────────────────
 
 export function useExpenses(params?: Record<string, string | number | undefined>) {
@@ -674,7 +714,7 @@ export function useExpensesSummary(params?: Record<string, string | number | und
 export function useCreateExpense() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: unknown) => api.post<ApiResponse<Expense>>('/expenses', data),
+    mutationFn: (data: unknown) => api.post<Expense>('/expenses', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
@@ -703,12 +743,36 @@ export function useDeleteExpense() {
   })
 }
 
+export function useUploadExpenseReceipt() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) => {
+      const formData = new FormData()
+      formData.append('receipt', file)
+      return api.upload<ApiResponse<Expense>>(`/expenses/${id}/receipt`, formData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    },
+  })
+}
+
+export function useDeleteExpenseReceipt() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete<ApiResponse<Expense>>(`/expenses/${id}/receipt`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+    },
+  })
+}
+
 // ── Staff ──────────────────────────────────────────────
 
 export function useStaffList() {
   return useQuery({
     queryKey: ['staff'],
-    queryFn: () => api.get<PaginatedResponse<User>>('/staff'),
+    queryFn: () => api.get<PaginatedResponse<User>>('/staff?per_page=100'),
   })
 }
 

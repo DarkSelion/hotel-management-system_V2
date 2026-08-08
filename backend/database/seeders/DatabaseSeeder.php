@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             ReservationSeeder::class,
             PaymentSeeder::class,
             HousekeepingSeeder::class,
+            TechnicianSeeder::class,
             MaintenanceSeeder::class,
             ActivityLogSeeder::class,
             RoomImageSeeder::class,

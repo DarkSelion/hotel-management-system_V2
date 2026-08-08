@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import {
   useMaintenanceRequests, useCreateMaintenanceRequest, useUpdateMaintenanceStatus,
-  useAssignMaintenanceRequest, useStaffAssignable, useRooms,
+  useAssignMaintenanceRequest, useTechnicians, useCreateTechnician, useUpdateTechnician,
+  useDeleteTechnician, useRooms,
 } from '@/hooks/useApi'
-import type { MaintenanceRequest } from '@/types'
+import type { MaintenanceRequest, Technician } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
@@ -18,7 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/toast'
 import { useAuthStore } from '@/stores/authStore'
 import { isAdminRole } from '@/lib/permissions'
-import { Plus, Search, Eye, Image, Clock, DollarSign, User } from 'lucide-react'
+import { Plus, Search, Eye, Image, Clock, DollarSign, User, Users, Trash2, Edit } from 'lucide-react'
 
 const CATEGORY_OPTIONS = [
   { value: 'Plumbing', label: 'Plumbing' },
@@ -67,7 +68,6 @@ export default function MaintenancePage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [sortBy, setSortBy] = useState('')
 
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
@@ -89,25 +89,32 @@ export default function MaintenancePage() {
   const [assignStaffId, setAssignStaffId] = useState('')
   const [estimatedCost, setEstimatedCost] = useState('')
 
+  const [showManageTechnicians, setShowManageTechnicians] = useState(false)
+  const [technicianForm, setTechnicianForm] = useState({ name: '', phone: '', specialty: '' })
+  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null)
+  const [technicianFormErrors, setTechnicianFormErrors] = useState<Record<string, string>>({})
+
   const params: Record<string, string | number | undefined> = {
     search: search || undefined,
     status: statusFilter || undefined,
     priority: priorityFilter || undefined,
     category: categoryFilter || undefined,
-    sort: sortBy || undefined,
   }
 
   const { data: requestsData, isLoading, error, refetch } = useMaintenanceRequests(params)
-  const { data: staffData } = useStaffAssignable()
+  const { data: techniciansData } = useTechnicians()
   const { data: roomsData } = useRooms({ all: 'true' })
 
   const createRequest = useCreateMaintenanceRequest()
   const updateStatus = useUpdateMaintenanceStatus()
   const assignRequest = useAssignMaintenanceRequest()
+  const createTechnician = useCreateTechnician()
+  const updateTechnician = useUpdateTechnician()
+  const deleteTechnician = useDeleteTechnician()
   const { addToast } = useToast()
 
   const requests = requestsData?.data ?? []
-  const staff = staffData ?? []
+  const technicians = techniciansData ?? []
   const rooms = roomsData?.data ?? []
 
   function openNewModal() {
@@ -157,23 +164,89 @@ export default function MaintenancePage() {
     updateStatus.mutate({ id: requestId, status })
   }
 
+  function openManageTechnicians() {
+    setEditingTechnician(null)
+    setTechnicianForm({ name: '', phone: '', specialty: '' })
+    setTechnicianFormErrors({})
+    setShowManageTechnicians(true)
+  }
+
+  function startEditTechnician(t: Technician) {
+    setEditingTechnician(t)
+    setTechnicianForm({ name: t.name, phone: t.phone ?? '', specialty: t.specialty ?? '' })
+    setTechnicianFormErrors({})
+  }
+
+  function handleTechnicianSave() {
+    const errors: Record<string, string> = {}
+    if (!technicianForm.name.trim()) errors.name = 'Name is required'
+    setTechnicianFormErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
+    const payload = {
+      name: technicianForm.name.trim(),
+      phone: technicianForm.phone.trim() || null,
+      specialty: technicianForm.specialty.trim() || null,
+    }
+
+    const onError = (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Failed to save technician.'
+      addToast(message, 'error')
+    }
+
+    if (editingTechnician) {
+      updateTechnician.mutate({ id: editingTechnician.id, data: payload }, {
+        onSuccess: () => {
+          addToast('Technician updated.', 'success')
+          setEditingTechnician(null)
+          setTechnicianForm({ name: '', phone: '', specialty: '' })
+        },
+        onError,
+      })
+    } else {
+      createTechnician.mutate(payload, {
+        onSuccess: () => {
+          addToast('Technician added.', 'success')
+          setTechnicianForm({ name: '', phone: '', specialty: '' })
+        },
+        onError,
+      })
+    }
+  }
+
+  function handleTechnicianToggleActive(t: Technician) {
+    updateTechnician.mutate({ id: t.id, data: { is_active: !t.is_active } }, {
+      onError: (err) => {
+        const message = err instanceof Error ? err.message : 'Failed to update technician.'
+        addToast(message, 'error')
+      },
+    })
+  }
+
+  function handleDeleteTechnician(t: Technician) {
+    deleteTechnician.mutate(t.id, {
+      onSuccess: () => addToast('Technician deleted.', 'success'),
+      onError: (err) => {
+        const message = err instanceof Error ? err.message : 'Failed to delete technician.'
+        addToast(message, 'error')
+      },
+    })
+  }
+
   const columns: Column<MaintenanceRequest>[] = [
     {
       key: 'id',
       label: 'ID',
-      sortable: true,
       render: (r) => <span className="font-mono text-xs text-muted">#{r.id}</span>,
     },
     {
       key: 'room',
       label: 'Room #',
-      sortable: true,
       render: (r) => <span className="font-semibold">{r.room.room_number}</span>,
     },
     {
       key: 'title',
       label: 'Title',
-      sortable: true,
       render: (r) => (
         <button onClick={() => openDetailModal(r)} className="text-left text-primary hover:underline">
           {r.title}
@@ -192,13 +265,11 @@ export default function MaintenancePage() {
     {
       key: 'priority',
       label: 'Priority',
-      sortable: true,
       render: (r) => <StatusBadge status={r.priority} />,
     },
     {
       key: 'status',
       label: 'Status',
-      sortable: true,
       render: (r) => <StatusBadge status={r.status} />,
     },
     {
@@ -211,7 +282,6 @@ export default function MaintenancePage() {
     {
       key: 'created_at',
       label: 'Reported Date',
-      sortable: true,
       render: (r) => <span className="text-muted">{r.created_at ? formatDateDisplay(r.created_at) : '-'}</span>,
     },
     {
@@ -269,10 +339,18 @@ export default function MaintenancePage() {
         title="Maintenance"
         description="Manage maintenance requests and work orders."
         actions={
-          <Button variant="gold" onClick={openNewModal}>
-            <Plus className="h-4 w-4" />
-            Report Issue
-          </Button>
+          <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={openManageTechnicians}>
+                <Users className="h-4 w-4" />
+                Manage Technicians
+              </Button>
+            )}
+            <Button variant="gold" onClick={openNewModal}>
+              <Plus className="h-4 w-4" />
+              Report Issue
+            </Button>
+          </div>
         }
       />
 
@@ -310,8 +388,6 @@ export default function MaintenancePage() {
             data={requests}
             loading={isLoading}
             error={error ? (error as Error).message : null}
-            sortBy={sortBy}
-            onSort={setSortBy}
             onRetry={() => refetch()}
             keyExtractor={(r) => r.id}
           />
@@ -415,12 +491,12 @@ export default function MaintenancePage() {
           </p>
           <Select
             label="Technician"
-            placeholder="Select staff"
+            placeholder="Select technician"
             value={assignStaffId}
             onChange={(e) => setAssignStaffId(e.target.value)}
           >
-            {staff.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
+            {technicians.filter(t => t.is_active).map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </Select>
           <Input
@@ -575,6 +651,90 @@ export default function MaintenancePage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={showManageTechnicians}
+        onClose={() => setShowManageTechnicians(false)}
+        title="Manage Technicians"
+        size="xl"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setShowManageTechnicians(false)}>
+              Close
+            </Button>
+            <Button variant="gold" onClick={handleTechnicianSave}>
+              {editingTechnician ? 'Update' : 'Add'} Technician
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          <div className="rounded-lg border border-border p-4">
+            <h4 className="mb-3 text-sm font-semibold text-foreground">
+              {editingTechnician ? `Edit ${editingTechnician.name}` : 'Add New Technician'}
+            </h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Input
+                label="Name"
+                placeholder="e.g. Mario Santos"
+                value={technicianForm.name}
+                onChange={(e) => setTechnicianForm((f) => ({ ...f, name: e.target.value }))}
+                error={technicianFormErrors.name}
+              />
+              <Input
+                label="Phone"
+                placeholder="Optional"
+                value={technicianForm.phone}
+                onChange={(e) => setTechnicianForm((f) => ({ ...f, phone: e.target.value }))}
+              />
+              <Input
+                label="Specialty"
+                placeholder="e.g. HVAC / Electrical"
+                value={technicianForm.specialty}
+                onChange={(e) => setTechnicianForm((f) => ({ ...f, specialty: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border">
+            <div className="divide-y divide-border">
+              {technicians.length === 0 && (
+                <p className="p-4 text-sm text-muted">No technicians yet. Add one above.</p>
+              )}
+              {technicians.map((t) => (
+                <div key={t.id} className="flex items-center justify-between gap-3 p-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-medium text-foreground">{t.name}</p>
+                      {!t.is_active && (
+                        <Badge variant="default" size="sm">Inactive</Badge>
+                      )}
+                    </div>
+                    <p className="truncate text-xs text-muted">
+                      {[t.specialty, t.phone].filter(Boolean).join(' · ') || 'No contact details'}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button variant="outline" size="sm" onClick={() => startEditTechnician(t)}>
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant={t.is_active ? 'outline' : 'primary'}
+                      size="sm"
+                      onClick={() => handleTechnicianToggleActive(t)}
+                    >
+                      {t.is_active ? 'Deactivate' : 'Activate'}
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDeleteTechnician(t)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </Modal>
     </div>
   )

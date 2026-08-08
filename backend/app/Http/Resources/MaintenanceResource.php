@@ -17,7 +17,12 @@ class MaintenanceResource extends JsonResource
             'category' => $this->category,
             'priority' => $this->priority,
             'status' => $this->status,
-            'assigned_to' => new UserResource($this->whenLoaded('assignedTo')),
+            'assigned_to' => $this->whenLoaded('assignedTo', fn () => $this->assignedTo ? [
+                'id' => $this->assignedTo->id,
+                'name' => $this->assignedTo->name,
+                'phone' => $this->assignedTo->phone,
+                'specialty' => $this->assignedTo->specialty,
+            ] : null),
             'estimated_cost' => $this->estimated_cost,
             'actual_cost' => $this->actual_cost,
             'completed_at' => $this->completed_at,

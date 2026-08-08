@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\RoomTypeController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\TechnicianController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -81,10 +82,16 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
     // Assignable staff (for assignment dropdowns)
     Route::get('/staff/assignable', [StaffController::class, 'assignable']);
 
+    // Technicians (for maintenance assignments)
+    Route::get('/technicians', [TechnicianController::class, 'index']);
+
     // Admin-only routes
     Route::middleware('role:admin')->group(function () {
         // Guests (write operations)
         Route::delete('/guests/{guest}', [GuestController::class, 'destroy']);
+
+        // Housekeeping (write operations)
+        Route::delete('/housekeeping/{task}', [HousekeepingController::class, 'destroy']);
 
         // Overdue refresh (manual trigger for No Show review)
         Route::post('/reservations/refresh-overdue', [ReservationController::class, 'refreshOverdue']);
@@ -105,13 +112,20 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
         Route::apiResource('room-types', RoomTypeController::class);
 
         // Maintenance (write operations)
-        Route::put('/maintenance/{request}', [MaintenanceController::class, 'update']);
-        Route::delete('/maintenance/{request}', [MaintenanceController::class, 'destroy']);
-        Route::put('/maintenance/{request}/status', [MaintenanceController::class, 'updateStatus']);
-        Route::post('/maintenance/{request}/assign', [MaintenanceController::class, 'assign']);
+        Route::put('/maintenance/{maintenance}', [MaintenanceController::class, 'update']);
+        Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy']);
+        Route::put('/maintenance/{maintenance}/status', [MaintenanceController::class, 'updateStatus']);
+        Route::post('/maintenance/{maintenance}/assign', [MaintenanceController::class, 'assign']);
+
+        // Technicians (write operations)
+        Route::post('/technicians', [TechnicianController::class, 'store']);
+        Route::put('/technicians/{technician}', [TechnicianController::class, 'update']);
+        Route::delete('/technicians/{technician}', [TechnicianController::class, 'destroy']);
 
         // Expenses
         Route::get('/expenses/summary', [ExpenseController::class, 'summary']);
+        Route::post('/expenses/{expense}/receipt', [ExpenseController::class, 'uploadReceipt']);
+        Route::delete('/expenses/{expense}/receipt', [ExpenseController::class, 'deleteReceipt']);
         Route::apiResource('expenses', ExpenseController::class);
 
         // Staff

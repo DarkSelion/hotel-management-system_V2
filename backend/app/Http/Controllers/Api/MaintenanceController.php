@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\MaintenanceRequest;
+use App\Models\Room;
 use Illuminate\Http\Request;
 
 class MaintenanceController extends Controller
@@ -45,6 +46,10 @@ class MaintenanceController extends Controller
 
         $maintenance = MaintenanceRequest::create($data);
 
+        if ($maintenance->room && in_array($maintenance->room->status, ['available', 'reserved', 'dirty'])) {
+            $maintenance->room->update(['status' => 'maintenance']);
+        }
+
         ActivityLog::create([
             'user_id' => $request->user()->id,
             'action' => 'created',
@@ -72,7 +77,19 @@ class MaintenanceController extends Controller
             'priority' => 'sometimes|in:low,medium,high,urgent',
         ]);
 
+        $oldRoomId = $maintenance->room_id;
         $maintenance->update($data);
+
+        if (isset($data['room_id']) && $data['room_id'] !== $oldRoomId) {
+            $oldRoom = $oldRoomId ? \App\Models\Room::find($oldRoomId) : null;
+            if ($oldRoom) {
+                $this->freeRoomIfNoOpenRequests($maintenance, $oldRoom);
+            }
+
+            if ($maintenance->room && in_array($maintenance->room->status, ['available', 'reserved', 'dirty'])) {
+                $maintenance->room->update(['status' => 'maintenance']);
+            }
+        }
 
         ActivityLog::create([
             'user_id' => $request->user()->id,
@@ -94,6 +111,8 @@ class MaintenanceController extends Controller
 
         $title = $maintenance->title;
         $maintenance->delete();
+
+        $this->freeRoomIfNoOpenRequests($maintenance);
 
         ActivityLog::create([
             'user_id' => request()->user()->id,
@@ -120,6 +139,10 @@ class MaintenanceController extends Controller
 
         $maintenance->update($updates);
 
+        if (in_array($data['status'], ['completed', 'cancelled'])) {
+            $this->freeRoomIfNoOpenRequests($maintenance);
+        }
+
         ActivityLog::create([
             'user_id' => $request->user()->id,
             'action' => 'status_changed',
@@ -135,7 +158,7 @@ class MaintenanceController extends Controller
     public function assign(Request $request, MaintenanceRequest $maintenance)
     {
         $data = $request->validate([
-            'assigned_to' => 'required|exists:users,id',
+            'assigned_to' => 'required|exists:technicians,id',
         ]);
 
         $maintenance->update([
@@ -153,5 +176,23 @@ class MaintenanceController extends Controller
         ]);
 
         return response()->json($maintenance->load(['room', 'assignedTo']));
+    }
+
+    private function freeRoomIfNoOpenRequests(MaintenanceRequest $maintenance, ?Room $room = null): void
+    {
+        $room = $room ?? $maintenance->room;
+
+        if (! $room) {
+            return;
+        }
+
+        $hasOpen = MaintenanceRequest::where('room_id', $room->id)
+            ->where('id', '!=', $maintenance->id)
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->exists();
+
+        if (! $hasOpen) {
+            $room->reconcileStatus();
+        }
     }
 }
