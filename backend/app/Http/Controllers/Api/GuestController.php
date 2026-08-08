@@ -23,6 +23,10 @@ class GuestController extends Controller
             });
         }
 
+        if ($request->boolean('blacklisted')) {
+            $query->where('is_blacklisted', true);
+        }
+
         return response()->json(
             $query->withCount(['reservations' => function ($q) {
                 $q->whereIn('status', ['pending', 'confirmed', 'checked_in']);

@@ -34,7 +34,7 @@ class RoomController extends Controller
             $rooms = $query->orderBy('room_number')->get();
             $rooms->transform(fn($room) => new RoomResource($room));
 
-            return response()->json($rooms);
+            return response()->json(['data' => $rooms]);
         }
 
         $rooms = $query->orderBy('room_number')->paginate($request->per_page ?? 10);

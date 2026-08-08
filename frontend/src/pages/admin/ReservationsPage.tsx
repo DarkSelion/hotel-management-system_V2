@@ -1,13 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  useReservations, useCancelReservation, useMarkNoShow, useRefreshOverdue, useExtendStay,
+  useReservations, useCancelReservation, useMarkNoShow, useExtendStay,
 } from '@/hooks/useApi'
 import { useCheckInOutModal } from '@/hooks/useCheckInOutModal'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
-import { isAdminRole } from '@/lib/permissions'
-import { useAuthStore } from '@/stores/authStore'
-import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable, type Column } from '@/components/shared/DataTable'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -25,7 +22,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Select } from '@/components/ui/select'
 import type { Reservation } from '@/types'
 import {
-  Plus, RefreshCw, AlertTriangle,
+  Plus, AlertTriangle,
 } from 'lucide-react'
 
 function formatDate(dateStr: string) {
@@ -82,10 +79,7 @@ export default function ReservationsPage() {
 
   const cancelReservation = useCancelReservation()
   const markNoShow = useMarkNoShow()
-  const refreshOverdue = useRefreshOverdue()
   const extendStay = useExtendStay()
-  const role = useAuthStore((s) => s.user?.role ?? '')
-  const isAdmin = isAdminRole(role)
 
   const reservations = reservationsData?.data ?? []
   const totalPages = reservationsData?.last_page ?? 1
@@ -278,17 +272,6 @@ export default function ReservationsPage() {
         description="Manage hotel reservations"
         actions={
           <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Button
-                variant="outline"
-                onClick={() => refreshOverdue.mutate()}
-                disabled={refreshOverdue.isPending}
-                title="Re-run overdue detection for No Show review"
-              >
-                <RefreshCw className={cn('h-4 w-4', refreshOverdue.isPending && 'animate-spin')} />
-                Refresh Overdue
-              </Button>
-            )}
             <Button variant="primary" onClick={openNewForm}>
               <Plus className="h-4 w-4" />
               New Reservation

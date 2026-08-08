@@ -15,7 +15,6 @@ class StaffSchedule extends Model
         'date',
         'start_time',
         'end_time',
-        'department',
         'notes',
     ];
 

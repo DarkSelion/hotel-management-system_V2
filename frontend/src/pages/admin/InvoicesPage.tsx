@@ -86,9 +86,7 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
-  const [sortBy, setSortBy] = useState('-issued_date')
   const [page, setPage] = useState(1)
-
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceExtended | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showFormModal, setShowFormModal] = useState(false)
@@ -103,13 +101,13 @@ export default function InvoicesPage() {
   const [paymentReference, setPaymentReference] = useState('')
 
   const queryParams = useMemo(() => {
-    const params: Record<string, string | number | undefined> = { page, sort: sortBy }
+    const params: Record<string, string | number | undefined> = { page }
     if (search) params.search = search
     if (statusFilter) params.status = statusFilter
     if (dateFrom) params.date_from = dateFrom
     if (dateTo) params.date_to = dateTo
     return params
-  }, [page, sortBy, search, statusFilter, dateFrom, dateTo])
+  }, [page, search, statusFilter, dateFrom, dateTo])
 
   const { data: invoicesData, isLoading, error, refetch } = useInvoices(queryParams)
   const { data: invoiceDetailData, isLoading: detailLoading } = useInvoice(selectedInvoice?.id ?? 0)
@@ -164,10 +162,10 @@ export default function InvoicesPage() {
 
   function openEditForm(invoice: InvoiceExtended) {
     setEditingInvoice(invoice)
-    const itemsSubtotal = invoice.items.reduce((s, i) => s + i.total_price, 0)
+    const itemsSubtotal = (invoice.items ?? []).reduce((s, i) => s + i.total_price, 0)
     setForm({
       reservation_id: invoice.reservation_id ?? '',
-      items: invoice.items.map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price })),
+      items: (invoice.items ?? []).map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price })),
       tax_percent: itemsSubtotal > 0 ? Math.round((invoice.tax_amount / itemsSubtotal) * 1000) / 10 : 0,
       discount_percent: itemsSubtotal > 0 ? Math.round((invoice.discount_amount / itemsSubtotal) * 1000) / 10 : 0,
       issued_date: invoice.issued_date?.split('T')[0] ?? '',
@@ -302,10 +300,6 @@ export default function InvoicesPage() {
     setShowPaymentModal(true)
   }
 
-  function handleSort(key: string) {
-    setSortBy(prev => prev === key ? `-${key}` : prev === `-${key}` ? key : key)
-  }
-
   const isFormSubmitting = createInvoice.isPending || updateInvoice.isPending
   const getGuestName = (inv: InvoiceExtended) => {
     if (inv.guest) return `${inv.guest.first_name} ${inv.guest.last_name}`
@@ -317,7 +311,6 @@ export default function InvoicesPage() {
     {
       key: 'invoice_number',
       label: 'Invoice #',
-      sortable: true,
       className: 'font-medium',
       render: (r) => (
         <button onClick={() => openDetailModal(r)} className="text-primary hover:underline">
@@ -328,7 +321,6 @@ export default function InvoicesPage() {
     {
       key: 'guest',
       label: 'Guest',
-      sortable: true,
       render: (r) => <span>{getGuestName(r)}</span>,
     },
     {
@@ -339,25 +331,21 @@ export default function InvoicesPage() {
     {
       key: 'total_amount',
       label: 'Amount',
-      sortable: true,
       render: (r) => <span className="font-medium">{formatCurrency(r.total_amount)}</span>,
     },
     {
       key: 'status',
       label: 'Status',
-      sortable: true,
       render: (r) => <StatusBadge status={r.status} />,
     },
     {
       key: 'issued_date',
       label: 'Issued Date',
-      sortable: true,
       render: (r) => <span>{formatDate(r.issued_date)}</span>,
     },
     {
       key: 'due_date',
       label: 'Due Date',
-      sortable: true,
       render: (r) => <span>{formatDate(r.due_date)}</span>,
     },
     {
@@ -439,8 +427,6 @@ export default function InvoicesPage() {
             data={invoices}
             loading={isLoading}
             error={error ? 'Failed to load invoices' : null}
-            sortBy={sortBy}
-            onSort={handleSort}
             pagination={invoicesData ? {
               currentPage: page,
               lastPage: totalPages,

@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { usePublicMe, usePublicUpdateProfile, usePublicDeleteAccount } from '@/hooks/usePublicApi'
 import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { publicApi } from '@/lib/publicApi'
-import { Loader2, User, Trash2, CheckCircle, X, Calendar } from 'lucide-react'
+import { DatePicker } from '@/components/ui/date-picker'
+import { Loader2, User, Trash2, CheckCircle, X } from 'lucide-react'
 
 export default function PublicProfilePage() {
   const navigate = useNavigate()
@@ -154,10 +155,12 @@ export default function PublicProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label htmlFor="profile_dob" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Date of Birth</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none" />
-                      <input id="profile_dob" type="date" value={form.date_of_birth} onChange={(e) => update('date_of_birth', e.target.value)} className="input-public pl-10 [color-scheme:dark]" />
-                    </div>
+                    <DatePicker
+                      value={form.date_of_birth}
+                      onChange={(v) => update('date_of_birth', v)}
+                      max={new Date().toISOString().split('T')[0]}
+                      portal
+                    />
                   </div>
                   <div>
                     <label htmlFor="profile_gender" className="text-xs uppercase tracking-[0.15em] text-white/40 block mb-2">Gender</label>

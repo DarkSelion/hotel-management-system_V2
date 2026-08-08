@@ -73,7 +73,6 @@ export default function HousekeepingPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
-  const [sortBy, setSortBy] = useState('')
 
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
@@ -101,7 +100,6 @@ export default function HousekeepingPage() {
     status: statusFilter || undefined,
     priority: priorityFilter || undefined,
     date: dateFilter || undefined,
-    sort: sortBy || undefined,
   }
 
   const { data: tasksData, isLoading, error, refetch } = useHousekeepingTasks(params)
@@ -117,7 +115,7 @@ export default function HousekeepingPage() {
   const tasks = tasksData?.data ?? []
   const staff = staffData ?? []
   const rooms = roomsData?.data ?? []
-  const dirtyRooms = rooms.filter(r => r.cleaning_status !== 'clean' || r.status === 'cleaning' || r.status === 'occupied')
+  const dirtyRooms = rooms.filter(r => r.cleaning_status !== 'clean' || r.status === 'dirty')
 
   const isSaving = createTask.isPending || updateTask.isPending
 
@@ -150,7 +148,10 @@ export default function HousekeepingPage() {
     if (taskForm.room_id) payload.room_id = Number(taskForm.room_id)
     if (taskForm.assigned_to) payload.assigned_to = Number(taskForm.assigned_to)
     if (taskForm.notes) payload.notes = taskForm.notes
-    createTask.mutate(payload, { onSuccess: () => setShowNewTaskModal(false) })
+    createTask.mutate(payload, {
+      onSuccess: () => setShowNewTaskModal(false),
+      onError: () => addToast('Failed to create task', 'error'),
+    })
   }
 
   function handleAssignStaff() {
@@ -162,7 +163,9 @@ export default function HousekeepingPage() {
   }
 
   function handleQuickAction(taskId: number, status: string) {
-    updateStatus.mutate({ id: taskId, status })
+    updateStatus.mutate({ id: taskId, status }, {
+      onError: () => addToast('Failed to update task', 'error'),
+    })
   }
 
   function openEditModal(task: HousekeepingTask) {
@@ -215,7 +218,6 @@ export default function HousekeepingPage() {
     {
       key: 'room_number',
       label: 'Room #',
-      sortable: true,
       render: (t) => <span className="font-semibold">{t.room ? t.room.room_number : '—'}</span>,
     },
     {
@@ -226,7 +228,6 @@ export default function HousekeepingPage() {
     {
       key: 'priority',
       label: 'Priority',
-      sortable: true,
       render: (t) => <StatusBadge status={t.priority} />,
     },
     {
@@ -239,7 +240,6 @@ export default function HousekeepingPage() {
     {
       key: 'scheduled_date',
       label: 'Scheduled Date',
-      sortable: true,
       render: (t) => {
         const d = t.scheduled_date ? formatDateDisplay(t.scheduled_date) : '—'
         return <span>{d}</span>
@@ -248,7 +248,6 @@ export default function HousekeepingPage() {
     {
       key: 'status',
       label: 'Status',
-      sortable: true,
       render: (t) => <StatusBadge status={t.status} />,
     },
     {
@@ -491,8 +490,6 @@ export default function HousekeepingPage() {
               data={tasks}
               loading={isLoading}
               error={error ? (error as Error).message : null}
-              sortBy={sortBy}
-              onSort={setSortBy}
               onRetry={() => refetch()}
               keyExtractor={(t) => t.id}
             />

@@ -12,6 +12,15 @@ class ActivityLogController extends Controller
     {
         $query = ActivityLog::with('user');
 
+        if ($search = $request->search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         if ($module = $request->module) {
             $query->where('module', $module);
         }
@@ -22,6 +31,14 @@ class ActivityLogController extends Controller
 
         if ($userId = $request->user_id) {
             $query->where('user_id', $userId);
+        }
+
+        if ($scope = $request->scope) {
+            if ($scope === 'staff') {
+                $query->whereNotNull('user_id');
+            } elseif ($scope === 'guest') {
+                $query->whereNull('user_id');
+            }
         }
 
         return response()->json(

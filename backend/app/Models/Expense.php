@@ -30,12 +30,21 @@ class Expense extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    protected $appends = ['created_by_user'];
+    protected $appends = ['created_by_user', 'receipt_url'];
 
     public function getCreatedByUserAttribute()
     {
         $creator = $this->createdBy;
 
         return $creator ? $creator->only(['id', 'name']) : null;
+    }
+
+    public function getReceiptUrlAttribute()
+    {
+        if (empty($this->receipt)) {
+            return null;
+        }
+
+        return url('storage/' . ltrim($this->receipt, '/'));
     }
 }

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { usePublicReservations, usePublicCancelReservation, usePublicCreatePayment, useHotelName, usePaymentSettings } from '@/hooks/usePublicApi'
 import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
-import type { PortalReservation } from '@/types'
+import type { PublicReservation } from '@/types'
 import {
   Calendar, MapPin, XCircle, Loader2, AlertTriangle, X,
   Clock, CheckCircle, RotateCcw, BedDouble, Users,
@@ -11,18 +11,18 @@ import {
 } from 'lucide-react'
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: any }> = {
-  pending: { bg: 'bg-yellow-500/10', text: 'text-yellow-400', icon: Clock },
-  confirmed: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', icon: CheckCircle },
-  checked_in: { bg: 'bg-sky-500/10', text: 'text-sky-400', icon: LogIn },
-  checked_out: { bg: 'bg-white/5', text: 'text-white/40', icon: LogOut },
+  pending: { bg: 'bg-yellow-500/10', text: 'text-yellow-600', icon: Clock },
+  confirmed: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', icon: CheckCircle },
+  checked_in: { bg: 'bg-sky-500/10', text: 'text-sky-600', icon: LogIn },
+  checked_out: { bg: 'bg-gray-100', text: 'text-gray-500', icon: LogOut },
   cancelled: { bg: 'bg-danger/10', text: 'text-danger', icon: XCircle },
 }
 
 const PAYMENT_STYLES: Record<string, { bg: string; text: string; border: string; icon: any }> = {
   unpaid: { bg: 'bg-danger/10', text: 'text-danger', border: 'border-danger/20', icon: AlertTriangle },
-  partial: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-400/20', icon: Clock },
-  paid: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-400/20', icon: CheckCircle },
-  refunded: { bg: 'bg-white/5', text: 'text-white/40', border: 'border-white/10', icon: RotateCcw },
+  partial: { bg: 'bg-amber-500/10', text: 'text-amber-600', border: 'border-amber-400/20', icon: Clock },
+  paid: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', border: 'border-emerald-400/20', icon: CheckCircle },
+  refunded: { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-200', icon: RotateCcw },
 }
 
 const THUMB_SRC: Record<string, string> = {
@@ -49,7 +49,7 @@ export default function PublicMyReservationsPage() {
   const gcashAccount = (paymentSettings['gcash_account'] as string) || ''
   const gcashQrImage = (paymentSettings['gcash_qr_image'] as string) || ''
   const [cancelId, setCancelId] = useState<number | null>(null)
-  const [paymentModal, setPaymentModal] = useState<PortalReservation | null>(null)
+  const [paymentModal, setPaymentModal] = useState<PublicReservation | null>(null)
   const [gcashRefNumber, setGcashRefNumber] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -89,23 +89,24 @@ export default function PublicMyReservationsPage() {
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <section className="bg-cream py-16 px-4">
+        <div className="max-w-5xl mx-auto">
         {isLoading ? (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-gold border-t-transparent" />
           </div>
         ) : reservations.length === 0 ? (
-          <div className="card-dark max-w-lg mx-auto p-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-5">
-              <CalendarX className="h-7 w-7 text-white/20" />
+          <div className="bg-[#e8e6e1] border border-gray-300 shadow-sm rounded-2xl max-w-lg mx-auto p-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-dark/5 flex items-center justify-center mx-auto mb-5">
+              <CalendarX className="h-7 w-7 text-gold" />
             </div>
-            <p className="text-white/40 text-lg mb-2 font-light">No upcoming stays yet</p>
-            <p className="text-white/20 text-sm mb-6">Browse our rooms and book your cozy escape in Pampanga.</p>
+            <p className="text-dark text-lg mb-2 font-light">No upcoming stays yet</p>
+            <p className="text-dark/40 text-sm mb-6">Browse our rooms and book your cozy escape in Pampanga.</p>
             <Link to="/public/rooms" className="btn-gold inline-block">Browse Rooms</Link>
           </div>
         ) : (
           <div className="space-y-4 sm:space-y-6">
-            {reservations.map((r: PortalReservation) => {
+            {reservations.map((r: PublicReservation) => {
               const sStyle = STATUS_STYLES[r.status] || STATUS_STYLES.pending
               const StatusIcon = sStyle.icon
               const pStyle = PAYMENT_STYLES[r.payment_status] || PAYMENT_STYLES.unpaid
@@ -114,17 +115,17 @@ export default function PublicMyReservationsPage() {
               return (
                 <div
                   key={r.id}
-                  className="bg-neutral-600 border border-gold/30 rounded-2xl overflow-hidden shadow-sm shadow-black/30 group hover:border-gold/40 hover:shadow-lg hover:shadow-gold/15 transition-all duration-300"
+                  className="bg-[#e8e6e1] border border-gray-300 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-gold/30 group transition-all duration-300"
                 >
                   {/* Gold accent bar */}
                   <div className="h-0.5 w-full bg-gradient-to-r from-gold/60 via-gold/20 to-transparent" />
 
                   {/* Header: ref number + status */}
-                  <div className="px-6 sm:px-8 pt-5 pb-4 border-b border-white/5">
+                  <div className="px-6 sm:px-8 pt-5 pb-4 border-b border-gray-100">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/25">Reference</p>
-                        <p className="text-base font-mono tracking-wider text-white">{r.reservation_number}</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-dark/30">Reference</p>
+                        <p className="text-base font-mono tracking-wider text-dark">{r.reservation_number}</p>
                       </div>
                       <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider ${sStyle.bg} ${sStyle.text}`}>
                         <StatusIcon className="h-3.5 w-3.5" />
@@ -136,7 +137,7 @@ export default function PublicMyReservationsPage() {
                   {/* Body: room thumbnail + info + dates */}
                     <div className="px-6 sm:px-8 py-5 pb-4">
                     <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-dark border border-white/5">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-dark/5 border border-gray-100">
                         <img
                           src={getThumbUrl(r.room?.room_type?.name ?? '')}
                           alt={r.room?.room_type?.name}
@@ -144,38 +145,38 @@ export default function PublicMyReservationsPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-serif text-lg font-light text-white">{r.room?.room_type?.name}</h3>
-                        <p className="text-sm text-white/40 mt-0.5">
-                          <MapPin className="h-3 w-3 inline mr-1 text-gold/40" />
+                        <h3 className="font-serif text-lg font-light text-dark">{r.room?.room_type?.name}</h3>
+                        <p className="text-sm text-dark/50 mt-0.5">
+                          <MapPin className="h-3 w-3 inline mr-1 text-gold/60" />
                           Room {r.room?.room_number} · Floor {r.room?.floor}
                         </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-white/30">
+                        <div className="flex items-center gap-4 mt-2 text-xs text-dark/40">
                           <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3 text-white/15" />
+                            <Users className="h-3 w-3 text-dark/20" />
                             {r.adults} adult{r.adults > 1 ? 's' : ''}{r.children > 0 ? `, ${r.children} child${r.children > 1 ? 'ren' : ''}` : ''}
                           </span>
                           <span className="flex items-center gap-1">
-                            <BedDouble className="h-3 w-3 text-white/15" />
+                            <BedDouble className="h-3 w-3 text-dark/20" />
                             {r.room?.room_type?.bed_type ?? 'Standard'}
                           </span>
                         </div>
                       </div>
-                      <div className="hidden sm:flex items-center gap-2 text-sm text-white/40 shrink-0">
-                        <Calendar className="h-4 w-4 text-gold/40" />
+                      <div className="hidden sm:flex items-center gap-2 text-sm text-dark/50 shrink-0">
+                        <Calendar className="h-4 w-4 text-gold/60" />
                         <span className="whitespace-nowrap">{formatDateDisplay(r.check_in)} — {formatDateDisplay(r.check_out)}</span>
                       </div>
                     </div>
-                    <div className="sm:hidden mt-3 flex items-center gap-2 text-sm text-white/40">
-                      <Calendar className="h-4 w-4 text-gold/40" />
+                    <div className="sm:hidden mt-3 flex items-center gap-2 text-sm text-dark/50">
+                      <Calendar className="h-4 w-4 text-gold/60" />
                       <span>{formatDateDisplay(r.check_in)} — {formatDateDisplay(r.check_out)}</span>
                     </div>
                   </div>
 
                   {/* Footer: pricing + actions */}
-                  <div className="px-6 sm:px-8 py-5 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="px-6 sm:px-8 py-5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <p className="text-xs text-white/25 uppercase tracking-wider">Total</p>
-                      <p className="text-2xl font-semibold text-gold">{formatCurrency(r.total_amount)}</p>
+                      <p className="text-xs text-dark/30 uppercase tracking-wider">Total</p>
+                      <p className="text-2xl font-semibold text-gold-dark">{formatCurrency(r.total_amount)}</p>
                       <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${pStyle.bg} ${pStyle.text} ${pStyle.border}`}>
                         <PayIcon className="h-3 w-3" />
                         {r.payment_status.replace('_', ' ')}
@@ -195,7 +196,7 @@ export default function PublicMyReservationsPage() {
                             Pay Now
                           </button>
                         ) : (
-                          <span className="px-4 py-2 rounded-lg text-xs text-white/30 border border-white/10 cursor-not-allowed">
+                          <span className="px-3 py-1.5 rounded-lg text-xs bg-amber-100 border border-amber-600/60 text-amber-800 cursor-not-allowed">
                             Online Payment Unavailable
                           </span>
                         )
@@ -203,7 +204,7 @@ export default function PublicMyReservationsPage() {
                       {(r.status === 'pending' || r.status === 'confirmed') && (
                         <button
                           onClick={() => setCancelId(r.id)}
-                          className="px-4 py-2 border border-danger/20 text-danger/70 rounded-lg text-xs uppercase tracking-wider hover:bg-danger/5 hover:border-danger/40 hover:text-danger transition-all flex items-center gap-1.5"
+                          className="px-4 py-2 border border-danger/30 text-danger rounded-lg text-xs uppercase tracking-wider hover:bg-danger/5 hover:border-danger/60 transition-all flex items-center gap-1.5"
                         >
                           <XCircle className="h-3.5 w-3.5" />
                           Cancel
@@ -216,7 +217,8 @@ export default function PublicMyReservationsPage() {
             })}
           </div>
         )}
-      </div>
+        </div>
+      </section>
 
       {/* Cancel Confirmation Modal */}
       {cancelId !== null && (
@@ -285,16 +287,16 @@ export default function PublicMyReservationsPage() {
 
               <div className="border-t border-white/5 pt-4">
                 <div className="space-y-4">
-                  <div className="bg-white/[0.03] border border-dashed border-white/10 rounded-xl p-6 text-center">
-                    <div className="w-20 h-20 mx-auto mb-3 bg-white/5 rounded-xl flex items-center justify-center border border-white/5 overflow-hidden">
+                  <div className="bg-white/[0.03] border border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
+                    <div className="w-48 h-48 rounded-lg overflow-hidden flex items-center justify-center bg-white p-2 mx-auto">
                       {gcashQrImage ? (
-                        <img src={gcashQrImage} alt="GCash QR Code" className="w-full h-full object-contain p-1" />
+                        <img src={gcashQrImage} alt="GCash QR Code" className="w-full h-full object-contain" />
                       ) : (
-                        <QrCode className="h-10 w-10 text-gold/40" />
+                        <QrCode className="h-12 w-12 text-zinc-400" />
                       )}
                     </div>
-                    <p className="text-sm text-white/60">Scan the QR code below to pay via GCash</p>
-                    <p className="text-[11px] text-white/30 mt-1">Send the exact amount and enter the reference number</p>
+                    <p className="text-sm text-white/60">Scan the QR code to pay via GCash</p>
+                    <p className="text-[11px] text-white/30">Send the exact amount and enter the reference number below</p>
                   </div>
                   <div className="flex items-center justify-between bg-white/[0.03] border border-white/5 rounded-lg px-4 py-3">
                     <div>

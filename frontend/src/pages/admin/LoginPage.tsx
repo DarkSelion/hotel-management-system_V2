@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useLogin } from '@/hooks/useApi'
 import { useAuthStore } from '@/stores/authStore'
+import { useHotelName } from '@/hooks/usePublicApi'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email'),
@@ -22,6 +23,7 @@ export function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth)
   const loginMutation = useLogin()
   const [showPassword, setShowPassword] = useState(false)
+  const hotelName = useHotelName()
 
   const {
     register,
@@ -62,7 +64,7 @@ export function LoginPage() {
             <Hotel className="h-8 w-8 text-gold" />
           </div>
           <h1 className="mb-2 text-4xl font-bold tracking-tight text-white">
-            Pampanga Home Suites
+            {hotelName}
           </h1>
           <p className="text-lg text-white/80">
             Admin Dashboard
@@ -83,7 +85,7 @@ export function LoginPage() {
               <Hotel className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-primary">
-              Pampanga Home Suites
+              {hotelName}
             </h1>
           </div>
 

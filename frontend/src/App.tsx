@@ -14,6 +14,7 @@ const CheckInPage = lazy(() => import('./pages/admin/CheckInPage'))
 const CheckOutPage = lazy(() => import('./pages/admin/CheckOutPage'))
 const GuestsPage = lazy(() => import('./pages/admin/GuestsPage'))
 const RoomsPage = lazy(() => import('./pages/admin/RoomsPage'))
+const RoomListPage = lazy(() => import('./pages/admin/RoomListPage'))
 const HousekeepingPage = lazy(() => import('./pages/admin/HousekeepingPage'))
 const MaintenancePage = lazy(() => import('./pages/admin/MaintenancePage'))
 const StaffPage = lazy(() => import('./pages/admin/StaffPage'))
@@ -23,6 +24,7 @@ const ExpensesPage = lazy(() => import('./pages/admin/ExpensesPage'))
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'))
 const InquiriesPage = lazy(() => import('./pages/admin/InquiriesPage'))
+const ActivityLogsPage = lazy(() => import('./pages/admin/ActivityLogsPage'))
 const ProfilePage = lazy(() => import('./pages/admin/ProfilePage'))
 const RoomTypesPage = lazy(() => import('./pages/admin/RoomTypesPage'))
 const AmenitiesPage = lazy(() => import('./pages/admin/AmenitiesPage'))
@@ -97,7 +99,7 @@ export default function App() {
           <Route path="check-out" element={<Suspense fallback={<PageLoader />}><CheckOutPage /></Suspense>} />
           <Route path="guests" element={<Suspense fallback={<PageLoader />}><GuestsPage /></Suspense>} />
           <Route path="rooms" element={<Suspense fallback={<PageLoader />}><RoomsPage /></Suspense>} />
-          <Route path="room-list" element={<Suspense fallback={<PageLoader />}><RoomsPage /></Suspense>} />
+          <Route path="room-list" element={<Suspense fallback={<PageLoader />}><RoomListPage /></Suspense>} />
           <Route path="room-types" element={<RequireRole><Suspense fallback={<PageLoader />}><RoomTypesPage /></Suspense></RequireRole>} />
           <Route path="amenities" element={<RequireRole><Suspense fallback={<PageLoader />}><AmenitiesPage /></Suspense></RequireRole>} />
           <Route path="room-images" element={<RequireRole><Suspense fallback={<PageLoader />}><RoomImagesPage /></Suspense></RequireRole>} />
@@ -109,6 +111,7 @@ export default function App() {
           <Route path="expenses" element={<RequireRole><Suspense fallback={<PageLoader />}><ExpensesPage /></Suspense></RequireRole>} />
           <Route path="reports" element={<RequireRole><Suspense fallback={<PageLoader />}><ReportsPage /></Suspense></RequireRole>} />
           <Route path="inquiries" element={<RequireRole><Suspense fallback={<PageLoader />}><InquiriesPage /></Suspense></RequireRole>} />
+          <Route path="activity-logs" element={<RequireRole><Suspense fallback={<PageLoader />}><ActivityLogsPage /></Suspense></RequireRole>} />
           <Route path="settings" element={<RequireRole><Suspense fallback={<PageLoader />}><SettingsPage /></Suspense></RequireRole>} />
           <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
         </Route>

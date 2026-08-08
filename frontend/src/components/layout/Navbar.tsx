@@ -26,23 +26,23 @@ function getActivityRoute(activity: ActivityLog): string {
   const { module, action } = activity
 
   if (module === 'reservations') {
-    if (action === 'checked_in') return '/check-in'
-    if (action === 'checked_out') return '/check-out'
-    return '/reservations'
+    if (action === 'checked_in') return '/admin/check-in'
+    if (action === 'checked_out') return '/admin/check-out'
+    return '/admin/reservations'
   }
 
   const moduleRoutes: Record<string, string> = {
-    guests: '/guests',
-    payments: '/payments',
-    invoices: '/invoices',
-    housekeeping: '/housekeeping',
-    maintenance: '/maintenance',
-    expenses: '/expenses',
-    staff: '/staff',
-    room_list: '/room-list',
-    rooms: '/rooms',
-    auth: '/settings',
-    settings: '/settings',
+    guests: '/admin/guests',
+    payments: '/admin/payments',
+    invoices: '/admin/invoices',
+    housekeeping: '/admin/housekeeping',
+    maintenance: '/admin/maintenance',
+    expenses: '/admin/expenses',
+    staff: '/admin/staff',
+    room_list: '/admin/room-list',
+    rooms: '/admin/rooms',
+    auth: '/admin/settings',
+    settings: '/admin/settings',
   }
 
   return moduleRoutes[module] ?? '/admin/dashboard'

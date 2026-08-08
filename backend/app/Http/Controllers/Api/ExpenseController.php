@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Expense;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
@@ -120,6 +121,40 @@ class ExpenseController extends Controller
         ]);
 
         return response()->json($expense, 201);
+    }
+
+    public function uploadReceipt(Request $request, Expense $expense)
+    {
+        $request->validate([
+            'receipt' => 'required|file|mimes:jpeg,jpg,png,pdf|max:4096',
+        ]);
+
+        if ($expense->receipt) {
+            Storage::disk('public')->delete($expense->receipt);
+        }
+
+        $path = $request->file('receipt')->store('receipts', 'public');
+        $expense->update(['receipt' => $path]);
+
+        return response()->json([
+            'message' => 'Receipt uploaded successfully.',
+            'receipt' => $path,
+            'receipt_url' => $expense->receipt_url,
+        ]);
+    }
+
+    public function deleteReceipt(Expense $expense)
+    {
+        if ($expense->receipt) {
+            Storage::disk('public')->delete($expense->receipt);
+            $expense->update(['receipt' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Receipt removed successfully.',
+            'receipt' => null,
+            'receipt_url' => null,
+        ]);
     }
 
     public function show(Expense $expense)

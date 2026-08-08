@@ -19,6 +19,7 @@ import {
   Mail,
   ImageIcon,
   CreditCard,
+  History,
 } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '../../lib/utils'
@@ -26,6 +27,7 @@ import { Tooltip } from '../ui/tooltip'
 import { useUIStore } from '../../stores/uiStore'
 import { useAuthStore } from '../../stores/authStore'
 import { isAdminRole } from '../../lib/permissions'
+import { useHotelName } from '../../hooks/usePublicApi'
 
 interface SidebarProps {
   collapsed: boolean
@@ -50,6 +52,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { user } = useAuthStore()
   const { pathname } = useLocation()
   const role = user?.role ?? 'staff'
+  const hotelName = useHotelName()
 
   const sidebarSections: SidebarSection[] = [
     {
@@ -88,6 +91,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       items: [
         { label: 'Reports', icon: <BarChart3 size={20} />, path: '/admin/reports', adminOnly: true },
         { label: 'Inquiries', icon: <Mail size={20} />, path: '/admin/inquiries', adminOnly: true },
+        { label: 'Activity Logs', icon: <History size={20} />, path: '/admin/activity-logs', adminOnly: true },
       ],
     },
     {
@@ -136,9 +140,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   : 'hover:translate-x-1 hover:bg-[var(--color-sidebar-hover-bg)]',
                 isChildActive
                   ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--color-primary)] rounded-l-none [&_svg]:text-[var(--color-sidebar-active-text)]'
-                  : !collapsed && isOpen
-                    ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-active-text)]'
-                    : 'text-[var(--color-sidebar-text)] hover:text-[var(--color-sidebar-active-text)]',
+                  : 'text-[var(--color-sidebar-text)] hover:text-[var(--color-sidebar-active-text)]',
               )}
               aria-expanded={!collapsed && isOpen}
               aria-label={item.label}
@@ -228,7 +230,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {!collapsed && (
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-bold text-[var(--color-sidebar-active-text)]">
-              Pampanga Home Suites
+              {hotelName}
             </span>
             <span className="text-xs text-[var(--color-sidebar-muted)]">Hotel Management System</span>
           </div>
@@ -237,17 +239,18 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3">
-        {sidebarSections.map((section) => (
-          <div key={section.label} className="mb-4">
-            {/* Section Label */}
-            {!collapsed && (
-              <h3 className="px-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-sidebar-muted)]">
-                {section.label}
-              </h3>
-            )}
-            {section.items
-              .filter((item) => !item.adminOnly || isAdminRole(role))
-              .map((item) => (
+        {sidebarSections.map((section) => {
+          const visibleItems = section.items.filter((item) => !item.adminOnly || isAdminRole(role))
+          if (visibleItems.length === 0) return null
+          return (
+            <div key={section.label} className="mb-4">
+              {/* Section Label */}
+              {!collapsed && (
+                <h3 className="px-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-sidebar-muted)]">
+                  {section.label}
+                </h3>
+              )}
+              {visibleItems.map((item) => (
                 <div key={item.label}>
                   {renderNavLink(item, section.label)}
 
@@ -275,8 +278,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   )}
                 </div>
               ))}
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </nav>
 
       {/* Bottom: Logout + Collapse Toggle */}

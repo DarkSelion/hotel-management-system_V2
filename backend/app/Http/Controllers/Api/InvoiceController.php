@@ -14,7 +14,7 @@ class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Invoice::with(['reservation.guest']);
+        $query = Invoice::with(['reservation.guest', 'items']);
 
         if ($status = $request->status) {
             $query->where('status', $status);

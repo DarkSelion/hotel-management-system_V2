@@ -60,11 +60,10 @@ export default function StaffPage() {
   const currentUserRole = useAuthStore((s) => s.user?.role ?? '')
 
   const [search, setSearch] = useState('')
-  const [departmentFilter, setDepartmentFilter] = useState('')
 
   const [viewStaffId, setViewStaffId] = useState<number | null>(null)
   const [editStaff, setEditStaff] = useState<User | null>(null)
-  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', role_id: '', department: '', is_active: true })
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', role_id: '', is_active: true })
   const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({})
 
   const [showAddStaff, setShowAddStaff] = useState(false)
@@ -74,7 +73,7 @@ export default function StaffPage() {
   const [scheduleDateFilter, setScheduleDateFilter] = useState('')
   const [scheduleStaffFilter, setScheduleStaffFilter] = useState('')
   const [showAddSchedule, setShowAddSchedule] = useState(false)
-  const [scheduleForm, setScheduleForm] = useState({ staff_id: '', date: '', start_time: '', end_time: '', department: '', notes: '' })
+  const [scheduleForm, setScheduleForm] = useState({ staff_id: '', date: '', start_time: '', end_time: '', notes: '' })
 
   const [showAddLeave, setShowAddLeave] = useState(false)
   const [leaveForm, setLeaveForm] = useState({ user_id: '', type: 'annual', start_date: '', end_date: '', reason: '' })
@@ -101,7 +100,6 @@ export default function StaffPage() {
   const filteredStaff = staff.filter((s) => {
     const q = search.toLowerCase()
     if (q && !s.name.toLowerCase().includes(q) && !s.email.toLowerCase().includes(q)) return false
-    if (departmentFilter && s.role?.slug !== departmentFilter) return false
     return true
   })
 
@@ -121,11 +119,6 @@ export default function StaffPage() {
       key: 'role',
       label: 'Role',
       render: (s) => <Badge variant="info">{s.role?.name ?? '-'}</Badge>,
-    },
-    {
-      key: 'department',
-      label: 'Department',
-      render: (s) => <span className="text-muted">{s.department || '-'}</span>,
     },
     {
       key: 'phone',
@@ -166,7 +159,6 @@ export default function StaffPage() {
       email: staff.email,
       phone: staff.phone ?? '',
       role_id: staff.role?.id ? String(staff.role.id) : '',
-      department: staff.department ?? '',
       is_active: staff.is_active,
     })
     setEditFormErrors({})
@@ -174,7 +166,7 @@ export default function StaffPage() {
 
   function closeEditModal() {
     setEditStaff(null)
-    setEditForm({ name: '', email: '', phone: '', role_id: '', department: '', is_active: true })
+    setEditForm({ name: '', email: '', phone: '', role_id: '', is_active: true })
     setEditFormErrors({})
   }
 
@@ -262,13 +254,12 @@ export default function StaffPage() {
       date: scheduleForm.date,
       start_time: scheduleForm.start_time,
       end_time: scheduleForm.end_time,
-      department: scheduleForm.department || undefined,
       notes: scheduleForm.notes || undefined,
     }
     api.post('/staff-schedules', payload).then(() => {
       queryClient.invalidateQueries({ queryKey: ['staff-schedules'] })
       setShowAddSchedule(false)
-      setScheduleForm({ staff_id: '', date: '', start_time: '', end_time: '', department: '', notes: '' })
+      setScheduleForm({ staff_id: '', date: '', start_time: '', end_time: '', notes: '' })
       addToast('Schedule added successfully', 'success')
     }).catch(() => addToast('Failed to add schedule', 'error'))
   }
@@ -375,11 +366,6 @@ export default function StaffPage() {
       render: (s) => <span>{s.end_time || '-'}</span>,
     },
     {
-      key: 'department',
-      label: 'Department',
-      render: (s) => <span className="text-muted">{s.department || '-'}</span>,
-    },
-    {
       key: 'notes',
       label: 'Notes',
       render: (s) => <span className="text-muted max-w-[200px] truncate">{s.notes || '-'}</span>,
@@ -420,16 +406,6 @@ export default function StaffPage() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <Select
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                className="w-44"
-              >
-                <option value="">All Departments</option>
-                {[...new Set(staff.map((s) => s.role?.slug).filter(Boolean))].map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </Select>
               {canAddStaff && (
                 <Button variant="primary" className="ml-auto" onClick={() => setShowAddStaff(true)}>
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -586,10 +562,6 @@ export default function StaffPage() {
                 <span className="text-xs font-medium text-muted">Role</span>
                 <p className="text-sm text-foreground">{viewStaff.role?.name ?? '-'}</p>
               </div>
-              <div>
-                <span className="text-xs font-medium text-muted">Department</span>
-                <p className="text-sm text-foreground">{viewStaff.department || '-'}</p>
-              </div>
             </div>
           </div>
         ) : (
@@ -705,23 +677,16 @@ export default function StaffPage() {
             value={editForm.phone}
             onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
           />
-          <div className="grid grid-cols-2 gap-4">
-            <Select
-              label="Role"
-              value={editForm.role_id}
-              onChange={(e) => setEditForm((p) => ({ ...p, role_id: e.target.value }))}
-            >
-              <option value="">Select role</option>
-              {roles.filter((r) => assignableRoleIds.includes(r.id)).map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </Select>
-            <Input
-              label="Department"
-              value={editForm.department}
-              onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))}
-            />
-          </div>
+          <Select
+            label="Role"
+            value={editForm.role_id}
+            onChange={(e) => setEditForm((p) => ({ ...p, role_id: e.target.value }))}
+          >
+            <option value="">Select role</option>
+            {roles.filter((r) => assignableRoleIds.includes(r.id)).map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </Select>
           <label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <input
               type="checkbox"
@@ -778,11 +743,6 @@ export default function StaffPage() {
               onChange={(e) => setScheduleForm((p) => ({ ...p, end_time: e.target.value }))}
             />
           </div>
-          <Input
-            label="Department"
-            value={scheduleForm.department}
-            onChange={(e) => setScheduleForm((p) => ({ ...p, department: e.target.value }))}
-          />
           <div>
             <label className="mb-1 block text-sm font-medium text-foreground">Notes</label>
             <textarea

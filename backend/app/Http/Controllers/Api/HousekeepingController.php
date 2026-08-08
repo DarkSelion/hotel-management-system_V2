@@ -130,6 +130,9 @@ class HousekeepingController extends Controller
         if ($data['status'] === 'completed') {
             if ($task->room) {
                 $task->room->update(['cleaning_status' => 'clean']);
+                if ($task->room->status === 'dirty') {
+                    $task->room->reconcileStatus();
+                }
             }
         }
 

@@ -93,7 +93,6 @@ export default function GuestsPage() {
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [blacklistedOnly, setBlacklistedOnly] = useState(false)
-  const [sortBy, setSortBy] = useState('')
 
   const role = useAuthStore((s) => s.user?.role ?? '')
   const isAdmin = isAdminRole(role)
@@ -111,7 +110,6 @@ export default function GuestsPage() {
     per_page: 10,
     search: search || undefined,
     blacklisted: blacklistedOnly ? '1' : undefined,
-    sort: sortBy || undefined,
   }
 
   const { data: guestsData, isLoading: guestsLoading, error: guestsError, refetch: refetchGuests } = useGuests(params)
@@ -126,10 +124,6 @@ export default function GuestsPage() {
   const paginationInfo = guestsData
     ? { currentPage: guestsData.current_page, lastPage: guestsData.last_page, total: guestsData.total, per_page: guestsData.per_page }
     : null
-
-  function handleSort(key: string) {
-    setSortBy((prev) => (prev === key ? `-${key}` : prev === `-${key}` ? '' : key))
-  }
 
   function openAddModal() {
     setSelectedGuest(null)
@@ -233,7 +227,6 @@ export default function GuestsPage() {
     {
       key: 'name',
       label: 'Name',
-      sortable: true,
       render: (g) => (
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground">
@@ -245,7 +238,6 @@ export default function GuestsPage() {
     {
       key: 'email',
       label: 'Email',
-      sortable: true,
       render: (g) => (
         <div className="flex items-center gap-1.5 text-muted">
           <Mail className="h-3.5 w-3.5" />
@@ -364,8 +356,6 @@ export default function GuestsPage() {
             loading={guestsLoading}
             error={guestsError ? (guestsError as Error).message : null}
             onSearch={undefined}
-            sortBy={sortBy}
-            onSort={handleSort}
             onRetry={() => refetchGuests()}
             keyExtractor={(g) => g.id}
             pagination={paginationInfo ? {

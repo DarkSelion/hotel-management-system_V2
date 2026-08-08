@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useExpenses, useExpensesSummary, useCreateExpense, useUpdateExpense, useDeleteExpense } from '@/hooks/useApi'
+import { useExpenses, useExpensesSummary, useCreateExpense, useUpdateExpense, useDeleteExpense, useUploadExpenseReceipt, useDeleteExpenseReceipt } from '@/hooks/useApi'
 import type { Expense } from '@/types'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -13,9 +13,10 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { DatePicker } from '@/components/ui/date-picker'
+import { useToast } from '@/components/ui/toast'
 import {
   Plus, Eye, Edit, Trash2, FileText, Save, Wallet, TrendingUp, ReceiptText, CalendarRange,
-  AlertCircle,
+  AlertCircle, Upload, X,
 } from 'lucide-react'
 
 const CATEGORIES = [
@@ -72,6 +73,8 @@ export default function ExpensesPage() {
   const [form, setForm] = useState<ExpenseFormData>(emptyForm)
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ExpenseFormData, string>>>({})
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const { addToast } = useToast()
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number | undefined> = { page, sort: sortBy }
@@ -87,6 +90,8 @@ export default function ExpensesPage() {
   const createExpense = useCreateExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
+  const uploadReceipt = useUploadExpenseReceipt()
+  const deleteReceipt = useDeleteExpenseReceipt()
 
   const expenses = expensesData?.data ?? []
   const totalPages = expensesData?.last_page ?? 1
@@ -104,6 +109,7 @@ export default function ExpensesPage() {
   function openNewForm() {
     setEditingExpense(null)
     setForm(emptyForm)
+    setReceiptFile(null)
     setFormErrors({})
     setShowFormModal(true)
   }
@@ -116,6 +122,7 @@ export default function ExpensesPage() {
       description: expense.description ?? '',
       date: expense.date?.split('T')[0] ?? '',
     })
+    setReceiptFile(null)
     setFormErrors({})
     setShowFormModal(true)
   }
@@ -124,6 +131,7 @@ export default function ExpensesPage() {
     setShowFormModal(false)
     setEditingExpense(null)
     setForm(emptyForm)
+    setReceiptFile(null)
     setFormErrors({})
   }
 
@@ -146,16 +154,45 @@ export default function ExpensesPage() {
       date: form.date,
     }
 
+    function afterSave(expenseId: number) {
+      if (receiptFile) {
+        uploadReceipt.mutate(
+          { id: expenseId, file: receiptFile },
+          {
+            onSuccess: () => addToast('Receipt uploaded successfully', 'success'),
+            onError: () => addToast('Expense saved but receipt upload failed', 'error'),
+          },
+        )
+      }
+      closeFormModal()
+    }
+
     if (editingExpense) {
-      updateExpense.mutate({ id: editingExpense.id, data: payload }, { onSuccess: closeFormModal })
+      updateExpense.mutate(
+        { id: editingExpense.id, data: payload },
+        {
+          onSuccess: () => afterSave(editingExpense.id),
+          onError: () => addToast('Failed to update expense', 'error'),
+        },
+      )
     } else {
-      createExpense.mutate(payload, { onSuccess: closeFormModal })
+      createExpense.mutate(payload, {
+        onSuccess: (created) => afterSave(created.id),
+        onError: () => addToast('Failed to create expense', 'error'),
+      })
     }
   }
 
   function handleDelete() {
     if (!deleteConfirmId) return
     deleteExpense.mutate(deleteConfirmId, { onSuccess: () => setDeleteConfirmId(null) })
+  }
+
+  function handleRemoveReceipt(expense: Expense) {
+    deleteReceipt.mutate(expense.id, {
+      onSuccess: () => addToast('Receipt removed successfully', 'success'),
+      onError: () => addToast('Failed to remove receipt', 'error'),
+    })
   }
 
   function updateField<K extends keyof ExpenseFormData>(key: K, value: ExpenseFormData[K]) {
@@ -173,7 +210,7 @@ export default function ExpensesPage() {
     setSortBy(prev => prev === key ? `-${key}` : prev === `-${key}` ? key : key)
   }
 
-  const isFormSubmitting = createExpense.isPending || updateExpense.isPending
+  const isFormSubmitting = createExpense.isPending || updateExpense.isPending || uploadReceipt.isPending
 
   const columns: Column<Expense>[] = [
     {
@@ -210,10 +247,21 @@ export default function ExpensesPage() {
     {
       key: 'receipt',
       label: 'Receipt',
-      render: () => (
-        <Button variant="ghost" size="sm" className="text-primary">
-          <FileText className="h-4 w-4" />
-        </Button>
+      render: (r) => (
+        r.receipt_url ? (
+          <a
+            href={r.receipt_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-primary hover:underline"
+          >
+            <FileText className="h-4 w-4" />
+            View
+          </a>
+        ) : (
+          <span className="text-muted">—</span>
+        )
       ),
     },
     {
@@ -350,6 +398,32 @@ export default function ExpensesPage() {
                 <label className="text-xs font-medium text-muted">Description</label>
                 <p className="text-sm text-foreground">{selectedExpense.description || '-'}</p>
               </div>
+              <div className="col-span-2">
+                <label className="text-xs font-medium text-muted">Receipt</label>
+                {selectedExpense.receipt_url ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={selectedExpense.receipt_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                    >
+                      <FileText className="h-4 w-4" />
+                      View receipt
+                    </a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRemoveReceipt(selectedExpense)}
+                      disabled={deleteReceipt.isPending}
+                    >
+                      {deleteReceipt.isPending ? 'Removing...' : 'Remove'}
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted">No receipt attached</p>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowDetailModal(false)}>Close</Button>
@@ -421,12 +495,48 @@ export default function ExpensesPage() {
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-foreground">Receipt</label>
-            <div className="flex items-center gap-3">
-              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted hover:bg-bg">
-                <FileText className="h-4 w-4" />
-                Upload Receipt
-                <input type="file" className="hidden" accept="image/*,.pdf" />
-              </label>
+            <div className="flex flex-wrap items-center gap-3">
+              {receiptFile ? (
+                <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="max-w-[200px] truncate">{receiptFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setReceiptFile(null)}
+                    className="text-muted hover:text-danger"
+                    aria-label="Remove receipt"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted hover:bg-bg">
+                    <Upload className="h-4 w-4" />
+                    {editingExpense?.receipt_url ? 'Replace Receipt' : 'Upload Receipt'}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) setReceiptFile(file)
+                      }}
+                    />
+                  </label>
+                  {editingExpense?.receipt_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={() => handleRemoveReceipt(editingExpense)}
+                      disabled={deleteReceipt.isPending}
+                    >
+                      {deleteReceipt.isPending ? 'Removing...' : 'Remove'}
+                    </Button>
+                  )}
+                </>
+              )}
               <span className="text-xs text-muted">PNG, JPG or PDF</span>
             </div>
           </div>
