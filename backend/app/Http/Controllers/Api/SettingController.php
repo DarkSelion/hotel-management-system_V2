@@ -6,9 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
 {
+    public const ALLOWED_KEYS = [
+        'hotel_name',
+        'hotel_address',
+        'hotel_phone',
+        'hotel_email',
+        'hotel_logo',
+        'default_currency',
+        'timezone',
+        'tax_name',
+        'tax_rate',
+        'default_discount',
+        'cancellation_policy',
+        'max_advance_days',
+        'early_checkin_fee',
+        'late_checkout_fee',
+        'contact_heading',
+        'contact_description',
+        'contact_reception_hours',
+        'contact_facebook',
+        'contact_instagram',
+        'contact_tiktok',
+        'contact_map_embed_url',
+        'contact_faq',
+        'online_payment_enabled',
+        'gcash_account',
+        'gcash_qr_image',
+        'password_min_length',
+        'session_timeout',
+        'max_login_attempts',
+        'two_factor_auth',
+    ];
+
+    public const PUBLIC_GROUPS = ['hotel', 'contact', 'tax', 'booking', 'payment'];
+
     public function index()
     {
         $settings = Setting::all()->pluck('value', 'key');
@@ -20,7 +55,7 @@ class SettingController extends Controller
     {
         $data = $request->validate([
             'settings' => 'required|array',
-            'settings.*.key' => 'required|string|max:100',
+            'settings.*.key' => ['required', 'string', 'max:100', Rule::in(self::ALLOWED_KEYS)],
             'settings.*.value' => 'nullable|string',
         ]);
 
@@ -65,6 +100,17 @@ class SettingController extends Controller
 
     public function byGroup(string $group)
     {
+        $settings = Setting::where('group', $group)->get()->pluck('value', 'key');
+
+        return response()->json(self::decorate($settings));
+    }
+
+    public function publicByGroup(string $group)
+    {
+        if (! in_array($group, self::PUBLIC_GROUPS, true)) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
         $settings = Setting::where('group', $group)->get()->pluck('value', 'key');
 
         return response()->json(self::decorate($settings));

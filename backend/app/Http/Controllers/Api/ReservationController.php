@@ -96,10 +96,6 @@ class ReservationController extends Controller
                 ]);
             }
 
-            $year = now()->year;
-            $lastId = Reservation::whereBetween('created_at', ["$year-01-01 00:00:00", "$year-12-31 23:59:59"])
-                ->max('id') ?? 0;
-
             $room = Room::findOrFail($data['room_id']);
 
             $rate = $room->price_override ?? $room->roomType->base_price;
@@ -121,8 +117,7 @@ class ReservationController extends Controller
 
             $room->update(['status' => 'reserved']);
 
-            return Reservation::create([
-                'reservation_number' => 'BK-'.$year.'-'.str_pad($lastId + 1, 4, '0', STR_PAD_LEFT),
+            return Reservation::createWithNumber([
                 'guest_id' => $guest->id,
                 'room_id' => $data['room_id'],
                 'status' => $data['status'] ?? 'confirmed',

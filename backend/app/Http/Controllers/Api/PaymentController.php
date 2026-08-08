@@ -70,7 +70,7 @@ class PaymentController extends Controller
         ]);
 
         $payment = DB::transaction(function () use ($data, $request) {
-            $reservation = Reservation::findOrFail($data['reservation_id']);
+            $reservation = Reservation::whereKey($data['reservation_id'])->lockForUpdate()->firstOrFail();
 
             if ($data['amount'] > (float) $reservation->due_amount) {
                 throw ValidationException::withMessages([
@@ -137,20 +137,25 @@ class PaymentController extends Controller
         $payment->update($data);
 
         if (in_array('status', array_keys($data))) {
-            $reservation = $payment->reservation;
-            if ($data['status'] === 'completed' && $reservation->status === 'pending') {
-                $reservation->update(['status' => 'confirmed']);
-            }
+            $reservation = DB::transaction(function () use ($payment, $data) {
+                $reservation = Reservation::whereKey($payment->reservation_id)->lockForUpdate()->firstOrFail();
 
-            $paidAmount = $reservation->payments()
-                ->where('status', 'completed')
-                ->sum('amount');
+                if ($data['status'] === 'completed' && $reservation->status === 'pending') {
+                    $reservation->update(['status' => 'confirmed']);
+                }
 
-            $reservation->update([
-                'paid_amount' => $paidAmount,
-                'payment_status' => $paidAmount >= $reservation->total_amount ? 'paid' : 'partial',
-                'due_amount' => max(0, $reservation->total_amount - $paidAmount),
-            ]);
+                $paidAmount = $reservation->payments()
+                    ->where('status', 'completed')
+                    ->sum('amount');
+
+                $reservation->update([
+                    'paid_amount' => $paidAmount,
+                    'payment_status' => $paidAmount >= $reservation->total_amount ? 'paid' : 'partial',
+                    'due_amount' => max(0, $reservation->total_amount - $paidAmount),
+                ]);
+
+                return $reservation;
+            });
         }
 
         ActivityLog::create([

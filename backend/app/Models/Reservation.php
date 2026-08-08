@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 
 class Reservation extends Model
 {
@@ -125,6 +127,31 @@ class Reservation extends Model
         $query->active()
             ->where('check_in', '<', $checkOut)
             ->where('check_out', '>', $checkIn);
+    }
+
+    public static function generateReservationNumber(): string
+    {
+        $year = now()->year;
+        $lastId = static::whereBetween('created_at', ["$year-01-01 00:00:00", "$year-12-31 23:59:59"])->max('id') ?? 0;
+
+        return 'BK-'.$year.'-'.str_pad($lastId + 1, 4, '0', STR_PAD_LEFT).'-'.strtoupper(Str::random(4));
+    }
+
+    public static function createWithNumber(array $attributes): self
+    {
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            try {
+                $attributes['reservation_number'] = static::generateReservationNumber();
+
+                return static::create($attributes);
+            } catch (QueryException $e) {
+                if (! str_contains($e->getMessage(), 'reservations.reservation_number')) {
+                    throw $e;
+                }
+            }
+        }
+
+        throw new QueryException('', 'reservations insert', [], new \Exception('Unable to allocate a unique reservation number.'));
     }
 
     protected function getIsOverstayAttribute(): bool

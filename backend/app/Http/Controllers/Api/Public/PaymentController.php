@@ -24,33 +24,36 @@ class PaymentController extends Controller
 
         $guest = $request->user();
 
-        $reservation = Reservation::with('room.roomType')->findOrFail($data['reservation_id']);
+        $payment = DB::transaction(function () use ($data, $guest) {
+            $reservation = Reservation::with('room.roomType')
+                ->whereKey($data['reservation_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if ($reservation->guest_id !== $guest->id) {
-            throw ValidationException::withMessages([
-                'reservation_id' => ['This reservation does not belong to you.'],
-            ]);
-        }
+            if ($reservation->guest_id !== $guest->id) {
+                throw ValidationException::withMessages([
+                    'reservation_id' => ['This reservation does not belong to you.'],
+                ]);
+            }
 
-        if (in_array($reservation->status, ['cancelled', 'checked_out', 'no_show'])) {
-            throw ValidationException::withMessages([
-                'reservation_id' => ['This reservation can no longer be paid.'],
-            ]);
-        }
+            if (in_array($reservation->status, ['cancelled', 'checked_out', 'no_show'])) {
+                throw ValidationException::withMessages([
+                    'reservation_id' => ['This reservation can no longer be paid.'],
+                ]);
+            }
 
-        if ($reservation->payment_status === 'paid') {
-            throw ValidationException::withMessages([
-                'reservation_id' => ['This reservation is already fully paid.'],
-            ]);
-        }
+            if ($reservation->payment_status === 'paid') {
+                throw ValidationException::withMessages([
+                    'reservation_id' => ['This reservation is already fully paid.'],
+                ]);
+            }
 
-        if ($data['amount'] > (float) $reservation->due_amount) {
-            throw ValidationException::withMessages([
-                'amount' => ['The amount cannot exceed the outstanding balance of '.number_format((float) $reservation->due_amount, 2).'.'],
-            ]);
-        }
+            if ($data['amount'] > (float) $reservation->due_amount) {
+                throw ValidationException::withMessages([
+                    'amount' => ['The amount cannot exceed the outstanding balance of '.number_format((float) $reservation->due_amount, 2).'.'],
+                ]);
+            }
 
-        $payment = DB::transaction(function () use ($data, $reservation) {
             $payment = Payment::create([
                 'reservation_id' => $reservation->id,
                 'guest_id' => $reservation->guest_id,

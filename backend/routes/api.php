@@ -172,7 +172,7 @@ Route::prefix('public')->group(function () {
     Route::get('/rooms', [PublicRoomController::class, 'index']);
     Route::get('/rooms/available', [PublicRoomController::class, 'available']);
     Route::get('/rooms/{slug}', [PublicRoomController::class, 'show']);
-    Route::get('/settings/{group}', [SettingController::class, 'byGroup']);
+    Route::get('/settings/{group}', [SettingController::class, 'publicByGroup']);
     Route::post('/contact', [PublicContactController::class, 'store'])->middleware('throttle:contact');
 
     Route::middleware(['auth:sanctum', 'role:guest'])->group(function () {
