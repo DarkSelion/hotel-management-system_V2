@@ -150,7 +150,7 @@ class ReservationSeeder extends Seeder
             ],
             [
                 'reservation_number' => $this->nextReservationNumber(),
-                'guest_id' => 12, 'room_id' => $rooms['306']->id, 'status' => 'checked_out',
+                'guest_id' => 12, 'room_id' => $rooms['305']->id, 'status' => 'checked_out',
                 'check_in' => Carbon::now()->subDays(14), 'check_out' => Carbon::now()->subDays(9),
                 'adults' => 3, 'children' => 0,
                 'price_per_night' => 500.00, 'total_nights' => 5,

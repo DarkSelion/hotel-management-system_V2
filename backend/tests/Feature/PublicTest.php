@@ -829,6 +829,43 @@ class PublicTest extends TestCase
         $response->assertStatus(201);
     }
 
+    public function test_public_reservation_rejects_past_check_in_date(): void
+    {
+        $this->setupSettings();
+        $type = $this->roomType('deluxe', 150);
+        $this->room($type);
+        $guest = $this->guest();
+        Sanctum::actingAs($guest);
+
+        $response = $this->postJson('/api/public/reservations', [
+            'room_type_id' => $type->id,
+            'check_in' => now()->subDays(2)->format('Y-m-d'),
+            'check_out' => now()->addDays(2)->format('Y-m-d'),
+            'adults' => 1,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('check_in');
+    }
+
+    public function test_public_reservation_accepts_check_in_today(): void
+    {
+        $this->setupSettings();
+        $type = $this->roomType('deluxe', 150);
+        $this->room($type);
+        $guest = $this->guest();
+        Sanctum::actingAs($guest);
+
+        $response = $this->postJson('/api/public/reservations', [
+            'room_type_id' => $type->id,
+            'check_in' => now()->format('Y-m-d'),
+            'check_out' => now()->addDays(1)->format('Y-m-d'),
+            'adults' => 1,
+        ]);
+
+        $response->assertStatus(201);
+    }
+
     public function test_public_reservation_assigns_first_available_room(): void
     {
         $this->setupSettings();

@@ -5,7 +5,7 @@ import { usePublicAuthStore } from '@/stores/publicAuthStore'
 import { useToast } from '@/components/ui/toast'
 import { formatCurrency } from '@/lib/format'
 import { DatePicker } from '@/components/ui/date-picker'
-import type { PortalRoom, PublicRoomType } from '@/types'
+import type { PublicRoom, PublicRoomType } from '@/types'
 import { Loader2, Check, Users, Maximize, BedDouble, ArrowLeft, CreditCard, Calendar, ChevronRight } from 'lucide-react'
 
 const HERO_IMAGES: Record<string, string> = {
@@ -38,7 +38,7 @@ function toLocalDateStr(d: Date): string {
 interface RoomGroup {
   roomType: PublicRoomType
   count: number
-  sampleRoom: PortalRoom
+  sampleRoom: PublicRoom
 }
 
 function groupImage(group: RoomGroup): string {
@@ -224,7 +224,7 @@ export default function PublicBookingPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label htmlFor="booking_check_in" className="text-xs uppercase tracking-[0.15em] text-gold/50 block mb-2">Check In</label>
-                    <DatePicker value={checkIn} onChange={(v) => setCheckIn(v)} max={maxDate} />
+                    <DatePicker value={checkIn} onChange={(v) => setCheckIn(v)} min={toLocalDateStr(new Date())} max={maxDate} />
                   </div>
                   <div>
                     <label htmlFor="booking_check_out" className="text-xs uppercase tracking-[0.15em] text-gold/50 block mb-2">Check Out</label>

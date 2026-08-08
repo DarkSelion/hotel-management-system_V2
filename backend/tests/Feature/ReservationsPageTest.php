@@ -363,7 +363,7 @@ class ReservationsPageTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['guest_first_name', 'guest_last_name', 'room_id', 'check_in', 'check_out', 'adults', 'price_per_night']);
+        $response->assertJsonValidationErrors(['guest_first_name', 'guest_last_name', 'room_id', 'check_in', 'check_out', 'adults']);
     }
 
     public function test_create_reservation_validates_check_out_after_check_in(): void
@@ -1002,5 +1002,241 @@ class ReservationsPageTest extends TestCase
             'id' => $reservation->id,
             'status' => 'confirmed',
         ]);
+    }
+
+    // ─── Status transition enforcement (C1) ─────────────────
+
+    public function test_update_rejects_invalid_transition_cancelled_to_checked_in(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'cancelled']);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'checked_in',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Cannot change status from cancelled to checked_in.');
+        $this->assertEquals('cancelled', $reservation->fresh()->status);
+    }
+
+    public function test_update_rejects_invalid_transition_confirmed_to_checked_out(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'checked_out',
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertEquals('confirmed', $reservation->fresh()->status);
+    }
+
+    public function test_update_rejects_invalid_transition_pending_to_no_show(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'pending']);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'no_show',
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertEquals('pending', $reservation->fresh()->status);
+    }
+
+    public function test_update_check_in_requires_payment(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'checked_in',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Collect a payment before checking in.');
+        $this->assertEquals('confirmed', $reservation->fresh()->status);
+    }
+
+    public function test_update_check_in_allowed_when_payment_recorded(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'confirmed']);
+        $reservation->room->update(['status' => 'reserved']);
+        $this->recordPayment($reservation);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'checked_in',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'status' => 'checked_in',
+            'checked_in_by' => $admin->id,
+        ]);
+        $this->assertDatabaseHas('rooms', [
+            'id' => $reservation->room_id,
+            'status' => 'occupied',
+        ]);
+    }
+
+    public function test_update_check_out_requires_full_settlement(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'checked_in']);
+        $reservation->room->update(['status' => 'occupied']);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'checked_out',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('message', 'Settle the outstanding balance before checking out.');
+        $this->assertEquals('checked_in', $reservation->fresh()->status);
+    }
+
+    public function test_update_check_out_allowed_when_settled(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation(['status' => 'checked_in']);
+        $reservation->room->update(['status' => 'occupied']);
+        $this->recordPayment($reservation);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'status' => 'checked_out',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('reservations', [
+            'id' => $reservation->id,
+            'status' => 'checked_out',
+            'checked_out_by' => $admin->id,
+        ]);
+        $this->assertDatabaseHas('rooms', [
+            'id' => $reservation->room_id,
+            'status' => 'dirty',
+        ]);
+    }
+
+    // ─── Server-side pricing (C2) ─────────────────────────────
+
+    public function test_create_reservation_ignores_client_total_amount(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $room = $this->room('available');
+
+        $response = $this->postJson('/api/reservations', [
+            'guest_first_name' => 'Juan',
+            'guest_last_name' => 'Dela Cruz',
+            'guest_phone' => '09171234567',
+            'room_id' => $room->id,
+            'check_in' => '2026-09-10',
+            'check_out' => '2026-09-12',
+            'adults' => 2,
+            'price_per_night' => 1000,
+            'total_amount' => 1,
+        ]);
+
+        $response->assertStatus(201);
+        // 2 nights * 1000 = 2000 + 10% tax = 2200 (client's "1" must be ignored)
+        $this->assertEquals(2200, (float) $response->json('total_amount'));
+        $this->assertEquals(2200, (float) $response->json('due_amount'));
+    }
+
+    public function test_create_reservation_rate_derived_from_room_override(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $room = $this->room('available');
+        $room->update(['price_override' => 2500]);
+
+        $response = $this->postJson('/api/reservations', [
+            'guest_first_name' => 'Juan',
+            'guest_last_name' => 'Dela Cruz',
+            'guest_phone' => '09171234567',
+            'room_id' => $room->id,
+            'check_in' => '2026-09-10',
+            'check_out' => '2026-09-12',
+            'adults' => 2,
+            'price_per_night' => 1000,
+        ]);
+
+        $response->assertStatus(201);
+        // 2 nights * 2500 = 5000 + 10% tax = 5500 (client price must be ignored)
+        $this->assertEquals(5500, (float) $response->json('total_amount'));
+        $this->assertEquals(2500, (float) $response->json('price_per_night'));
+    }
+
+    public function test_update_ignores_client_price_and_total(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation([
+            'check_in' => '2026-09-10',
+            'check_out' => '2026-09-12',
+            'price_per_night' => 1000,
+            'total_amount' => 2200,
+        ]);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'price_per_night' => 1,
+            'total_amount' => 1,
+        ]);
+
+        $response->assertStatus(200);
+        // No dates/room changed, so stored pricing is untouched and no recalc runs.
+        $this->assertEquals(1000, (float) $response->json('price_per_night'));
+        $this->assertEquals(2200, (float) $response->json('total_amount'));
+    }
+
+    public function test_update_room_change_recalculates_from_new_room_rate(): void
+    {
+        $admin = $this->admin();
+        Sanctum::actingAs($admin);
+
+        $reservation = $this->reservation([
+            'check_in' => '2026-09-10',
+            'check_out' => '2026-09-12',
+            'price_per_night' => 1000,
+            'total_amount' => 2200,
+            'subtotal' => 2000,
+        ]);
+        $oldRoom = $reservation->room;
+        $oldRoom->update(['status' => 'reserved']);
+
+        $newRoom = $this->room('available');
+        $newRoom->update(['price_override' => 1500]);
+
+        $response = $this->putJson("/api/reservations/{$reservation->id}", [
+            'room_id' => $newRoom->id,
+        ]);
+
+        $response->assertStatus(200);
+        // 2 nights * 1500 = 3000 + 10% tax = 3300
+        $this->assertEquals(1500, (float) $response->json('price_per_night'));
+        $this->assertEquals(3300, (float) $response->json('total_amount'));
+        // Old room reconciled (no other active reservations)
+        $this->assertDatabaseHas('rooms', ['id' => $oldRoom->id, 'status' => 'available']);
     }
 }

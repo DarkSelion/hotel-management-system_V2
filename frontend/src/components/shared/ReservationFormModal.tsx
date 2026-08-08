@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { useAvailableRooms, useCreateReservation, useUpdateReservation } from '@/hooks/useApi'
+import { useAvailableRooms, useCreateReservation, useUpdateReservation, useSettings } from '@/hooks/useApi'
 import { formatCurrency, formatDateDisplay } from '@/lib/format'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
@@ -110,6 +110,10 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
 
   const createReservation = useCreateReservation()
   const updateReservation = useUpdateReservation()
+  const { data: settingsData } = useSettings()
+  const settings = (settingsData ?? {}) as Record<string, string>
+  const taxRate = Number(settings['tax_rate'] ?? 0.1)
+  const taxLabel = `${Math.round(taxRate * 100)}%`
 
   function validateStep(step: number): boolean {
     const errors: Partial<Record<keyof ReservationFormData, string>> = {}
@@ -157,9 +161,9 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
     if (!nights || !form.price_per_night) return 0
     const subtotal = nights * form.price_per_night
     const discountAmount = subtotal * (form.discount_percent / 100)
-    const tax = (subtotal - discountAmount) * 0.12
+    const tax = (subtotal - discountAmount) * taxRate
     return Math.round((subtotal - discountAmount + tax) * 100) / 100
-  }, [nights, form.price_per_night, form.discount_percent])
+  }, [nights, form.price_per_night, form.discount_percent, taxRate])
 
   const isFormSubmitting = createReservation.isPending || updateReservation.isPending
 
@@ -472,8 +476,8 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-muted">Tax (12%)</span>
-                <span>{formatCurrency(((nights * form.price_per_night) - ((nights * form.price_per_night) * (form.discount_percent / 100))) * 0.12)}</span>
+                <span className="text-muted">Tax ({taxLabel})</span>
+                <span>{formatCurrency(((nights * form.price_per_night) - ((nights * form.price_per_night) * (form.discount_percent / 100))) * taxRate)}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-2 font-semibold text-foreground">
                 <span>Total</span>
@@ -549,8 +553,8 @@ export function ReservationFormModal({ isOpen, onClose, reservation }: Reservati
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-muted">Tax (12%)</span>
-                <span>{formatCurrency(((nights * form.price_per_night) - ((nights * form.price_per_night) * (form.discount_percent / 100))) * 0.12)}</span>
+                <span className="text-muted">Tax ({taxLabel})</span>
+                <span>{formatCurrency(((nights * form.price_per_night) - ((nights * form.price_per_night) * (form.discount_percent / 100))) * taxRate)}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-2 text-base font-bold text-foreground">
                 <span>Total</span>

@@ -77,8 +77,7 @@ class ReservationController extends Controller
             'children' => 'nullable|integer|min:0',
             'source' => 'nullable|string|max:50',
             'special_requests' => 'nullable|string',
-            'price_per_night' => 'required|numeric|min:0',
-            'total_amount' => 'nullable|numeric|min:0',
+            'price_per_night' => 'nullable|numeric|min:0',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
             'status' => 'sometimes|in:pending,confirmed',
         ]);
@@ -101,7 +100,9 @@ class ReservationController extends Controller
             $lastId = Reservation::whereBetween('created_at', ["$year-01-01 00:00:00", "$year-12-31 23:59:59"])
                 ->max('id') ?? 0;
 
-            $rate = $data['price_per_night'];
+            $room = Room::findOrFail($data['room_id']);
+
+            $rate = $room->price_override ?? $room->roomType->base_price;
             $nights = now()->parse($data['check_in'])->diffInDays(now()->parse($data['check_out']));
             $subtotal = $rate * $nights;
             $discount = $subtotal * (($data['discount_percent'] ?? 0) / 100);
@@ -109,8 +110,6 @@ class ReservationController extends Controller
             $taxRate = ((float) ($taxSetting ? $taxSetting->getRawOriginal('value') : '10')) / 100;
             $tax = ($subtotal - $discount) * $taxRate;
             $total = round($subtotal - $discount + $tax, 2);
-
-            $room = Room::findOrFail($data['room_id']);
 
             $overlap = $this->roomHasOverlap($room->id, $data['check_in'], $data['check_out']);
 
@@ -138,8 +137,8 @@ class ReservationController extends Controller
                 'discount_amount' => $discount,
                 'tax_percent' => $taxRate * 100,
                 'tax_amount' => $tax,
-                'total_amount' => $data['total_amount'] ?? $total,
-                'due_amount' => $data['total_amount'] ?? $total,
+                'total_amount' => $total,
+                'due_amount' => $total,
                 'paid_amount' => 0,
                 'source' => $data['source'] ?? null,
                 'special_requests' => $data['special_requests'] ?? null,
@@ -182,8 +181,6 @@ class ReservationController extends Controller
             'children' => 'nullable|integer|min:0',
             'source' => 'nullable|string|max:50',
             'special_requests' => 'nullable|string',
-            'price_per_night' => 'sometimes|numeric|min:0',
-            'total_amount' => 'sometimes|numeric|min:0',
             'status' => 'sometimes|in:pending,confirmed,checked_in,checked_out,cancelled,no_show',
         ]);
 
@@ -191,21 +188,46 @@ class ReservationController extends Controller
             $newStatus = $data['status'];
             $oldStatus = $reservation->status;
 
-            $allowedTransitions = [
-                'pending' => ['confirmed', 'checked_in', 'cancelled'],
-                'confirmed' => ['checked_in', 'cancelled', 'no_show'],
-                'checked_in' => ['checked_out'],
-                'checked_out' => [],
-                'cancelled' => [],
-                'no_show' => [],
-            ];
+            // Same-status no-op — allow re-saving without transition validation
+            // (edit forms may submit the current status unchanged).
+            if ($newStatus === $oldStatus) {
+                unset($data['status']);
+            } else {
+                $allowedTransitions = [
+                    'pending' => ['confirmed', 'checked_in', 'cancelled'],
+                    'confirmed' => ['checked_in', 'cancelled', 'no_show'],
+                    'checked_in' => ['checked_out'],
+                    'checked_out' => [],
+                    'cancelled' => [],
+                    'no_show' => [],
+                ];
 
-            if (in_array($newStatus, ['cancelled', 'no_show'])) {
-                if (!in_array($newStatus, $allowedTransitions[$oldStatus] ?? [])) {
+                if (! in_array($newStatus, $allowedTransitions[$oldStatus] ?? [])) {
                     return response()->json([
                         'message' => "Cannot change status from {$oldStatus} to {$newStatus}.",
                     ], 422);
                 }
+            }
+
+            if ($newStatus === 'checked_in') {
+                if ($reservation->due_amount > 0 && ! $reservation->payments()->whereIn('status', ['completed', 'pending'])->exists()) {
+                    return response()->json(['message' => 'Collect a payment before checking in.'], 422);
+                }
+                $data['checked_in_by'] = $request->user()->id;
+                $data['checked_in_at'] = now();
+            }
+
+            if ($newStatus === 'checked_out') {
+                if ((float) $reservation->due_amount > 0) {
+                    return response()->json(['message' => 'Settle the outstanding balance before checking out.'], 422);
+                }
+                $data['checked_out_by'] = $request->user()->id;
+                $data['checked_out_at'] = now();
+            }
+
+            if ($newStatus === 'no_show') {
+                $data['no_show_by'] = $request->user()->id;
+                $data['is_overdue'] = false;
             }
         }
 
@@ -230,7 +252,16 @@ class ReservationController extends Controller
 
         $reservation->update($data);
 
-        if (isset($data['price_per_night']) || isset($data['check_in']) || isset($data['check_out'])) {
+        if ($roomChanged) {
+            $newRoom = Room::find($newRoomId);
+            if ($newRoom) {
+                $reservation->update([
+                    'price_per_night' => $newRoom->price_override ?? $newRoom->roomType->base_price,
+                ]);
+            }
+        }
+
+        if ($roomChanged || $datesChanged) {
             $this->recalculatePricing($reservation);
         }
 
@@ -479,18 +510,7 @@ class ReservationController extends Controller
 
     private function reconcileRoomStatus(Room $room): void
     {
-        $hasActive = Reservation::where('room_id', $room->id)
-            ->active()
-            ->exists();
-
-        if ($hasActive) {
-            $occupied = Reservation::where('room_id', $room->id)
-                ->where('status', 'checked_in')
-                ->exists();
-            $room->update(['status' => $occupied ? 'occupied' : 'reserved']);
-        } else {
-            $room->update(['status' => 'available']);
-        }
+        $room->reconcileStatus();
     }
 
     private function applyRoomState(Reservation $reservation): void

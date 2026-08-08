@@ -57,7 +57,7 @@ class HousekeepingSeeder extends Seeder
                 'created_by' => 3,
             ],
             [
-                'room_id' => $rooms['306']->id, 'assigned_to' => 4,
+                'room_id' => $rooms['305']->id, 'assigned_to' => 4,
                 'status' => 'completed', 'priority' => 'high',
                 'task_type' => 'Deep Clean', 'notes' => 'Post-stay deep clean for VIP suite',
                 'scheduled_date' => Carbon::now()->subDays(2), 'completed_at' => Carbon::now()->subDays(2)->addHours(3),
