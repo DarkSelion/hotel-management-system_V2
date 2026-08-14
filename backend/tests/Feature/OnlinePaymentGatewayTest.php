@@ -29,7 +29,7 @@ class OnlinePaymentGatewayTest extends TestCase
         $defaults = [
             'online_gateway_enabled' => '1',
             'online_gateway_base_url' => 'https://hardreset.onrender.com',
-            'online_gateway_api_key' => 'hotelSecretKey123',
+            'online_gateway_api_key' => 'hardreset',
             'online_gateway_webhook_secret' => 'webhook-secret-abc',
         ];
 
@@ -144,14 +144,14 @@ class OnlinePaymentGatewayTest extends TestCase
 
         Http::assertSent(function ($request) use ($reservation) {
             return $request->url() === 'https://hardreset.onrender.com/api/initiate-payment'
-                && $request->hasHeader('X-API-KEY', 'hotelSecretKey123')
+                && $request->hasHeader('X-API-KEY', 'hardreset')
                 && $request['booking_ref'] === $reservation->reservation_number
                 && $request['customer_name'] === 'Juan Dela Cruz'
                 && $request['customer_email'] === $reservation->guest->email
                 && $request['total_amount'] === '2000.00'
                 && $request['reservation_id'] === $reservation->id
-                && $request['room_name'] === 'Deluxe King'
-                && $request['room_number'] === $reservation->room->room_number;
+                && ! isset($request['room_name'])
+                && ! isset($request['room_number']);
         });
     }
 
@@ -455,7 +455,7 @@ class OnlinePaymentGatewayTest extends TestCase
 
         $this->getJson('/api/settings/payment')
             ->assertOk()
-            ->assertJsonPath('online_gateway_api_key', 'hotelSecretKey123')
+            ->assertJsonPath('online_gateway_api_key', 'hardreset')
             ->assertJsonPath('online_gateway_webhook_secret', 'webhook-secret-abc');
     }
 }
